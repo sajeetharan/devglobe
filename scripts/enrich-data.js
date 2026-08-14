@@ -265,15 +265,15 @@ async function enrichCollaborators() {
   for (let i = 0; i < enriched.length; i += 10) {
     const chunk = enriched.slice(i, i + 10);
     await Promise.all(chunk.map(async (dev) => {
-      if (!dev.collaborators || dev.collaborators.length === 0) return;
+      if (!dev?.id) return;
       try {
-        await container.item(dev.id, dev.location || 'Unknown').patch({
-          operations: [
-            { op: 'set', path: '/collaborators', value: dev.collaborators },
-          ],
-        });
+        const operations = [{ op: 'set', path: '/collaborators', value: dev.collaborators ?? [] }];
+        const patchPromise = container.item(dev.id, dev.location || 'Unknown').patch({ operations });
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
+        await Promise.race([patchPromise, timeout]);
         updated++;
       } catch (err) {
+        if (errors < 5) console.log(`    ⚠ Collaborator patch error ${dev?.login || dev?.id}: ${err.message?.slice(0, 50)}`);
         errors++;
       }
     }));
