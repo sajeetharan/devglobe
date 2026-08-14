@@ -205,6 +205,10 @@ Required environment variables:
 | `COSMOS_CONTAINER` | Container name |
 | `COSMOS_ACTIVITY_CONTAINER` | Rolling GitHub activity container (`activities`) |
 | `ACTIVITY_INGEST_SECRET` | Bearer secret for the activity collector endpoint |
+| `RESEND_API_KEY` | Optional Resend API key for claim and approval emails |
+| `EMAIL_FROM` | Sender on a domain verified by Resend |
+
+Lifecycle emails are transactional and best-effort. Claims use the verified primary email authorized through GitHub OAuth; nomination approvals can use only an email made public on the nominee's GitHub profile. Recipient addresses are not stored in Cosmos DB. See the [lifecycle email PRD](docs/prd/lifecycle-email-notifications.md).
 
 ### Live developer activity
 

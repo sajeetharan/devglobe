@@ -24,6 +24,7 @@ import {
   enrichFromGitHub,
   geocodeLocation,
 } from '../lib/nominate.js';
+import { buildNominationApprovedEmail, sendLifecycleEmail } from '../lib/lifecycle-email.js';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config();
@@ -137,6 +138,18 @@ async function approve(container, username, reviewer, refresh = false) {
       process.exit(1);
     }
     throw err;
+  }
+
+  if (!refresh) {
+    try {
+      await sendLifecycleEmail({
+        to: ghUser.email,
+        message: buildNominationApprovedEmail({ login: dev.login, name: enriched.name }),
+        idempotencyKey: `nomination-approved-${dev.login.toLowerCase()}-${Date.parse(dev.nomination.submittedAt)}`,
+      });
+    } catch (emailError) {
+      console.error(`  Approval email delivery failed: ${emailError.message}`);
+    }
   }
 
   console.log(`  ✓ "${username}" ${refresh ? 'details refreshed' : 'approved and now public'}.`);

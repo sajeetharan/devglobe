@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { createSessionToken, buildSessionCookie } from '../../../../lib/auth.js';
 import { saveActivities } from '../../../../lib/activity-store.js';
 import { createPlatformActivity } from '../../../../lib/platform-activity.js';
+import { selectGitHubEmail } from '../../../../lib/github-email.js';
 
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
@@ -61,13 +62,25 @@ export async function GET(request) {
     }
 
     const ghUser = await userRes.json();
+    let githubEmails = [];
+    try {
+      const emailsRes = await fetch('https://api.github.com/user/emails', {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
+      });
+      if (emailsRes.ok) githubEmails = await emailsRes.json();
+    } catch (emailError) {
+      console.error('GitHub email lookup failed:', emailError.message);
+    }
 
     // Create session
     const session = {
       login: ghUser.login,
       name: ghUser.name || ghUser.login,
       avatarUrl: ghUser.avatar_url,
-      email: ghUser.email,
+      email: selectGitHubEmail(ghUser.email, githubEmails),
     };
 
     const token = await createSessionToken(session);
