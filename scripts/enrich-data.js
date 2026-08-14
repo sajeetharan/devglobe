@@ -7,6 +7,7 @@
 import { CosmosClient } from '@azure/cosmos';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import { enrichWithCollaborators } from '../lib/collaboration.js';
 
 dotenv.config();
 
@@ -249,6 +250,38 @@ async function enrichDevs() {
   console.log(`   ✅ Enrichment complete. ${processed} processed, ${errors} errors`);
 }
 
+// ─── Step 3: Compute collaboration networks ──────────────────────────────────
+async function enrichCollaborators() {
+  console.log('\n🌐 Step 3: Computing collaboration graph across developers...');
+  const { resources: allDevs } = await container.items
+    .query('SELECT c.id, c.login, c.name, c.avatarUrl, c.location, c.lat, c.lng, c.totalStars, c.topLanguage, c.topRepos FROM c')
+    .fetchAll();
+
+  console.log(`   Found ${allDevs.length} developers. Calculating shared repository networks...`);
+  const enriched = enrichWithCollaborators(allDevs);
+  let updated = 0;
+  let errors = 0;
+
+  for (let i = 0; i < enriched.length; i += 10) {
+    const chunk = enriched.slice(i, i + 10);
+    await Promise.all(chunk.map(async (dev) => {
+      if (!dev.collaborators || dev.collaborators.length === 0) return;
+      try {
+        await container.item(dev.id, dev.location || 'Unknown').patch({
+          operations: [
+            { op: 'set', path: '/collaborators', value: dev.collaborators },
+          ],
+        });
+        updated++;
+      } catch (err) {
+        errors++;
+      }
+    }));
+  }
+
+  console.log(`   ✅ Collaboration graph complete. ${updated} developers updated (errors: ${errors})`);
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 async function main() {
   console.log('🔧 Developer Data Enrichment');
@@ -266,6 +299,9 @@ async function main() {
 
   // Step 2: Enrich (commits, stars, repos)
   await enrichDevs();
+
+  // Step 3: Compute collaboration graph
+  await enrichCollaborators();
 
   console.log('\n🎉 All done!');
 }

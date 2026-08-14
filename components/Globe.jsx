@@ -47,6 +47,12 @@ const noLabel = () => '';
 const avatarAltitude = () => 0.018;
 const avatarLat = d => d.markerLat;
 const avatarLng = d => d.markerLng;
+const arcStartLat = d => d.startLat;
+const arcStartLng = d => d.startLng;
+const arcEndLat = d => d.endLat;
+const arcEndLng = d => d.endLng;
+const arcColor = d => d.color;
+const arcLabel = d => d.label;
 
 function createAvatarMarker(developer, onSelectDev, setAutoRotate) {
   const marker = document.createElement('div');
@@ -214,6 +220,7 @@ const Globe = forwardRef(function Globe({
   const reducedMotion = useRef(false);
   const [countryFeatures, setCountryFeatures] = useState([]);
   const [hoverCountry, setHoverCountry] = useState(null);
+  const [hoverDev, setHoverDev] = useState(null);
   const isLight = theme === 'light';
 
   const geoDevs = useMemo(() => {
@@ -260,9 +267,39 @@ const Globe = forwardRef(function Globe({
     return markers;
   }, [countryFeatures, geoDevs, selectedCountry]);
 
-  // Pulsing rings for top 10 developers
+  // Dynamic animated arcs on hover connecting developer to top collaborators
+  const arcsData = useMemo(() => {
+    if (!hoverDev || !hoverDev.collaborators || hoverDev.collaborators.length === 0) {
+      return [];
+    }
+    if (hoverDev.lat == null || hoverDev.lng == null) {
+      return [];
+    }
+
+    const sourceColor = getScoreColor(hoverDev.score);
+    return hoverDev.collaborators
+      .filter(c => c.lat != null && c.lng != null)
+      .slice(0, 5)
+      .map(collab => {
+        const targetColor = getScoreColor(collab.score ?? hoverDev.score);
+        return {
+          startLat: hoverDev.lat,
+          startLng: hoverDev.lng,
+          endLat: collab.lat,
+          endLng: collab.lng,
+          color: [sourceColor, targetColor],
+          sourceLogin: hoverDev.login,
+          targetLogin: collab.login,
+          targetName: collab.name || collab.login,
+          repo: collab.repo || 'shared repo',
+          label: `Collaborates with @${collab.login} on ${collab.repo || 'shared repo'}`,
+        };
+      });
+  }, [hoverDev]);
+
+  // Pulsing rings for top 10 developers + active hovered developer's collaborators
   const ringsData = useMemo(() => {
-    return geoDevs.slice(0, 10).map(d => ({
+    const base = geoDevs.slice(0, 10).map(d => ({
       lat: d.lat,
       lng: d.lng,
       maxR: 3,
@@ -271,7 +308,25 @@ const Globe = forwardRef(function Globe({
       color: getScoreColor(d.score),
       login: d.login,
     }));
-  }, [geoDevs]);
+
+    if (hoverDev?.collaborators?.length && hoverDev.lat != null && hoverDev.lng != null) {
+      const collabRings = hoverDev.collaborators
+        .filter(c => c.lat != null && c.lng != null)
+        .slice(0, 5)
+        .map(c => ({
+          lat: c.lat,
+          lng: c.lng,
+          maxR: 4,
+          propagationSpeed: 3,
+          repeatPeriod: 900,
+          color: '#38bdf8',
+          login: c.login,
+        }));
+      return [...base, ...collabRings];
+    }
+
+    return base;
+  }, [geoDevs, hoverDev]);
 
   // Developers per country, keyed the same way the leaderboard filters
   const devCountByCountry = useMemo(() => {
@@ -358,6 +413,7 @@ const Globe = forwardRef(function Globe({
     if (!tooltipDisabled) return;
     tooltipRef.current?.classList.remove('visible');
     setHoverCountry(null);
+    setHoverDev(null);
   }, [tooltipDisabled]);
 
   const handleHover = useCallback((point) => {
@@ -365,11 +421,26 @@ const Globe = forwardRef(function Globe({
     if (!tooltip) return;
 
     if (tooltipDisabled) {
+      setHoverDev(null);
       tooltip.classList.remove('visible');
       return;
     }
 
+    setHoverDev(point || null);
+
     if (point) {
+      const collabs = point.collaborators?.slice(0, 5) || [];
+      const collabHtml = collabs.length > 0 ? `
+        <div class="tooltip__collaborators">
+          <div class="tooltip__collab-header">🤝 Collaboration Network (${collabs.length})</div>
+          ${collabs.map(c => `
+            <div class="tooltip__collab-item">
+              Collaborates with <strong>@${c.login}</strong> on <span class="tooltip__collab-repo">${c.repo}</span>
+            </div>
+          `).join('')}
+        </div>
+      ` : '';
+
       tooltip.innerHTML = `
         <div class="tooltip__header">
           <img class="tooltip__avatar" src="${point.avatarUrl}" alt="${point.login}">
@@ -388,6 +459,7 @@ const Globe = forwardRef(function Globe({
           <span>📍 ${point.location || 'Unknown'}</span>
           ${point.topLanguage ? `<span>· ${point.topLanguage}</span>` : ''}
         </div>
+        ${collabHtml}
       `;
       tooltip.classList.add('visible');
       setAutoRotate(false);
@@ -546,6 +618,20 @@ const Globe = forwardRef(function Globe({
           labelColor={labelColor}
           labelDotRadius={0.3}
           labelAltitude={0.02}
+          arcsData={arcsData}
+          arcStartLat={arcStartLat}
+          arcStartLng={arcStartLng}
+          arcEndLat={arcEndLat}
+          arcEndLng={arcEndLng}
+          arcColor={arcColor}
+          arcAltitude={0.25}
+          arcStroke={0.6}
+          arcDashLength={0.9}
+          arcDashGap={2}
+          arcDashInitialGap={1}
+          arcDashAnimateTime={1800}
+          arcsTransitionDuration={300}
+          arcLabel={arcLabel}
           onPointHover={handleHover}
           onPointClick={handleClick}
         />

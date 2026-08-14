@@ -37,14 +37,14 @@
         "forks": 52000
       },
       {
+        "name": "git",
+        "stars": 54000,
+        "forks": 26000
+      },
+      {
         "name": "subsurface-for-dirk",
         "stars": 2200,
         "forks": 680
-      },
-      {
-        "name": "uemacs",
-        "stars": 710,
-        "forks": 120
       }
     ],
     "soUserId": null,
@@ -52,7 +52,35 @@
     "soAnswers": 0,
     "soAcceptRate": 0,
     "soBadges": 0,
-    "metricsUpdatedAt": "2026-08-06T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-06T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "mattn",
+        "name": "Yasuhiro Matsumoto",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/10111?v=4",
+        "repo": "linux",
+        "sharedRepos": [
+          "linux"
+        ],
+        "lat": 34.6937,
+        "lng": 135.5023,
+        "score": 0,
+        "location": "Osaka, Japan"
+      },
+      {
+        "login": "brendangregg",
+        "name": "Brendan Gregg",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/1904851?v=4",
+        "repo": "linux",
+        "sharedRepos": [
+          "linux"
+        ],
+        "lat": -33.8688,
+        "lng": 151.2093,
+        "score": 0,
+        "location": "Sydney, Australia"
+      }
+    ]
   },
   {
     "login": "gaearon",
@@ -92,14 +120,14 @@
         "forks": 15700
       },
       {
+        "name": "react",
+        "stars": 228000,
+        "forks": 45000
+      },
+      {
         "name": "react-hot-loader",
         "stars": 12300,
         "forks": 850
-      },
-      {
-        "name": "overreacted.io",
-        "stars": 7100,
-        "forks": 1300
       }
     ],
     "soUserId": 458193,
@@ -107,7 +135,61 @@
     "soAnswers": 320,
     "soAcceptRate": 45,
     "soBadges": 48,
-    "metricsUpdatedAt": "2026-08-04T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-04T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "sindresorhus",
+        "name": "Sindre Sorhus",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/170270?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 13.7563,
+        "lng": 100.5018,
+        "score": 0,
+        "location": "Bangkok, Thailand"
+      },
+      {
+        "login": "getify",
+        "name": "Kyle Simpson",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/150330?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 30.2672,
+        "lng": -97.7431,
+        "score": 0,
+        "location": "Austin, TX, USA"
+      },
+      {
+        "login": "mrdoob",
+        "name": "Ricardo Cabello",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/97088?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 41.3874,
+        "lng": 2.1686,
+        "score": 0,
+        "location": "Barcelona, Spain"
+      },
+      {
+        "login": "addyosmani",
+        "name": "Addy Osmani",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/110953?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 37.3861,
+        "lng": -122.0839,
+        "score": 0,
+        "location": "Mountain View, CA, USA"
+      }
+    ]
   },
   {
     "login": "sindresorhus",
@@ -143,18 +225,23 @@
     "topRepos": [
       {
         "name": "awesome",
-        "stars": 310000,
-        "forks": 27000
+        "stars": 320000,
+        "forks": 28000
       },
       {
         "name": "got",
         "stars": 14000,
-        "forks": 940
+        "forks": 800
       },
       {
-        "name": "execa",
-        "stars": 6800,
-        "forks": 220
+        "name": "react",
+        "stars": 228000,
+        "forks": 45000
+      },
+      {
+        "name": "vite",
+        "stars": 68000,
+        "forks": 6200
       }
     ],
     "soUserId": null,
@@ -162,7 +249,74 @@
     "soAnswers": 15,
     "soAcceptRate": 60,
     "soBadges": 8,
-    "metricsUpdatedAt": "2026-08-02T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-02T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "yyx990803",
+        "name": "Evan You",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/499550?v=4",
+        "repo": "vite",
+        "sharedRepos": [
+          "vite"
+        ],
+        "lat": 1.3521,
+        "lng": 103.8198,
+        "score": 0,
+        "location": "Singapore"
+      },
+      {
+        "login": "gaearon",
+        "name": "Dan Abramov",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/810438?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 51.5074,
+        "lng": -0.1278,
+        "score": 0,
+        "location": "London, UK"
+      },
+      {
+        "login": "getify",
+        "name": "Kyle Simpson",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/150330?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 30.2672,
+        "lng": -97.7431,
+        "score": 0,
+        "location": "Austin, TX, USA"
+      },
+      {
+        "login": "mrdoob",
+        "name": "Ricardo Cabello",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/97088?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 41.3874,
+        "lng": 2.1686,
+        "score": 0,
+        "location": "Barcelona, Spain"
+      },
+      {
+        "login": "addyosmani",
+        "name": "Addy Osmani",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/110953?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 37.3861,
+        "lng": -122.0839,
+        "score": 0,
+        "location": "Mountain View, CA, USA"
+      }
+    ]
   },
   {
     "login": "tj",
@@ -199,17 +353,17 @@
       {
         "name": "commander.js",
         "stars": 26500,
-        "forks": 1700
+        "forks": 2500
       },
       {
         "name": "co",
-        "stars": 11900,
-        "forks": 780
+        "stars": 12000,
+        "forks": 600
       },
       {
         "name": "n",
-        "stars": 18700,
-        "forks": 750
+        "stars": 18000,
+        "forks": 900
       }
     ],
     "soUserId": 68115,
@@ -217,7 +371,35 @@
     "soAnswers": 890,
     "soAcceptRate": 52,
     "soBadges": 62,
-    "metricsUpdatedAt": "2026-07-31T00:00:00Z"
+    "metricsUpdatedAt": "2026-07-31T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "substack",
+        "name": "James Halliday",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/12631?v=4",
+        "repo": "commander.js",
+        "sharedRepos": [
+          "commander.js"
+        ],
+        "lat": 37.8044,
+        "lng": -122.2712,
+        "score": 0,
+        "location": "Oakland, CA, USA"
+      },
+      {
+        "login": "jonschlinkert",
+        "name": "Jon Schlinkert",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/383994?v=4",
+        "repo": "commander.js",
+        "sharedRepos": [
+          "commander.js"
+        ],
+        "lat": 39.1031,
+        "lng": -84.512,
+        "score": 0,
+        "location": "Cincinnati, OH, USA"
+      }
+    ]
   },
   {
     "login": "yyx990803",
@@ -253,18 +435,18 @@
     "topRepos": [
       {
         "name": "vue",
-        "stars": 207000,
-        "forks": 33800
+        "stars": 208000,
+        "forks": 34000
       },
       {
         "name": "vite",
-        "stars": 67000,
-        "forks": 6000
+        "stars": 68000,
+        "forks": 6200
       },
       {
         "name": "vue-next",
         "stars": 45000,
-        "forks": 8200
+        "forks": 8000
       }
     ],
     "soUserId": 2437875,
@@ -272,7 +454,22 @@
     "soAnswers": 120,
     "soAcceptRate": 38,
     "soBadges": 22,
-    "metricsUpdatedAt": "2026-08-05T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-05T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "sindresorhus",
+        "name": "Sindre Sorhus",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/170270?v=4",
+        "repo": "vite",
+        "sharedRepos": [
+          "vite"
+        ],
+        "lat": 13.7563,
+        "lng": 100.5018,
+        "score": 0,
+        "location": "Bangkok, Thailand"
+      }
+    ]
   },
   {
     "login": "antirez",
@@ -327,7 +524,8 @@
     "soAnswers": 0,
     "soAcceptRate": 0,
     "soBadges": 0,
-    "metricsUpdatedAt": "2026-06-23T00:00:00Z"
+    "metricsUpdatedAt": "2026-06-23T00:00:00Z",
+    "collaborators": []
   },
   {
     "login": "mrdoob",
@@ -363,13 +561,18 @@
     "topRepos": [
       {
         "name": "three.js",
-        "stars": 101000,
-        "forks": 27000
+        "stars": 102000,
+        "forks": 35000
       },
       {
         "name": "htmleditor",
-        "stars": 980,
-        "forks": 290
+        "stars": 1200,
+        "forks": 280
+      },
+      {
+        "name": "react",
+        "stars": 228000,
+        "forks": 45000
       }
     ],
     "soUserId": null,
@@ -377,7 +580,61 @@
     "soAnswers": 45,
     "soAcceptRate": 30,
     "soBadges": 12,
-    "metricsUpdatedAt": "2026-07-28T00:00:00Z"
+    "metricsUpdatedAt": "2026-07-28T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "sindresorhus",
+        "name": "Sindre Sorhus",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/170270?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 13.7563,
+        "lng": 100.5018,
+        "score": 0,
+        "location": "Bangkok, Thailand"
+      },
+      {
+        "login": "gaearon",
+        "name": "Dan Abramov",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/810438?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 51.5074,
+        "lng": -0.1278,
+        "score": 0,
+        "location": "London, UK"
+      },
+      {
+        "login": "getify",
+        "name": "Kyle Simpson",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/150330?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 30.2672,
+        "lng": -97.7431,
+        "score": 0,
+        "location": "Austin, TX, USA"
+      },
+      {
+        "login": "addyosmani",
+        "name": "Addy Osmani",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/110953?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 37.3861,
+        "lng": -122.0839,
+        "score": 0,
+        "location": "Mountain View, CA, USA"
+      }
+    ]
   },
   {
     "login": "JakeWharton",
@@ -432,7 +689,8 @@
     "soAnswers": 2400,
     "soAcceptRate": 68,
     "soBadges": 184,
-    "metricsUpdatedAt": "2026-06-08T00:00:00Z"
+    "metricsUpdatedAt": "2026-06-08T00:00:00Z",
+    "collaborators": []
   },
   {
     "login": "getify",
@@ -469,17 +727,17 @@
       {
         "name": "You-Dont-Know-JS",
         "stars": 178000,
-        "forks": 21000
+        "forks": 33000
       },
       {
         "name": "Functional-Light-JS",
-        "stars": 16500,
-        "forks": 2100
+        "stars": 16000,
+        "forks": 1400
       },
       {
-        "name": "LABjs",
-        "stars": 2300,
-        "forks": 340
+        "name": "react",
+        "stars": 228000,
+        "forks": 45000
       }
     ],
     "soUserId": 228852,
@@ -487,7 +745,61 @@
     "soAnswers": 1800,
     "soAcceptRate": 55,
     "soBadges": 95,
-    "metricsUpdatedAt": "2026-08-03T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-03T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "sindresorhus",
+        "name": "Sindre Sorhus",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/170270?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 13.7563,
+        "lng": 100.5018,
+        "score": 0,
+        "location": "Bangkok, Thailand"
+      },
+      {
+        "login": "gaearon",
+        "name": "Dan Abramov",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/810438?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 51.5074,
+        "lng": -0.1278,
+        "score": 0,
+        "location": "London, UK"
+      },
+      {
+        "login": "mrdoob",
+        "name": "Ricardo Cabello",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/97088?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 41.3874,
+        "lng": 2.1686,
+        "score": 0,
+        "location": "Barcelona, Spain"
+      },
+      {
+        "login": "addyosmani",
+        "name": "Addy Osmani",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/110953?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 37.3861,
+        "lng": -122.0839,
+        "score": 0,
+        "location": "Mountain View, CA, USA"
+      }
+    ]
   },
   {
     "login": "addyosmani",
@@ -523,18 +835,18 @@
     "topRepos": [
       {
         "name": "learning-jsdp",
-        "stars": 28000,
-        "forks": 5100
+        "stars": 13000,
+        "forks": 2700
       },
       {
         "name": "es6-tools",
-        "stars": 4000,
-        "forks": 510
+        "stars": 7200,
+        "forks": 530
       },
       {
-        "name": "critical",
-        "stars": 10000,
-        "forks": 430
+        "name": "react",
+        "stars": 228000,
+        "forks": 45000
       }
     ],
     "soUserId": 193238,
@@ -542,7 +854,61 @@
     "soAnswers": 620,
     "soAcceptRate": 42,
     "soBadges": 55,
-    "metricsUpdatedAt": "2026-08-01T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-01T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "sindresorhus",
+        "name": "Sindre Sorhus",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/170270?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 13.7563,
+        "lng": 100.5018,
+        "score": 0,
+        "location": "Bangkok, Thailand"
+      },
+      {
+        "login": "gaearon",
+        "name": "Dan Abramov",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/810438?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 51.5074,
+        "lng": -0.1278,
+        "score": 0,
+        "location": "London, UK"
+      },
+      {
+        "login": "getify",
+        "name": "Kyle Simpson",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/150330?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 30.2672,
+        "lng": -97.7431,
+        "score": 0,
+        "location": "Austin, TX, USA"
+      },
+      {
+        "login": "mrdoob",
+        "name": "Ricardo Cabello",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/97088?v=4",
+        "repo": "react",
+        "sharedRepos": [
+          "react"
+        ],
+        "lat": 41.3874,
+        "lng": 2.1686,
+        "score": 0,
+        "location": "Barcelona, Spain"
+      }
+    ]
   },
   {
     "login": "vczh",
@@ -597,7 +963,8 @@
     "soAnswers": 450,
     "soAcceptRate": 35,
     "soBadges": 32,
-    "metricsUpdatedAt": "2026-07-30T00:00:00Z"
+    "metricsUpdatedAt": "2026-07-30T00:00:00Z",
+    "collaborators": []
   },
   {
     "login": "ThePrimeagen",
@@ -637,18 +1004,18 @@
     "topRepos": [
       {
         "name": "harpoon",
-        "stars": 6800,
-        "forks": 420
+        "stars": 6900,
+        "forks": 550
       },
       {
         "name": "vim-be-good",
-        "stars": 2900,
-        "forks": 180
+        "stars": 6100,
+        "forks": 420
       },
       {
         "name": "kata-machine",
-        "stars": 2100,
-        "forks": 680
+        "stars": 2300,
+        "forks": 390
       }
     ],
     "soUserId": null,
@@ -656,7 +1023,22 @@
     "soAnswers": 35,
     "soAcceptRate": 40,
     "soBadges": 8,
-    "metricsUpdatedAt": "2026-05-09T00:00:00Z"
+    "metricsUpdatedAt": "2026-05-09T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "mattn",
+        "name": "Yasuhiro Matsumoto",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/10111?v=4",
+        "repo": "vim-be-good",
+        "sharedRepos": [
+          "vim-be-good"
+        ],
+        "lat": 34.6937,
+        "lng": 135.5023,
+        "score": 0,
+        "location": "Osaka, Japan"
+      }
+    ]
   },
   {
     "login": "jonschlinkert",
@@ -688,18 +1070,18 @@
     "topRepos": [
       {
         "name": "micromatch",
-        "stars": 2200,
+        "stars": 2800,
         "forks": 180
       },
       {
         "name": "remarkable",
-        "stars": 5700,
-        "forks": 410
+        "stars": 5400,
+        "forks": 520
       },
       {
-        "name": "gray-matter",
-        "stars": 3800,
-        "forks": 210
+        "name": "commander.js",
+        "stars": 26500,
+        "forks": 2500
       }
     ],
     "soUserId": null,
@@ -707,7 +1089,35 @@
     "soAnswers": 85,
     "soAcceptRate": 50,
     "soBadges": 15,
-    "metricsUpdatedAt": "2026-08-05T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-05T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "tj",
+        "name": "TJ Holowaychuk",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/25254?v=4",
+        "repo": "commander.js",
+        "sharedRepos": [
+          "commander.js"
+        ],
+        "lat": 48.4284,
+        "lng": -123.3656,
+        "score": 0,
+        "location": "Victoria, BC, Canada"
+      },
+      {
+        "login": "substack",
+        "name": "James Halliday",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/12631?v=4",
+        "repo": "commander.js",
+        "sharedRepos": [
+          "commander.js"
+        ],
+        "lat": 37.8044,
+        "lng": -122.2712,
+        "score": 0,
+        "location": "Oakland, CA, USA"
+      }
+    ]
   },
   {
     "login": "brendangregg",
@@ -747,18 +1157,18 @@
     "topRepos": [
       {
         "name": "perf-tools",
-        "stars": 9700,
-        "forks": 1700
+        "stars": 7800,
+        "forks": 1100
       },
       {
         "name": "FlameGraph",
-        "stars": 17000,
-        "forks": 1900
+        "stars": 16500,
+        "forks": 2100
       },
       {
-        "name": "bcc",
-        "stars": 2100,
-        "forks": 410
+        "name": "linux",
+        "stars": 175000,
+        "forks": 52000
       }
     ],
     "soUserId": null,
@@ -766,7 +1176,35 @@
     "soAnswers": 42,
     "soAcceptRate": 65,
     "soBadges": 18,
-    "metricsUpdatedAt": "2026-08-04T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-04T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "torvalds",
+        "name": "Linus Torvalds",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/1024025?v=4",
+        "repo": "linux",
+        "sharedRepos": [
+          "linux"
+        ],
+        "lat": 45.5155,
+        "lng": -122.6789,
+        "score": 0,
+        "location": "Portland, OR, USA"
+      },
+      {
+        "login": "mattn",
+        "name": "Yasuhiro Matsumoto",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/10111?v=4",
+        "repo": "linux",
+        "sharedRepos": [
+          "linux"
+        ],
+        "lat": 34.6937,
+        "lng": 135.5023,
+        "score": 0,
+        "location": "Osaka, Japan"
+      }
+    ]
   },
   {
     "login": "mitchellh",
@@ -821,7 +1259,8 @@
     "soAnswers": 180,
     "soAcceptRate": 48,
     "soBadges": 35,
-    "metricsUpdatedAt": "2026-08-02T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-02T00:00:00Z",
+    "collaborators": []
   },
   {
     "login": "fabpot",
@@ -876,7 +1315,8 @@
     "soAnswers": 520,
     "soAcceptRate": 58,
     "soBadges": 72,
-    "metricsUpdatedAt": "2026-07-23T00:00:00Z"
+    "metricsUpdatedAt": "2026-07-23T00:00:00Z",
+    "collaborators": []
   },
   {
     "login": "mattn",
@@ -916,18 +1356,23 @@
     "topRepos": [
       {
         "name": "go-sqlite3",
-        "stars": 7800,
-        "forks": 1100
+        "stars": 8200,
+        "forks": 1200
       },
       {
         "name": "vim-gist",
-        "stars": 1800,
-        "forks": 210
+        "stars": 1500,
+        "forks": 240
       },
       {
-        "name": "goreman",
-        "stars": 1400,
-        "forks": 160
+        "name": "linux",
+        "stars": 175000,
+        "forks": 52000
+      },
+      {
+        "name": "vim-be-good",
+        "stars": 6100,
+        "forks": 420
       }
     ],
     "soUserId": 340289,
@@ -935,7 +1380,48 @@
     "soAnswers": 680,
     "soAcceptRate": 42,
     "soBadges": 45,
-    "metricsUpdatedAt": "2026-07-18T00:00:00Z"
+    "metricsUpdatedAt": "2026-07-18T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "torvalds",
+        "name": "Linus Torvalds",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/1024025?v=4",
+        "repo": "linux",
+        "sharedRepos": [
+          "linux"
+        ],
+        "lat": 45.5155,
+        "lng": -122.6789,
+        "score": 0,
+        "location": "Portland, OR, USA"
+      },
+      {
+        "login": "ThePrimeagen",
+        "name": "ThePrimeagen",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/4458174?v=4",
+        "repo": "vim-be-good",
+        "sharedRepos": [
+          "vim-be-good"
+        ],
+        "lat": 40.7608,
+        "lng": -111.891,
+        "score": 0,
+        "location": "Salt Lake City, UT, USA"
+      },
+      {
+        "login": "brendangregg",
+        "name": "Brendan Gregg",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/1904851?v=4",
+        "repo": "linux",
+        "sharedRepos": [
+          "linux"
+        ],
+        "lat": -33.8688,
+        "lng": 151.2093,
+        "score": 0,
+        "location": "Sydney, Australia"
+      }
+    ]
   },
   {
     "login": "kennethreitz",
@@ -990,7 +1476,8 @@
     "soAnswers": 240,
     "soAcceptRate": 50,
     "soBadges": 42,
-    "metricsUpdatedAt": "2026-08-06T00:00:00Z"
+    "metricsUpdatedAt": "2026-08-06T00:00:00Z",
+    "collaborators": []
   },
   {
     "login": "substack",
@@ -1031,13 +1518,13 @@
       },
       {
         "name": "stream-handbook",
-        "stars": 13600,
-        "forks": 990
+        "stars": 16000,
+        "forks": 1100
       },
       {
-        "name": "tape",
-        "stars": 5800,
-        "forks": 330
+        "name": "commander.js",
+        "stars": 26500,
+        "forks": 2500
       }
     ],
     "soUserId": null,
@@ -1045,7 +1532,35 @@
     "soAnswers": 110,
     "soAcceptRate": 45,
     "soBadges": 20,
-    "metricsUpdatedAt": "2026-06-28T00:00:00Z"
+    "metricsUpdatedAt": "2026-06-28T00:00:00Z",
+    "collaborators": [
+      {
+        "login": "tj",
+        "name": "TJ Holowaychuk",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/25254?v=4",
+        "repo": "commander.js",
+        "sharedRepos": [
+          "commander.js"
+        ],
+        "lat": 48.4284,
+        "lng": -123.3656,
+        "score": 0,
+        "location": "Victoria, BC, Canada"
+      },
+      {
+        "login": "jonschlinkert",
+        "name": "Jon Schlinkert",
+        "avatarUrl": "https://avatars.githubusercontent.com/u/383994?v=4",
+        "repo": "commander.js",
+        "sharedRepos": [
+          "commander.js"
+        ],
+        "lat": 39.1031,
+        "lng": -84.512,
+        "score": 0,
+        "location": "Cincinnati, OH, USA"
+      }
+    ]
   },
   {
     "login": "jonsuh",
@@ -1091,6 +1606,7 @@
     "soAnswers": 36000,
     "soAcceptRate": 82,
     "soBadges": 890,
-    "metricsUpdatedAt": null
+    "metricsUpdatedAt": null,
+    "collaborators": []
   }
 ]

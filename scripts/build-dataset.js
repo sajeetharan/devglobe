@@ -13,6 +13,7 @@ import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { scoreAll } from '../lib/scoring.js';
 import { addDeveloperRanks } from '../lib/ranking.js';
+import { enrichWithCollaborators } from '../lib/collaboration.js';
 
 function run(script, description) {
   console.log(`\n${'='.repeat(60)}`);
@@ -67,8 +68,14 @@ async function main() {
   // client-side — no risk of the two implementations drifting apart.
   const scored = addDeveloperRanks(scoreAll(developers));
 
+  // Step 5: Compute collaboration networks (shared topRepos)
+  console.log(`\n${'='.repeat(60)}`);
+  console.log('  STEP: Building developer collaboration graph');
+  console.log(`${'='.repeat(60)}\n`);
+  const finalDataset = enrichWithCollaborators(scored);
+
   // Write final output
-  writeFileSync('data/developers.json', JSON.stringify(scored, null, 2));
+  writeFileSync('data/developers.json', JSON.stringify(finalDataset, null, 2));
 
   // Score distribution summary, for reviewing calibration (spread, outliers,
   // how many profiles land in sparse-data territory) each time the dataset

@@ -28,7 +28,7 @@ export async function GET() {
     const container = client.database(DATABASE).container(CONTAINER);
 
     const { resources } = await container.items
-      .query("SELECT c.id, c.login, c.name, c.avatarUrl, c.githubUrl, c.location, c.lat, c.lng, c.followers, c.totalStars, c.totalForks, c.totalCommits, c.topLanguage, c.soReputation, c.soAnswers, c.soAcceptRate, c.soBadges, c.specialTags, c.claimed, c.metricsUpdatedAt FROM c WHERE NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved'")
+      .query("SELECT c.id, c.login, c.name, c.avatarUrl, c.githubUrl, c.location, c.lat, c.lng, c.followers, c.totalStars, c.totalForks, c.totalCommits, c.topLanguage, c.soReputation, c.soAnswers, c.soAcceptRate, c.soBadges, c.specialTags, c.claimed, c.metricsUpdatedAt, c.collaborators FROM c WHERE NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved'")
       .fetchAll();
 
     return NextResponse.json(resources, {

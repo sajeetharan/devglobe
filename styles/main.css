@@ -2261,6 +2261,36 @@ body {
   gap: 4px;
 }
 
+.tooltip__collaborators {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.tooltip__collab-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.tooltip__collab-item {
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+
+.tooltip__collab-item strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.tooltip__collab-repo {
+  color: var(--accent-blue);
+  font-weight: 500;
+}
+
 /* Stats grid */
 .stats-grid {
   display: grid;
