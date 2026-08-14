@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './AddMeModal.module.css';
 
-const SUCCESS_MESSAGE = "Your profile is pending review. It will appear on the globe and in search after approval, usually within a week.";
+const SUCCESS_MESSAGE = "Your profile is pending review. We'll email you when it is approved and visible on the globe, usually within a week.";
 
 export default function AddMeModal({ onClose }) {
   const [username, setUsername] = useState('');
   const [location, setLocation] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailConsent, setEmailConsent] = useState(false);
   const [status, setStatus] = useState('idle'); // idle | submitting | success | error
   const [error, setError] = useState('');
   const inputRef = useRef(null);
@@ -29,6 +31,11 @@ export default function AddMeModal({ onClose }) {
       setError('Please enter your GitHub username.');
       return;
     }
+    if (!email.trim() || !emailConsent) {
+      setStatus('error');
+      setError('Enter your email and agree to receive nomination updates.');
+      return;
+    }
 
     setStatus('submitting');
     setError('');
@@ -36,7 +43,12 @@ export default function AddMeModal({ onClose }) {
       const res = await fetch('/api/nominate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: clean, location: location.trim() }),
+        body: JSON.stringify({
+          username: clean,
+          location: location.trim(),
+          email: email.trim(),
+          emailConsent,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -97,6 +109,30 @@ export default function AddMeModal({ onClose }) {
                 onChange={(e) => setLocation(e.target.value)}
                 autoComplete="off"
               />
+
+              <label className={styles['modal__label']} htmlFor="nominate-email">
+                Email <span className={styles['modal__required']}>*</span>
+              </label>
+              <input
+                id="nominate-email"
+                className={styles['modal__input']}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
+
+              <label className={styles['modal__consent']}>
+                <input
+                  type="checkbox"
+                  checked={emailConsent}
+                  onChange={(e) => setEmailConsent(e.target.checked)}
+                  required
+                />
+                <span>Email me about this nomination and essential DevGlobe profile updates.</span>
+              </label>
 
               {status === 'error' && <div className={styles['modal__error']}>{error}</div>}
 

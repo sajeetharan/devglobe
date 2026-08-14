@@ -20,13 +20,13 @@ Claimed and newly approved developers receive no follow-up after the lifecycle a
 - Confirm successful claims and nomination approvals outside the browser.
 - Link recipients directly to their public developer profile.
 - Introduce profile controls and AI collaboration features without a marketing sequence.
-- Use email addresses transiently and never add them to developer documents.
+- Store addresses only in a dedicated private contact container and never add them to developer documents.
 - Keep core lifecycle writes independent from provider availability.
 
 ## Non-goals
 
 - Marketing campaigns, newsletters, drip sequences, or bulk email.
-- Persisting email addresses in Cosmos DB.
+- Marketing use of lifecycle contact addresses without separate opt-in.
 - Discovering a nomination email that is private on GitHub.
 - Retrying failed delivery or building a durable email outbox in this phase.
 - Email preference management beyond these transactional lifecycle messages.
@@ -35,20 +35,21 @@ Claimed and newly approved developers receive no follow-up after the lifecycle a
 
 ### First profile claim
 
-After the developer document is successfully created or transitions from unclaimed to claimed, DevGlobe sends a welcome email to the verified primary address returned by the authenticated GitHub `user:email` scope. Repeated claims do not trigger another message.
+After the developer document is successfully created or transitions from unclaimed to claimed, DevGlobe stores and sends to the verified primary address returned by the authenticated GitHub `user:email` scope. Repeated claims do not trigger another message.
 
 The message confirms ownership and links to the profile, activity, rankings, and AI collaboration settings.
 
 ### First nomination approval
 
-After the review command completes fresh GitHub enrichment and atomically transitions a pending nomination to approved, DevGlobe sends an approval email when the GitHub profile exposes a public email address. Refreshing an already approved profile does not trigger another message.
+The self-nomination form requires a notification email and explicit consent for nomination and essential profile updates. The address is stored separately from the public nomination. After review completes fresh GitHub enrichment and atomically transitions a pending nomination to approved, DevGlobe sends the approval email to that private contact. Refreshing an already approved profile does not trigger another message.
 
-GitHub does not expose another user's private email to an administrative token. A nominee with no public profile email is therefore skipped until a future consent-based collection flow exists.
+Nomination addresses are not treated as identity-verified. A later authenticated claim replaces the stored address with the verified primary GitHub OAuth address while preserving separate product-update preferences.
 
 ## Functional Requirements
 
 - Use the Resend email API without adding an SDK dependency.
 - Configure delivery with `RESEND_API_KEY` and `EMAIL_FROM`.
+- Store lifecycle contacts in `COSMOS_CONTACTS_CONTAINER` with partition key `/id`.
 - Include both plain-text and escaped HTML bodies.
 - Display the hosted DevGlobe logo with fixed email-safe dimensions.
 - Use `/developer/{login}` as the primary call to action.
@@ -60,9 +61,11 @@ GitHub does not expose another user's private email to an administrative token. 
 
 ## Privacy And Security
 
-- Claim email is read from the signed GitHub OAuth session and used only for immediate delivery.
-- Nomination email is read from the freshly fetched public GitHub profile and used only for immediate delivery.
+- Claim email is read from the signed GitHub OAuth session and stored as verified OAuth contact data.
+- Nomination email requires explicit lifecycle consent and is stored as unverified self-nomination contact data.
+- Contact records default product-update consent to false.
 - Developer records, public APIs, activity records, and logs do not contain recipient addresses.
+- The private contact container supports point reads only and excludes document fields from indexing.
 - HTML interpolations are escaped and profile path segments are URL encoded.
 - The Resend API key remains server-side.
 
@@ -105,7 +108,8 @@ Provider logs supply initial delivery visibility. Product analytics and durable 
 ## Rollout
 
 1. Create a Resend account and verify the sending domain.
-2. Configure `RESEND_API_KEY` and a verified `EMAIL_FROM` value in Vercel and the review-script environment.
-3. Deploy and test with one controlled first claim and one controlled nomination approval.
-4. Monitor Resend delivery logs and application errors.
-5. Add durable notification events, retries, and preference controls only if delivery volume warrants them.
+2. Run `npm run setup-contacts-container` against the target Cosmos database.
+3. Configure `RESEND_API_KEY`, a verified `EMAIL_FROM`, and `COSMOS_CONTACTS_CONTAINER` in Vercel and the review-script environment.
+4. Deploy and test with one controlled first claim and one controlled nomination approval.
+5. Monitor Resend delivery logs and application errors.
+6. Add durable notification events, retries, verification, and preference controls only if delivery volume warrants them.

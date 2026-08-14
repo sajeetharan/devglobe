@@ -22,6 +22,7 @@
     "populate-special-tags": "node scripts/populate-special-tags.js",
     "setup-activity-container": "node scripts/setup-activity-container.js",
     "setup-introductions-container": "node scripts/setup-introductions-container.js",
+    "setup-contacts-container": "node scripts/setup-contacts-container.js",
     "create-agent-key": "node scripts/create-agent-key.js",
     "review-nominations": "node scripts/review-nominations.js",
     "seed-emulator": "node scripts/seed-emulator.js"

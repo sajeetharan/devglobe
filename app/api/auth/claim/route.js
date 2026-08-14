@@ -4,6 +4,7 @@ import { getSession } from '../../../../lib/auth.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { buildClaimWelcomeEmail, sendLifecycleEmail } from '../../../../lib/lifecycle-email.js';
+import { saveDeveloperContact } from '../../../../lib/developer-contact-store.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
@@ -120,6 +121,20 @@ export async function POST() {
       }
 
       await container.items.upsert(dev);
+
+      if (session.email) {
+        try {
+          await saveDeveloperContact({
+            login: dev.login,
+            email: session.email,
+            source: 'github-oauth',
+            emailVerified: true,
+            transactionalEmailsEnabled: true,
+          });
+        } catch (contactError) {
+          console.error('Claim contact storage failed:', contactError.message);
+        }
+      }
 
       if (!wasClaimed) {
         try {

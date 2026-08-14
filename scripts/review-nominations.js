@@ -25,6 +25,7 @@ import {
   geocodeLocation,
 } from '../lib/nominate.js';
 import { buildNominationApprovedEmail, sendLifecycleEmail } from '../lib/lifecycle-email.js';
+import { getDeveloperContact } from '../lib/developer-contact-store.js';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config();
@@ -141,9 +142,17 @@ async function approve(container, username, reviewer, refresh = false) {
   }
 
   if (!refresh) {
+    let recipient = ghUser.email;
+    try {
+      const contact = await getDeveloperContact(dev.login);
+      if (contact?.transactionalEmailsEnabled) recipient = contact.email;
+    } catch (contactError) {
+      console.error(`  Private contact lookup failed: ${contactError.message}`);
+    }
+
     try {
       await sendLifecycleEmail({
-        to: ghUser.email,
+        to: recipient,
         message: buildNominationApprovedEmail({ login: dev.login, name: enriched.name }),
         idempotencyKey: `nomination-approved-${dev.login.toLowerCase()}-${Date.parse(dev.nomination.submittedAt)}`,
       });

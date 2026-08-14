@@ -104,6 +104,24 @@
   border-color: var(--accent-blue);
 }
 
+.modal__consent {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.modal__consent input {
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  accent-color: var(--accent-blue);
+}
+
 .modal__error {
   padding: 10px 12px;
   background: rgba(239, 68, 68, 0.12);
