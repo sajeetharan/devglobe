@@ -3932,25 +3932,6 @@ body {
   overflow-y: auto;
   box-shadow: var(--shadow-strong);
   animation: fadeIn 0.2s ease;
-  scrollbar-width: thin;
-  scrollbar-color: var(--text-muted) transparent;
-}
-
-.card-modal::-webkit-scrollbar {
-  width: 8px;
-}
-
-.card-modal::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.card-modal::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 4px;
-}
-
-.card-modal::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
 }
 
 .card-modal__close {
@@ -4013,46 +3994,46 @@ body {
   margin-bottom: 14px;
 }
 
-.badge-card--compact {
-  margin: 20px auto 0;
-  padding: 18px 18px 16px;
-  max-width: 100%;
+.card-modal__rank-strip > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(8, 145, 178, 0.25);
+  border-radius: 8px;
+  background: rgba(8, 145, 178, 0.08);
 }
 
-.badge-card--compact .badge-card__title {
-  margin: 10px 0 4px;
-  font-size: 16px;
+.card-modal__rank-strip strong {
+  color: #0891b2;
+  font-size: 20px;
 }
 
-.badge-card--compact .badge-card__subtitle {
-  margin: 0 0 14px;
+.card-modal__rank-strip span {
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
-.badge-card--compact .badge-card__stats {
-  margin-bottom: 14px;
-}
-
-.badge-card--compact .badge-card__preview {
-  margin-bottom: 14px;
-  padding: 10px;
-}
-
-.badge-card__preview {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 44px;
+.card-modal__preview {
+  position: relative;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
   margin-bottom: 20px;
-  padding: 14px;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  background: #060911;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.badge-card__preview img {
-  height: 20px;
+.card-modal__image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
 }
+
 .card-modal__loading,
 .card-modal__error {
   padding: 40px;
@@ -4333,7 +4314,9 @@ body {
   background: linear-gradient(135deg, #1d4ed8, #0a1f44);
   color: #f8fafc;
   box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
-}.badge-card__preview {
+}
+
+.badge-card__preview {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -4388,7 +4371,7 @@ body {
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
-  white-space: normal;
+  white-space: normal;   
   color: #a8c5ff;
   font-size: 11.5px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -4409,31 +4392,6 @@ body {
 
 .badge-card__copy:active {
   transform: translateY(1px);
-}
-
-.badge-card--compact {
-  margin: 20px auto 0;
-  padding: 18px 18px 16px;
-  max-width: 100%;
-}
-
-.badge-card--compact .badge-card__title {
-  margin: 10px 0 4px;
-  font-size: 16px;
-}
-
-.badge-card--compact .badge-card__subtitle {
-  margin: 0 0 14px;
-  font-size: 12px;
-}
-
-.badge-card--compact .badge-card__stats {
-  margin-bottom: 14px;
-}
-
-.badge-card--compact .badge-card__preview {
-  margin-bottom: 14px;
-  padding: 10px;
 }
 @media (max-width: 520px) {
   .quick-tour {
@@ -4559,8 +4517,6 @@ body {
 .card-modal__success span {
   color: var(--text-secondary);
   font-size: 11px;
-}
-
 }
 
 @media (prefers-reduced-motion: reduce) {

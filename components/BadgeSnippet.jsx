@@ -10,7 +10,7 @@ const STAT_OPTIONS = [
   { value: 'stars', label: 'Stars' },
 ];
 
-export default function BadgeSnippet({ login, siteUrl, compact = false }) {
+export default function BadgeSnippet({ login, siteUrl }) {
   const [stat, setStat] = useState('globalRank');
   const [format, setFormat] = useState('markdown');
   const [copied, setCopied] = useState(false);
@@ -36,7 +36,7 @@ export default function BadgeSnippet({ login, siteUrl, compact = false }) {
   }
 
   return (
-    <section className={`badge-card${compact ? ' badge-card--compact' : ''}`} id="get-your-badge">
+    <section className="badge-card" id="get-your-badge">
       <span className="badge-card__eyebrow">Embeddable badge</span>
       <h2 className="badge-card__title">Get your badge</h2>
       <p className="badge-card__subtitle">

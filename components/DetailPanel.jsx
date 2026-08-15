@@ -5,11 +5,10 @@ import { track } from '@vercel/analytics';
 import * as d3 from 'd3';
 import { formatNum, formatRelativeTime, isStaleData } from '../lib/format.js';
 import { DIMENSIONS, SCORE_METHODOLOGY } from '../lib/scoring.js';
-import { SOCIAL_PREVIEW_VERSION, getSiteUrl } from '../lib/site.js';
+import { SOCIAL_PREVIEW_VERSION } from '../lib/site.js';
 import { classifyAgent } from '../lib/agent-class.js';
 import { AI_TOOLS } from '../lib/ai-profile.js';
 import SpecialTags from './SpecialTags.jsx';
-import BadgeSnippet from './BadgeSnippet.jsx';
 
 export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogins, openCardOnMount = false, claimSuccess = false }) {
   const [fullData, setFullData] = useState(null);
@@ -134,8 +133,8 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogi
               {merged.soUserId && (
                 <a href={`https://stackoverflow.com/users/${merged.soUserId}`} target="_blank" rel="noreferrer">StackOverflow ↗</a>
               )}
-              <a href={`/share/${encodeURIComponent(dev.login)}#get-your-badge`} target="_blank" rel="noopener noreferrer">Get Badge ↗</a>
-              <button
+                <a href={`/share/${encodeURIComponent(dev.login)}#get-your-badge`} target="_blank" rel="noopener noreferrer">Get Badge ↗</a>
+                <button
                 className="btn btn--share"
                 onClick={handleGenerateCard}
               >
@@ -675,8 +674,6 @@ function CardModal({ dev, claimSuccess, onClose }) {
           </a>
           {linkedinCopied && <span className="card-modal__share-status" role="status">Caption and tags copied. Paste them into your LinkedIn post.</span>}
         </div>
-
-        <BadgeSnippet login={login} siteUrl={getSiteUrl()} compact />
       </div>
     </div>
   );
