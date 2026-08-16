@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import * as d3 from 'd3';
 import { formatNum, formatRelativeTime, isStaleData } from '../lib/format.js';
@@ -192,7 +193,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogi
               {merged.soUserId && (
                 <a href={`https://stackoverflow.com/users/${merged.soUserId}`} target="_blank" rel="noreferrer">StackOverflow ↗</a>
               )}
-                <a href={`/developer/${encodeURIComponent(dev.login)}`}>Impact History</a>
+                <Link href={`/developer/${encodeURIComponent(dev.login)}`}>Impact History</Link>
                 <a href={`/share/${encodeURIComponent(dev.login)}#get-your-badge`} target="_blank" rel="noopener noreferrer">Get Badge ↗</a>
                 <button
                 className="btn btn--share"

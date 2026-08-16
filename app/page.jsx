@@ -20,13 +20,14 @@ import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
 const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
+let cachedDeveloperDataset = null;
 
 export default function Home() {
-  const [developers, setDevelopers] = useState([]);
+  const [developers, setDevelopers] = useState(() => cachedDeveloperDataset?.developers || []);
   const [datasetCount, setDatasetCount] = useState(null);
-  const [filtered, setFiltered] = useState([]);
+  const [filtered, setFiltered] = useState(() => cachedDeveloperDataset?.developers || []);
   const [selectedDev, setSelectedDev] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !cachedDeveloperDataset);
   const [error, setError] = useState(null);
   const [flyTarget, setFlyTarget] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -34,7 +35,7 @@ export default function Home() {
   const [theme, setTheme] = useState('dark');
   const [user, setUser] = useState(null);
   const [claimStatus, setClaimStatus] = useState('unclaimed'); // 'unclaimed' | 'pending' | 'claimed' | 'no_match'
-  const [claimedLogins, setClaimedLogins] = useState(new Set());
+  const [claimedLogins, setClaimedLogins] = useState(() => new Set(cachedDeveloperDataset?.claimedLogins || []));
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarView, setSidebarView] = useState('leaderboard');
   const [cardRequest, setCardRequest] = useState(0);
@@ -135,12 +136,17 @@ export default function Home() {
             setFiltered(scored);
             const claimed = new Set(raw.filter(d => d.claimed).map(d => d.login));
             setClaimedLogins(claimed);
+            cachedDeveloperDataset = { developers: scored, claimedLogins: claimed };
             claimedDeveloper = scored.find(developer => developer.login === user.login);
           }
         } else if (claimedDeveloper) {
           claimedDeveloper = { ...claimedDeveloper, claimed: true };
-          setDevelopers(current => current.map(developer => developer.login === user.login ? claimedDeveloper : developer));
+          const updatedDevelopers = developers.map(developer => developer.login === user.login ? claimedDeveloper : developer);
+          const updatedClaimedLogins = new Set(cachedDeveloperDataset?.claimedLogins || []);
+          updatedClaimedLogins.add(user.login);
+          setDevelopers(updatedDevelopers);
           setFiltered(current => current.map(developer => developer.login === user.login ? claimedDeveloper : developer));
+          cachedDeveloperDataset = { developers: updatedDevelopers, claimedLogins: updatedClaimedLogins };
         }
 
         claimedDeveloper ||= {
@@ -200,6 +206,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (cachedDeveloperDataset) return;
+
     async function loadData() {
       try {
         fetch('/api/developers/count', { signal: AbortSignal.timeout(10000) })
@@ -218,6 +226,7 @@ export default function Home() {
         // Build set of all claimed logins from data
         const claimed = new Set(raw.filter(d => d.claimed).map(d => d.login));
         setClaimedLogins(claimed);
+        cachedDeveloperDataset = { developers: scored, claimedLogins: claimed };
         setLoading(false);
       } catch (err) {
         setError(err.message);
