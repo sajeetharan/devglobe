@@ -19,6 +19,7 @@ import { enrichWithCollaborators } from '../lib/collaboration.js';
 import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
+const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
 
 export default function Home() {
   const [developers, setDevelopers] = useState([]);
@@ -39,6 +40,7 @@ export default function Home() {
   const [cardRequest, setCardRequest] = useState(0);
   const [cardContext, setCardContext] = useState(null);
   const [showAddMe, setShowAddMe] = useState(false);
+  const [verificationUsername, setVerificationUsername] = useState('');
   const [showClaimPending, setShowClaimPending] = useState(false);
   const [showAiProfile, setShowAiProfile] = useState(false);
   const [showIntroductions, setShowIntroductions] = useState(false);
@@ -118,7 +120,7 @@ export default function Home() {
           setCardRequest(0);
           setShowClaimPending(true);
           setSidebarOpen(false);
-          return;
+          return { ok: false, ...result };
         }
         setClaimStatus('claimed');
         setClaimedLogins(prev => new Set(prev).add(user.login));
@@ -152,14 +154,33 @@ export default function Home() {
         setCardContext('claim');
         setCardRequest(request => request + 1);
         setSidebarOpen(false);
+        return { ok: true, ...result };
       } else {
         const data = await res.json();
         console.error('Claim failed:', data.error);
+        return { ok: false, ...data };
       }
     } catch (err) {
       console.error('Claim error:', err);
+      return { ok: false, error: err.message };
     }
   }, [user, developers]);
+
+  useEffect(() => {
+    if (!user) return;
+    let pendingUsername = '';
+    try { pendingUsername = localStorage.getItem(PENDING_CLAIM_KEY) || ''; } catch { return; }
+    if (!pendingUsername) return;
+
+    if (pendingUsername.toLowerCase() !== user.login.toLowerCase()) {
+      setVerificationUsername(pendingUsername);
+      setShowAddMe(true);
+      return;
+    }
+
+    localStorage.removeItem(PENDING_CLAIM_KEY);
+    void handleClaim();
+  }, [user, handleClaim]);
 
   const handleToggleTheme = useCallback(() => {
     setTheme(prev => {
@@ -369,6 +390,7 @@ export default function Home() {
   }, []);
 
   const handleAddMe = useCallback(() => {
+    setVerificationUsername('');
     setShowAddMe(true);
   }, []);
 
@@ -490,7 +512,14 @@ export default function Home() {
         {compareDevs.length === 2 && (
           <ComparePanel devs={compareDevs} onClose={handleCloseCompare} />
         )}
-        {showAddMe && <AddMeModal onClose={handleCloseAddMe} />}
+        {showAddMe && (
+          <AddMeModal
+            onClose={handleCloseAddMe}
+            user={user}
+            onVerify={handleClaim}
+            verificationUsername={verificationUsername}
+          />
+        )}
         {showClaimPending && <ClaimStatusModal onClose={() => setShowClaimPending(false)} />}
         {showAiProfile && (
           <AiProfileModal
