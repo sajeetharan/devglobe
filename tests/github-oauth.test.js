@@ -11,3 +11,11 @@ test('uses the callback registered on the GitHub OAuth application', () => {
   assert.equal(url.searchParams.get('scope'), 'read:user user:email');
   assert.equal(url.searchParams.has('redirect_uri'), false);
 });
+
+test('suggests a valid nominated login without forwarding invalid input', () => {
+  const hintedUrl = new URL(buildGitHubAuthorizationUrl('client-id', 'octo-cat'));
+  const invalidUrl = new URL(buildGitHubAuthorizationUrl('client-id', 'not a login'));
+
+  assert.equal(hintedUrl.searchParams.get('login'), 'octo-cat');
+  assert.equal(invalidUrl.searchParams.has('login'), false);
+});

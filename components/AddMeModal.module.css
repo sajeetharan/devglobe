@@ -147,7 +147,14 @@
 }
 
 .modal__success-icon {
-  font-size: 44px;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.32);
 }
 
 .modal__success .modal__title {
@@ -158,4 +165,63 @@
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
+}
+
+.modal__message strong {
+  color: var(--text-primary);
+}
+
+.modal__identity-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.modal__identity-warning strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.modal__verify {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+}
+
+.modal__later {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.modal__later:hover {
+  color: var(--text-primary);
+}
+
+.modal__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: modalSpin 0.8s linear infinite;
+}
+
+@keyframes modalSpin {
+  to { transform: rotate(360deg); }
 }
