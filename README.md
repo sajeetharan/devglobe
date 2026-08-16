@@ -210,7 +210,7 @@ Required environment variables:
 | `EMAIL_FROM` | Sender on a domain verified by Resend |
 | `COSMOS_WATCHLIST_CONTAINER` | Optional private watchlist container name (default: `watchlists`) |
 | `COSMOS_IMPACT_HISTORY_CONTAINER` | Optional impact snapshot container name (default: `impact-history`) |
-| `CRON_SECRET` | Bearer token used by Vercel Cron for the weekly digest endpoint |
+| `CRON_SECRET` | Bearer token used by Vercel Cron for weekly digest and impact history endpoints |
 | `EMAIL_PREFERENCE_SECRET` | HMAC secret for weekly-email unsubscribe links; defaults to `SESSION_SECRET` |
 
 Lifecycle emails are transactional and best-effort. Claims use the verified primary email authorized through GitHub OAuth; self-nominations collect an explicitly consented notification address. Addresses are stored only in the private `developer-contacts` container and are never projected by public APIs or copied into developer documents. Create the container before deployment:
