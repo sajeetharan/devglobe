@@ -226,6 +226,8 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogi
         </div>
       </div>
 
+      {dev.ossWorth && <OssWorthSection worth={dev.ossWorth} />}
+
       {/* Charts */}
       <div className="detail-panel__charts">
         <div className="chart-section">
@@ -404,6 +406,63 @@ function StatCard({ label, value, className = '' }) {
       <div className="stat-card__value">{value}</div>
       <div className="stat-card__label">{label}</div>
     </div>
+  );
+}
+
+function OssWorthSection({ worth }) {
+  return (
+    <section className="oss-worth" aria-labelledby="oss-worth-title">
+      <div className="oss-worth__heading">
+        <div>
+          <span>Public contribution footprint</span>
+          <h3 id="oss-worth-title">OSS Worth</h3>
+        </div>
+        <strong title={`${worth.totalCredits.toLocaleString()} OSS Credits`}>
+          {formatNum(worth.totalCredits)} <small>OSC</small>
+        </strong>
+      </div>
+      <p className="oss-worth__disclaimer">
+        Fictional OSS Credits celebrate public contributions. They are not compensation, skill, employability, or financial value.
+      </p>
+      <div className="oss-worth__cards">
+        <WorthCard platform="GitHub" allocation="60% allocation" worth={worth.github} />
+        <WorthCard platform="Stack Overflow" allocation="40% allocation" worth={worth.stackoverflow} />
+      </div>
+      <details className="oss-worth__methodology">
+        <summary>How this is calculated</summary>
+        <p>Inputs are log-normalized against fixed reference caps. Formula {worth.formulaVersion}.</p>
+      </details>
+    </section>
+  );
+}
+
+function WorthCard({ platform, allocation, worth }) {
+  const platformClass = platform === 'GitHub' ? 'github' : 'stackoverflow';
+  return (
+    <article className={`worth-card worth-card--${platformClass}${worth.available ? '' : ' worth-card--unavailable'}`}>
+      <div className="worth-card__header">
+        <span>{platform}</span>
+        <small>{allocation}</small>
+      </div>
+      <strong title={`${worth.credits.toLocaleString()} of ${worth.maxCredits.toLocaleString()} OSS Credits`}>
+        {formatNum(worth.credits)} <small>/ {formatNum(worth.maxCredits)} OSC</small>
+      </strong>
+      {!worth.available ? (
+        <p>No linked Stack Overflow profile</p>
+      ) : (
+        <ul>
+          {worth.breakdown.map(dimension => (
+            <li key={dimension.key}>
+              <span>
+                {dimension.label}
+                <small>{Math.round(dimension.weight * 100)}% · cap {formatNum(dimension.cap)}</small>
+              </span>
+              <b>{formatNum(dimension.sourceValue)}</b>
+            </li>
+          ))}
+        </ul>
+      )}
+    </article>
   );
 }
 

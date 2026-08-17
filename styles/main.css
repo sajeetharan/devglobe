@@ -2578,6 +2578,154 @@ body {
   margin-top: 4px;
 }
 
+/* OSS Worth */
+.oss-worth {
+  margin: 0 0 24px;
+  padding: 18px 0 20px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.oss-worth__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.oss-worth__heading span {
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.oss-worth__heading h3 {
+  margin: 3px 0 0;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.oss-worth__heading > strong {
+  color: #22d3ee;
+  font-size: 24px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.oss-worth__heading > strong small {
+  font-size: 11px;
+}
+
+.oss-worth__disclaimer {
+  margin: 9px 0 14px;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.oss-worth__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.worth-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+}
+
+.worth-card--github { border-top: 2px solid #2ea44f; }
+.worth-card--stackoverflow { border-top: 2px solid #f48024; }
+.worth-card--unavailable { opacity: 0.72; }
+
+.worth-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.worth-card__header span {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.worth-card__header small,
+.worth-card > strong small {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.worth-card > strong {
+  color: var(--text-primary);
+  font-size: 17px;
+}
+
+.worth-card ul {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.worth-card li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.worth-card li span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.worth-card li small {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.worth-card li b {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.worth-card > p {
+  margin: 11px 0 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.oss-worth__methodology {
+  margin-top: 11px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.oss-worth__methodology summary {
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.oss-worth__methodology p { margin: 6px 0 0; line-height: 1.45; }
+
 /* SO bars */
 .so-bars {
   display: flex;
@@ -2641,6 +2789,8 @@ body {
   display: flex;
   gap: 6px;
   margin-top: 3px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .lb-badge {
@@ -2658,6 +2808,11 @@ body {
 .lb-badge--so {
   background: rgba(244, 128, 36, 0.15);
   color: var(--accent-so);
+}
+
+.lb-badge--worth {
+  background: rgba(34, 211, 238, 0.13);
+  color: #22d3ee;
 }
 
 /* Compare selection */
@@ -3351,6 +3506,9 @@ body {
 }
 
 @media (max-width: 480px) {
+  .oss-worth__cards {
+    grid-template-columns: 1fr;
+  }
   .activity-banner {
     justify-content: flex-start;
     padding: 0 12px;

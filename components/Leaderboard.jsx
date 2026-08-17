@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { formatNum } from '../lib/format.js';
 import { extractCountry, normalizeCountry, countryKey } from '../lib/country.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
+import { compareOssWorth } from '../lib/oss-worth.js';
 import SpecialTags from './SpecialTags.jsx';
 import GlobalActivityFeed from './GlobalActivityFeed.jsx';
 import AgentNetworkPanel from './AgentNetworkPanel.jsx';
@@ -78,6 +79,7 @@ export default function Leaderboard({
         case 'stars': return (b.totalStars || 0) - (a.totalStars || 0);
         case 'commits': return (b.totalCommits || 0) - (a.totalCommits || 0);
         case 'soRep': return (b.soReputation || 0) - (a.soReputation || 0);
+        case 'worth': return compareOssWorth(a, b);
         default: return b.score - a.score;
       }
     });
@@ -213,6 +215,7 @@ export default function Leaderboard({
             <option value="stars">Stars</option>
             <option value="commits">Commits</option>
             <option value="soRep">SO Rep</option>
+            <option value="worth">OSS Worth</option>
           </select>
         </div>
         {sortBy === 'score' && (
@@ -257,6 +260,13 @@ export default function Leaderboard({
                   <div className="lb-item__badges">
                     <span className="lb-badge lb-badge--gh" title="GitHub Stars">★ {formatNum(dev.totalStars)}</span>
                     {dev.soReputation ? <span className="lb-badge lb-badge--so" title="SO Reputation">● {formatNum(dev.soReputation)}</span> : null}
+                    <span
+                      className="lb-badge lb-badge--worth"
+                      title={`${dev.ossWorth?.totalCredits?.toLocaleString() || 0} OSS Credits`}
+                      aria-label={`${dev.ossWorth?.totalCredits?.toLocaleString() || 0} OSS Credits`}
+                    >
+                      OSC {formatNum(dev.ossWorth?.totalCredits || 0)}
+                    </span>
                   </div>
                 </div>
                 <div className="lb-item__actions">
