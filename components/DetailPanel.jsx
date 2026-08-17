@@ -89,11 +89,13 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogi
     return () => { cancelled = true; };
   }, [dev.id]);
 
+  const merged = { ...dev, ...fullData };
+
   // Radar chart
   useEffect(() => {
-    if (!dev.scoreDimensions || !radarRef.current) return;
-    renderRadar(radarRef.current, dev.scoreDimensions);
-  }, [dev.scoreDimensions]);
+    if (!merged.scoreDimensions || !radarRef.current) return;
+    renderRadar(radarRef.current, merged.scoreDimensions);
+  }, [merged.scoreDimensions]);
 
   // Heatmap
   useEffect(() => {
@@ -108,7 +110,6 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogi
     renderLanguages(langRef.current, langs);
   }, [fullData, dev.topLanguage]);
 
-  const merged = { ...dev, ...fullData };
   const repos = merged.topRepos || [];
   const soRep = merged.soReputation || 0;
   const soAnswers = merged.soAnswers || 0;
@@ -233,7 +234,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogi
         <div className="chart-section">
           <h3>Score Breakdown</h3>
           <div ref={radarRef} />
-          <ScoreExplanation dev={dev} />
+          <ScoreExplanation dev={merged} />
         </div>
 
         <div className="chart-section">

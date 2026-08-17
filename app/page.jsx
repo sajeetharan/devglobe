@@ -13,10 +13,7 @@ import AiProfileModal from '../components/AiProfileModal.jsx';
 import IntroductionInboxModal from '../components/IntroductionInboxModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
-import { scoreAll } from '../lib/scoring.js';
-import { addDeveloperRanks } from '../lib/ranking.js';
-import { enrichWithCollaborators } from '../lib/collaboration.js';
-import { withOssWorth } from '../lib/oss-worth.js';
+import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
@@ -29,6 +26,7 @@ export default function Home() {
   const [filtered, setFiltered] = useState(() => cachedDeveloperDataset?.developers || []);
   const [selectedDev, setSelectedDev] = useState(null);
   const [loading, setLoading] = useState(() => !cachedDeveloperDataset);
+  const [loadingStage, setLoadingStage] = useState('connecting');
   const [error, setError] = useState(null);
   const [flyTarget, setFlyTarget] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -132,7 +130,7 @@ export default function Home() {
           const devRes = await fetch('/api/developers', { cache: 'no-store' });
           if (devRes.ok) {
             const raw = await devRes.json();
-            const scored = enrichWithCollaborators(addDeveloperRanks(scoreAll(raw))).map(withOssWorth);
+            const scored = prepareDeveloperDataset(raw);
             setDevelopers(scored);
             setFiltered(scored);
             const claimed = new Set(raw.filter(d => d.claimed).map(d => d.login));
@@ -220,8 +218,10 @@ export default function Home() {
 
         const res = await fetch('/api/developers', { signal: AbortSignal.timeout(30000) });
         if (!res.ok) throw new Error(`Failed to load data: ${res.status}`);
+        setLoadingStage('downloading');
         const raw = await res.json();
-        const scored = enrichWithCollaborators(addDeveloperRanks(scoreAll(raw))).map(withOssWorth);
+        setLoadingStage('preparing');
+        const scored = prepareDeveloperDataset(raw);
         setDevelopers(scored);
         setFiltered(scored);
         // Build set of all claimed logins from data
@@ -419,12 +419,13 @@ export default function Home() {
     setSidebarOpen(false);
   }, [developers]);
 
-  if (loading || error) {
+  if (error) {
     return <LoadingOverlay error={error} datasetCount={datasetCount} />;
   }
 
   return (
-    <div id="app" className={tourStep ? 'tour-active' : ''}>
+    <div id="app" className={tourStep ? 'tour-active' : ''} aria-busy={loading}>
+      {loading && <LoadingOverlay datasetCount={datasetCount} stage={loadingStage} />}
       <Header
         onHome={handleHome}
         theme={theme}

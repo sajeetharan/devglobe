@@ -3057,10 +3057,37 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
+  padding: 20px;
+  background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
   z-index: 999;
   transition: opacity 0.5s;
   gap: 0;
+}
+
+.loading-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(390px, calc(100vw - 40px));
+  padding: 22px 24px 24px;
+  background: color-mix(in srgb, var(--bg-card) 94%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-strong);
+  text-align: center;
+}
+
+.loading-panel--error {
+  max-width: 400px;
+}
+
+.loading-panel .loading-scene {
+  --loading-orbit-radius: 56px;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 4px;
 }
 
 .loading-overlay.hidden {
@@ -3202,18 +3229,26 @@ body {
   align-items: center;
   gap: 10px;
   max-width: 720px;
-  padding: 0 24px;
-  font-size: 28px;
+  padding: 0;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .loading-brand__logo {
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
+}
+
+.loading-title {
+  margin: 0 0 7px;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .loading-tagline {
@@ -3298,12 +3333,12 @@ body {
 
 /* Progress bar */
 .loading-progress {
-  width: 200px;
+  width: 100%;
   height: 3px;
   background: var(--border);
   border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin: 16px 0 0;
 }
 
 .loading-progress__bar {
@@ -3320,9 +3355,11 @@ body {
 }
 
 .loading-status {
-  font-size: 12px;
-  color: var(--text-muted);
-  min-width: 160px;
+  min-height: 20px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 0;
   text-align: center;
 }
 
@@ -3517,7 +3554,7 @@ body {
     padding: 0;
   }
   .product-hunt-badge {
-    left: 12px;
+    display: none;
   }
 }
 

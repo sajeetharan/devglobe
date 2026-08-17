@@ -222,7 +222,24 @@ const Globe = forwardRef(function Globe({
   const [countryFeatures, setCountryFeatures] = useState([]);
   const [hoverCountry, setHoverCountry] = useState(null);
   const [hoverDev, setHoverDev] = useState(null);
+  const [pointLimit, setPointLimit] = useState(800);
   const isLight = theme === 'light';
+
+  useEffect(() => {
+    setPointLimit(800);
+    const expandedLimit = window.innerWidth < 768 ? 1200 : 2500;
+
+    if (window.requestIdleCallback) {
+      const idleId = window.requestIdleCallback(
+        () => setPointLimit(expandedLimit),
+        { timeout: 2500 }
+      );
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timerId = window.setTimeout(() => setPointLimit(expandedLimit), 1200);
+    return () => window.clearTimeout(timerId);
+  }, [developers]);
 
   const geoDevs = useMemo(() => {
     let list = developers.filter(d => d.lat != null && d.lng != null);
@@ -234,8 +251,8 @@ const Globe = forwardRef(function Globe({
 
     return list
       .sort((a, b) => b.score - a.score)
-      .slice(0, 5000);
-  }, [developers, selectedCountry]);
+      .slice(0, pointLimit);
+  }, [developers, pointLimit, selectedCountry]);
 
   const featuredGeoDevs = useMemo(() => (
     agentNetworkVisible ? geoDevs.filter(developer => developer.agentReady) : geoDevs
@@ -630,7 +647,7 @@ const Globe = forwardRef(function Globe({
           pointAltitude={displayPointAltitude}
           pointRadius={displayPointRadius}
           pointColor={displayPointColor}
-          pointResolution={6}
+          pointResolution={5}
           htmlElementsData={avatarDevs}
           htmlLat={avatarLat}
           htmlLng={avatarLng}
