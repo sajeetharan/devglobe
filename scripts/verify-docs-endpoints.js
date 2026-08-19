@@ -1,43 +1,45 @@
+const siteUrl = (process.env.LIVE_SITE_URL || 'https://www.devglobe.dev').replace(/\/$/, '');
+
 const resources = [
   {
     name: 'API catalog',
-    url: 'https://www.devglobe.dev/.well-known/api-catalog',
+    path: '/.well-known/api-catalog',
     contentType: 'application/linkset+json',
   },
   {
     name: 'OpenAPI description',
-    url: 'https://www.devglobe.dev/openapi.json',
+    path: '/openapi.json',
     contentType: 'application/openapi+json',
   },
   {
     name: 'MCP server card',
-    url: 'https://www.devglobe.dev/.well-known/mcp/server-card.json',
+    path: '/.well-known/mcp/server-card.json',
     contentType: 'application/json',
   },
   {
     name: 'Agent Skills index',
-    url: 'https://www.devglobe.dev/.well-known/agent-skills/index.json',
+    path: '/.well-known/agent-skills/index.json',
     contentType: 'application/json',
   },
   {
     name: 'DevGlobe Agent Skill',
-    url: 'https://www.devglobe.dev/.well-known/agent-skills/devglobe/SKILL.md',
+    path: '/.well-known/agent-skills/devglobe/SKILL.md',
     contentType: 'text/markdown',
   },
   {
     name: 'Authentication guide',
-    url: 'https://www.devglobe.dev/auth.md',
+    path: '/auth.md',
     contentType: 'text/markdown',
   },
   {
     name: 'Agent overview',
-    url: 'https://www.devglobe.dev/llms.txt',
+    path: '/llms.txt',
     contentType: 'text/plain',
   },
 ];
 
 for (const resource of resources) {
-  const response = await fetch(resource.url, {
+  const response = await fetch(`${siteUrl}${resource.path}`, {
     headers: { 'User-Agent': 'DevGlobe-Docs-Check/1.0' },
     signal: AbortSignal.timeout(15_000),
   });
@@ -57,7 +59,7 @@ for (const resource of resources) {
   }
 }
 
-const markdownHome = await fetch('https://www.devglobe.dev', {
+const markdownHome = await fetch(siteUrl, {
   headers: {
     Accept: 'text/markdown',
     'User-Agent': 'DevGlobe-Docs-Check/1.0',
