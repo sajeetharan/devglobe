@@ -1,0 +1,12 @@
+.git
+.github
+.next
+.vercel
+node_modules
+npm-debug.log*
+temp-query.js
+.env*
+!.env.example
+docs
+docs-site
+tests
