@@ -46,7 +46,3 @@ jobs:
             --resource-group "$AZURE_RESOURCE_GROUP" \
             --name "$AZURE_CONTAINER_APP" \
             --image "$AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:${GITHUB_SHA}"
-
-      - name: Log out of Azure
-        if: always()
-        run: az logout
