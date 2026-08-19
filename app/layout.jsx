@@ -1,4 +1,3 @@
-import { Analytics } from '@vercel/analytics/react';
 import '../styles/main.css';
 import { getSiteUrl } from '../lib/site.js';
 import WebMcpProvider from '../components/WebMcpProvider.jsx';
@@ -160,7 +159,6 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
         />
         {children}
-        <Analytics />
       </body>
     </html>
   );

@@ -1,15 +1,17 @@
-name: Deploy to Vercel
+name: Deploy web app to Azure
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  AZURE_RESOURCE_GROUP: devglobe-rg
+  AZURE_CONTAINER_REGISTRY: devglobewebacr
+  AZURE_CONTAINER_APP: devglobe-web
+  IMAGE_NAME: devglobe-web
+  NEXT_PUBLIC_API_URL: https://devglobe-public-api.azurewebsites.net
+  NEXT_PUBLIC_DEVELOPER_SNAPSHOT_URL: https://devglobeactivityfn.z13.web.core.windows.net/developers.json
   NEXT_PUBLIC_SITE_URL: https://www.devglobe.dev
 
 jobs:
@@ -17,48 +19,34 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
+      id-token: write
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
+      - name: Log in to Azure
+        uses: azure/login@v2
         with:
-          node-version: 22
-          cache: npm
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Use repository npm version
-        run: npm install --global npm@11.14.1
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
-      - name: Pull Vercel Environment
-        if: env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
-        run: vercel pull --yes --environment=${{ github.event_name == 'push' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build
-        if: env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
-        run: vercel build ${{ github.event_name == 'push' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy
-        id: deploy
-        if: env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+      - name: Build and push image
         run: |
-          URL=$(vercel deploy --prebuilt ${{ github.event_name == 'push' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }})
-          echo "url=$URL" >> $GITHUB_OUTPUT
+          az acr build \
+            --registry "$AZURE_CONTAINER_REGISTRY" \
+            --image "$IMAGE_NAME:${GITHUB_SHA}" \
+            --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+            --build-arg NEXT_PUBLIC_DEVELOPER_SNAPSHOT_URL="$NEXT_PUBLIC_DEVELOPER_SNAPSHOT_URL" \
+            --build-arg NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" \
+            .
 
-      - name: Comment PR with Preview URL
-        if: github.event_name == 'pull_request' && env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
-        uses: actions/github-script@v8
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 Preview deployed: ${{ steps.deploy.outputs.url }}`
-            })
+      - name: Deploy image
+        run: |
+          az containerapp update \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_CONTAINER_APP" \
+            --image "$AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:${GITHUB_SHA}"
+
+      - name: Log out of Azure
+        if: always()
+        run: az logout

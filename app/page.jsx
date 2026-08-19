@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 import Header from '../components/Header.jsx';
 import SearchBar from '../components/SearchBar.jsx';
 import Leaderboard from '../components/Leaderboard.jsx';

@@ -4,7 +4,7 @@
 
 **The global open-source developer discovery platform — search, compare, and connect with the people behind the code**
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-blue?style=for-the-badge&logo=vercel)](https://devglobe.dev)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-blue?style=for-the-badge&logo=microsoftazure)](https://devglobe.dev)
 [![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://sajeetharan.github.io/devglobe/)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Install-007ACC?style=for-the-badge&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery)
 [![GitHub Stars](https://img.shields.io/github/stars/sajeetharan/devglobe?style=for-the-badge&logo=github)](https://github.com/sajeetharan/devglobe/stargazers)
@@ -19,7 +19,7 @@
 
 DevGlobe is an interactive global developer network built for engineering teams, open-source communities, and the emerging ecosystem of AI agents. It combines a 3D developer map with Azure Cosmos DB vector and hybrid search to surface relevant expertise from real contribution signals rather than popularity alone. The long-term vision is a consent-aware discovery layer where AI agents can find the right human collaborators.
 
-The dynamic application is hosted on [Vercel](https://www.devglobe.dev). Product, API, MCP, Agent Skill, and agent-readiness documentation is published separately on [GitHub Pages](https://sajeetharan.github.io/devglobe/).
+The dynamic application is hosted on [Azure Container Apps](https://www.devglobe.dev). Product, API, MCP, Agent Skill, and agent-readiness documentation is published separately on [GitHub Pages](https://sajeetharan.github.io/devglobe/).
 
 > [!IMPORTANT]
 > **Connect an AI agent to DevGlobe:** MCP-compatible agents can use the hosted endpoint at `https://www.devglobe.dev/mcp` to search public developer profiles without credentials. Verified agents can also request developer-approved introductions. See the [MCP setup guide](docs/mcp-server.md).
@@ -111,7 +111,7 @@ AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
 
 `AZURE_OPENAI_CHAT_DEPLOYMENT` enables generated fun facts on identity cards. Cards use factual profile copy when the chat deployment is unavailable.
 
-Production can serve high-volume public API reads and the developer snapshot directly from Azure while Vercel hosts the frontend. See [docs/azure-backend.md](docs/azure-backend.md) for the resource layout, environment switches, and deployment checks.
+Production serves the Next.js application from Azure Container Apps, high-volume public API reads from Azure Functions, and the developer snapshot from Azure Blob Storage. See [docs/azure-backend.md](docs/azure-backend.md) for the resource layout, environment switches, and deployment checks.
 
 ```bash
 npm run dev
@@ -124,7 +124,7 @@ npm run dev
 | Frontend | React 19, Three.js (react-globe.gl), Next.js 15 |
 | Search | Azure Cosmos DB (vector + hybrid search) |
 | API | Next.js API Routes |
-| Hosting | Vercel |
+| Hosting | Azure Container Apps and Azure Functions |
 | Data Pipeline | Node.js scripts (GitHub GraphQL, StackOverflow API, geocoding) |
 
 ## 📊 Scoring Formula (0–100)
@@ -201,11 +201,9 @@ The command preserves existing tags and is idempotent. Other credentials require
     └── developers-sample.json  # Sample data for local dev
 ```
 
-## 🌍 Deploy to Vercel
+## 🌍 Deploy to Azure Container Apps
 
-```bash
-npx vercel
-```
+Pushes to `main` build the standalone Next.js image in Azure Container Registry and deploy it to Azure Container Apps through GitHub Actions OIDC. The deployment identity requires Contributor access scoped to the application resource group and these repository variables: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`.
 
 Required environment variables:
 
@@ -233,7 +231,7 @@ npm run setup-contacts-container
 
 See the [lifecycle email PRD](docs/prd/lifecycle-email-notifications.md).
 
-Verified users can explicitly opt in to a Monday weekly digest from the user menu. The digest includes current global and country rankings, rank movement since the previous digest, current DevGlobe features, and an Explore DevGlobe link. Vercel invokes `/api/cron/weekly-digest` at 13:00 UTC each Monday; only verified contacts with `productUpdatesEnabled: true` are eligible. Each message uses a per-user, per-week idempotency key and includes one-click unsubscribe headers and a signed unsubscribe link.
+Verified users can explicitly opt in to a Monday weekly digest from the user menu. The digest includes current global and country rankings, rank movement since the previous digest, current DevGlobe features, and an Explore DevGlobe link. The Azure Functions app invokes `/api/cron/weekly-digest` at 13:00 UTC each Monday; only verified contacts with `productUpdatesEnabled: true` are eligible. Each message uses a per-user, per-week idempotency key and includes one-click unsubscribe headers and a signed unsubscribe link.
 
 Generate a manual-review activation queue and weekly social spotlight from public, unclaimed profiles:
 
@@ -266,10 +264,10 @@ Deploy the `functions` directory to an Azure Function App and configure these ap
 
 ```env
 IMPACT_HISTORY_URL=https://www.devglobe.dev/api/cron/impact-history
-CRON_SECRET=the-same-secret-configured-in-vercel
+CRON_SECRET=the-same-secret-configured-on-the-container-app
 ```
 
-The timer resumes the current UTC day's capture in RU-bounded batches. Keep `IMPACT_HISTORY_CONCURRENCY` and `IMPACT_HISTORY_BATCH_SIZE` on the Vercel application because the Next.js endpoint performs the Cosmos work.
+The timer resumes the current UTC day's capture in RU-bounded batches. Keep `IMPACT_HISTORY_CONCURRENCY` and `IMPACT_HISTORY_BATCH_SIZE` on the Container App because the Next.js endpoint performs the Cosmos work.
 
 ### Email verification reminders
 
@@ -279,10 +277,11 @@ Configure these application settings on the Azure Function App:
 
 ```env
 EMAIL_VERIFICATION_REMINDERS_URL=https://www.devglobe.dev/api/cron/email-verification-reminders
-CRON_SECRET=the-same-secret-configured-in-vercel
+WEEKLY_DIGEST_URL=https://www.devglobe.dev/api/cron/weekly-digest
+CRON_SECRET=the-same-secret-configured-on-the-container-app
 ```
 
-Deploy the complete `functions` directory so the timer and its `function.json` are included. Do not configure the same reminder schedule in Vercel, or each due batch may be invoked twice.
+Deploy the complete `functions` directory so each timer and its `function.json` are included.
 
 ## 🤝 Contributing
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 import UserMenu from './UserMenu.jsx';
 
 const marketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 
 export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, claimStatus }) {
   const [open, setOpen] = useState(false);
