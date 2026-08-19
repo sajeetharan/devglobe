@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { track } from '@vercel/analytics';
 import { formatNum, formatRelativeTime } from '../lib/format.js';
+import { publicApiUrl } from '../lib/public-api.js';
 import { useActivityFeed } from './useActivityFeed.js';
 import SpecialTags from './SpecialTags.jsx';
 import ImpactHistoryPanel from './ImpactHistoryPanel.jsx';
@@ -29,7 +30,7 @@ export default function DeveloperActivityPage({ login }) {
 
     async function load() {
       try {
-        const developerResponse = await fetch(`/api/developer?id=${encodeURIComponent(login)}`);
+        const developerResponse = await fetch(publicApiUrl(`/api/developer?id=${encodeURIComponent(login)}`));
         if (!developerResponse.ok) throw new Error('Developer not found');
 
         const profile = await developerResponse.json();

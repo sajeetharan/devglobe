@@ -13,7 +13,7 @@ function relativeTime(timestamp) {
 }
 
 export default function PlatformActivityBanner() {
-  const { activities, error } = useGlobalActivityFeed(true);
+  const { activities, error } = useGlobalActivityFeed(true, { intervalMs: 300000 });
   const [visibleIndex, setVisibleIndex] = useState(0);
 
   useEffect(() => {

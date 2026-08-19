@@ -106,7 +106,12 @@ COSMOS_KEY=your-cosmos-key
 AZURE_OPENAI_ENDPOINT=https://your-openai.openai.azure.com/
 AZURE_OPENAI_KEY=your-openai-key
 EMBEDDING_DEPLOYMENT=text-embedding-3-small
+AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
 ```
+
+`AZURE_OPENAI_CHAT_DEPLOYMENT` enables generated fun facts on identity cards. Cards use factual profile copy when the chat deployment is unavailable.
+
+Production can serve high-volume public API reads and the developer snapshot directly from Azure while Vercel hosts the frontend. See [docs/azure-backend.md](docs/azure-backend.md) for the resource layout, environment switches, and deployment checks.
 
 ```bash
 npm run dev

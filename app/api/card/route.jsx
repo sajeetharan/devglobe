@@ -9,6 +9,7 @@ import { getCosmosContainer } from '../../../lib/cosmos.js';
 import { getPublicAiToolNames } from '../../../lib/ai-profile.js';
 import { calculateOssWorth } from '../../../lib/oss-worth.js';
 import { formatUsd } from '../../../lib/format.js';
+import { getDeveloperFunFact } from '../../../lib/card-fun-fact.js';
 
 export const runtime = 'nodejs';
 
@@ -96,9 +97,10 @@ export async function GET(request) {
   const score = Number.isFinite(dev.score) ? dev.score : 0;
   const agent = classifyAgent({ ...dev, score });
   const power = getPowerTier(score);
-  const [avatarDataUrl, fonts] = await Promise.all([
+  const [avatarDataUrl, fonts, funFact] = await Promise.all([
     loadAvatarDataUrl(dev.avatarUrl),
     manropeFonts,
+    getDeveloperFunFact(dev),
   ]);
   const avatarInitial = (dev.name || dev.login).trim().charAt(0).toUpperCase();
   const agentMark = agent.name
@@ -475,7 +477,7 @@ export async function GET(request) {
                 OSS WORTH
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8' }}>
-                <span style={{ color: '#f8fafc', fontSize: '23', fontWeight: '800' }}>{formatUsd(ossWorth.totalDollarValue, true)}</span>
+                <span style={{ color: '#f8fafc', fontSize: '23', fontWeight: '800' }}>{formatUsd(ossWorth.totalCredits, true)}</span>
                 <span style={{ color: '#cffafe', fontSize: '11', fontWeight: '700' }}>{formatNum(ossWorth.totalCredits)} OSC</span>
               </div>
             </div>
@@ -532,6 +534,22 @@ export async function GET(request) {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '9',
+              marginTop: '12',
+              color: '#52667a',
+              fontSize: '12',
+            }}
+          >
+            <span style={{ display: 'flex', flexShrink: '0', color: '#c2410c', fontSize: '11', fontWeight: '800', letterSpacing: '1' }}>
+              FUN FACT
+            </span>
+            <span style={{ display: 'flex' }}>{funFact}</span>
           </div>
 
           {aiToolNames.length > 0 && (

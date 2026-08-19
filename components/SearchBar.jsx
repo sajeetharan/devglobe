@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import SpecialTags from './SpecialTags.jsx';
 import { countryKey } from '../lib/country.js';
+import { publicApiUrl } from '../lib/public-api.js';
 
 const SAMPLES_BY_MODE = {
   text: [
@@ -60,7 +61,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         setSearching(true);
         try {
           const response = await fetch(
-            `/api/search?q=${encodeURIComponent(q)}&mode=text&top=${topN}`,
+            publicApiUrl(`/api/search?q=${encodeURIComponent(q)}&mode=text&top=${topN}`),
             { signal: controller.signal }
           );
           const data = await response.json();
@@ -88,7 +89,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
     try {
       const res = await fetch(
-        `/api/search?q=${encodeURIComponent(q)}&mode=${m}&top=${topN}`,
+        publicApiUrl(`/api/search?q=${encodeURIComponent(q)}&mode=${m}&top=${topN}`),
         { signal: controller.signal }
       );
       const data = await res.json();

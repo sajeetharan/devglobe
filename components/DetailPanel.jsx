@@ -9,6 +9,7 @@ import { DIMENSIONS, SCORE_METHODOLOGY } from '../lib/scoring.js';
 import { IDENTITY_CARD_VERSION, SOCIAL_PREVIEW_VERSION } from '../lib/site.js';
 import { classifyAgent } from '../lib/agent-class.js';
 import { AI_TOOLS } from '../lib/ai-profile.js';
+import { publicApiUrl } from '../lib/public-api.js';
 import SpecialTags from './SpecialTags.jsx';
 
 export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogins, user, openCardOnMount = false, claimSuccess = false }) {
@@ -82,7 +83,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, claimedLogi
     let cancelled = false;
     async function fetchFull() {
       try {
-        const res = await fetch(`/api/developer?id=${encodeURIComponent(dev.id)}`);
+        const res = await fetch(publicApiUrl(`/api/developer?id=${encodeURIComponent(dev.id)}`));
         if (res.ok) {
           const data = await res.json();
           if (!cancelled) setFullData(data);

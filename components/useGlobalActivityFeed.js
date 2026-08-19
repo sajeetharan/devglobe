@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { publicApiUrl } from '../lib/public-api.js';
 
-const POLL_INTERVAL_MS = 15000;
+const POLL_INTERVAL_MS = 60000;
 const MAX_VISIBLE_EVENTS = 300;
 
 function mergeActivities(current, incoming) {
@@ -13,7 +14,7 @@ function mergeActivities(current, incoming) {
     .slice(0, MAX_VISIBLE_EVENTS);
 }
 
-export function useGlobalActivityFeed(active) {
+export function useGlobalActivityFeed(active, { intervalMs = POLL_INTERVAL_MS } = {}) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -25,7 +26,7 @@ export function useGlobalActivityFeed(active) {
   const knownIdsRef = useRef(new Set());
 
   const requestPage = useCallback(async (query = '') => {
-    const response = await fetch(`/api/activities/live${query}`, { cache: 'no-store' });
+    const response = await fetch(publicApiUrl(`/api/activities/live${query}`));
     if (!response.ok) throw new Error('Live activity is temporarily unavailable');
     return response.json();
   }, []);
@@ -77,7 +78,7 @@ export function useGlobalActivityFeed(active) {
   useEffect(() => {
     if (!active) return undefined;
     refresh(activities.length === 0);
-    const interval = setInterval(() => refresh(false), POLL_INTERVAL_MS);
+    const interval = setInterval(() => refresh(false), intervalMs);
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') refresh(false);
     };
@@ -86,7 +87,7 @@ export function useGlobalActivityFeed(active) {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [active, activities.length, refresh]);
+  }, [active, activities.length, intervalMs, refresh]);
 
   return { activities, loading, loadingMore, error, newActivityIds, nextCursor, lastUpdated, loadMore, refresh };
 }

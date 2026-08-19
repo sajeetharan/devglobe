@@ -4,9 +4,9 @@
       "name": "timer",
       "type": "timerTrigger",
       "direction": "in",
-      "schedule": "0 */5 * * * *",
+      "schedule": "0 5 * * * *",
       "runOnStartup": false,
-      "useMonitor": false
+      "useMonitor": true
     }
   ],
   "scriptFile": "index.js"

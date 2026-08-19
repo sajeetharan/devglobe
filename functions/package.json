@@ -3,6 +3,10 @@
   "private": true,
   "type": "commonjs",
   "engines": {
-    "node": ">=24"
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.10.0",
+    "@azure/storage-blob": "^12.28.0"
   }
 }

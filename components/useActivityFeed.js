@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { publicApiUrl } from '../lib/public-api.js';
 
 const SESSION_CACHE_PREFIX = 'devglobe-activity:';
 const SESSION_CACHE_MS = 10 * 60 * 1000;
@@ -33,7 +34,7 @@ function saveSessionActivities(activities) {
   } catch { /* session storage unavailable */ }
 }
 
-export function useActivityFeed(logins, { limit, intervalMs = 30000 } = {}) {
+export function useActivityFeed(logins, { limit, intervalMs = 300000 } = {}) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newActivityIds, setNewActivityIds] = useState(new Set());
@@ -53,7 +54,7 @@ export function useActivityFeed(logins, { limit, intervalMs = 30000 } = {}) {
       if (inFlight || (!force && document.visibilityState === 'hidden')) return;
       inFlight = true;
       try {
-        const response = await fetch(`/api/activities?${query}`, { cache: 'no-store' });
+        const response = await fetch(publicApiUrl(`/api/activities?${query}`));
         if (!response.ok) throw new Error('Activity request failed');
         const data = await response.json();
         if (cancelled) return;

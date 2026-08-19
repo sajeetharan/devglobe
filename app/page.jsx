@@ -15,6 +15,7 @@ import IntroductionInboxModal from '../components/IntroductionInboxModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
+import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
@@ -151,7 +152,7 @@ export default function Home() {
         let claimedDeveloper = developers.find(developer => developer.login === user.login);
         // If a new profile was created, reload developers to include it
         if (result.created || result.autoApproved) {
-          const devRes = await fetch('/api/developers', { cache: 'no-store' });
+          const devRes = await fetch(developerSnapshotUrl(), { cache: 'no-store' });
           if (devRes.ok) {
             const raw = await devRes.json();
             const scored = prepareDeveloperDataset(raw);
@@ -235,14 +236,14 @@ export default function Home() {
 
     async function loadData() {
       try {
-        fetch('/api/developers/count', { signal: AbortSignal.timeout(10000) })
+        fetch(publicApiUrl('/api/developers/count'), { signal: AbortSignal.timeout(10000) })
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (Number.isInteger(data?.count)) setDatasetCount(data.count);
           })
           .catch(() => {});
 
-        const res = await fetch('/api/developers', { signal: AbortSignal.timeout(30000) });
+        const res = await fetch(developerSnapshotUrl(), { signal: AbortSignal.timeout(30000) });
         if (!res.ok) throw new Error(`Failed to load data: ${res.status}`);
         setLoadingStage('downloading');
         const raw = await res.json();
