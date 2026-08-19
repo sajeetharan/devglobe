@@ -179,7 +179,7 @@ The command preserves existing tags and is idempotent. Other credentials require
 ```
 ├── index.html                  # Entry HTML
 ├── src/
-│   ├── main.jsx                # App bootstrap + Vercel Analytics
+│   ├── main.jsx                # Application bootstrap
 │   ├── App.jsx                 # Root component, data loading
 │   ├── components/
 │   │   ├── Globe.jsx           # 3D globe (react-globe.gl)

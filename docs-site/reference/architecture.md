@@ -13,14 +13,14 @@ flowchart LR
   SO[Stack Overflow API] --> P
   P --> C[(Azure Cosmos DB)]
   C --> N[Next.js API and MCP]
-  N --> V[Vercel application]
-  V --> H[Human users]
+  N --> CA[Azure Container Apps]
+  CA --> H[Human users]
   N --> A[AI agents]
   R[Repository Markdown] --> VP[VitePress build]
   VP --> GP[GitHub Pages docs]
 ```
 
-The React 19 and Next.js 15 application runs on Vercel. Azure Cosmos DB stores indexed profiles, vector embeddings, activity, private user-scoped features, and consent records in separate containers. Azure Functions invoke scheduled ingestion and snapshot endpoints. Documentation is a static VitePress artifact deployed independently to GitHub Pages.
+The React 19 and Next.js 15 application runs on Azure Container Apps. Azure Cosmos DB stores indexed profiles, vector embeddings, activity, private user-scoped features, and consent records in separate containers. Azure Functions serve high-volume public reads and run scheduled ingestion, snapshot, and lifecycle tasks. Documentation is a static VitePress artifact deployed independently to GitHub Pages.
 
 ## Data sources
 
