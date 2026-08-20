@@ -27,6 +27,8 @@ test('generateProfileReadme builds a profile-styled README', () => {
   const markdown = generateProfileReadme(developer(), { siteUrl: 'https://devglobe.test/' });
 
   assert.match(markdown, /# Hey, I'm Octo Dev 👋/);
+  assert.match(markdown, /api\/profile-card\/octo-dev\.svg\?theme=dark/);
+  assert.match(markdown, /<picture>/);
   assert.match(markdown, /komarev\.com\/ghpvc\/\?username=octo-dev/);
   assert.match(markdown, /## 🚀 About Me/);
   assert.match(markdown, /## 🏆 Community Impact/);
