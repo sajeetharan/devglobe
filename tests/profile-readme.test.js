@@ -23,15 +23,19 @@ function developer(overrides = {}) {
   };
 }
 
-test('generateProfileReadme builds a portable profile README', () => {
+test('generateProfileReadme builds a profile-styled README', () => {
   const markdown = generateProfileReadme(developer(), { siteUrl: 'https://devglobe.test/' });
 
-  assert.match(markdown, /# Hi, I'm Octo Dev/);
+  assert.match(markdown, /# Hey, I'm Octo Dev 👋/);
+  assert.match(markdown, /komarev\.com\/ghpvc\/\?username=octo-dev/);
+  assert.match(markdown, /## 🚀 About Me/);
+  assert.match(markdown, /## 🏆 Community Impact/);
+  assert.match(markdown, /Ranked \*\*#12 globally\*\* on DevGlobe/);
+  assert.match(markdown, /github-readme-stats\.vercel\.app\/api\?username=octo-dev/);
+  assert.match(markdown, /## 🛠️ Tech Stack/);
+  assert.match(markdown, /img\.shields\.io\/badge\/TypeScript-3178C6/);
+  assert.match(markdown, /stackoverflow\.com\/users\/flair\/12345\.png/);
   assert.match(markdown, /https:\/\/devglobe\.test\/api\/badge\/octo-dev\.svg/);
-  assert.match(markdown, /\| Stars \| 1,234 \|/);
-  assert.match(markdown, /TypeScript · JavaScript/);
-  assert.match(markdown, /\[handy\\-tools\]\(https:\/\/github\.com\/octo-dev\/handy-tools\)/);
-  assert.match(markdown, /\[Stack Overflow\]\(https:\/\/stackoverflow\.com\/users\/12345\)/);
 });
 
 test('generateProfileReadme escapes profile-sourced Markdown and omits unavailable sections', () => {
@@ -46,16 +50,33 @@ test('generateProfileReadme escapes profile-sourced Markdown and omits unavailab
     soReputation: null,
     globalRank: null,
     countryRank: null,
+    cityRank: null,
+    city: null,
+    score: null,
     totalStars: null,
     totalCommits: null,
     followers: null,
   }));
 
-  assert.ok(markdown.includes("# Hi, I'm \\[Click me\\]\\(https://example\\.com\\)"));
-  assert.doesNotMatch(markdown, /## Languages/);
-  assert.doesNotMatch(markdown, /## Featured projects/);
-  assert.doesNotMatch(markdown, /## Open-source snapshot/);
-  assert.doesNotMatch(markdown, /Stack Overflow/);
+  assert.ok(markdown.includes("# Hey, I'm \\[Click me\\]\\(https://example\\.com\\) 👋"));
+  assert.doesNotMatch(markdown, /## 🛠️ Tech Stack/);
+  assert.doesNotMatch(markdown, /## 🔥 Featured Projects/);
+  assert.doesNotMatch(markdown, /## 🏆 Community Impact/);
+  assert.doesNotMatch(markdown, /## 🏅 Stack Overflow/);
+  // GitHub Stats is always included.
+  assert.match(markdown, /## 📊 GitHub Stats/);
+});
+
+test('generateProfileReadme includes optional social badges only when present', () => {
+  const withSocials = generateProfileReadme(developer({ website: 'octo.dev', twitter: '@octo', linkedin: 'octo-dev' }));
+  assert.match(withSocials, /img\.shields\.io\/badge\/Website/);
+  assert.match(withSocials, /img\.shields\.io\/badge\/LinkedIn/);
+  assert.match(withSocials, /img\.shields\.io\/badge\/X-/);
+  assert.match(withSocials, /twitter\.com\/octo/);
+
+  const withoutSocials = generateProfileReadme(developer({ website: null, twitter: null, linkedin: null }));
+  assert.doesNotMatch(withoutSocials, /img\.shields\.io\/badge\/Website/);
+  assert.doesNotMatch(withoutSocials, /img\.shields\.io\/badge\/LinkedIn/);
 });
 
 test('generateProfileReadme preserves a custom About me section', () => {
