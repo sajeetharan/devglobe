@@ -1,24 +1,22 @@
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import { createSessionToken, buildSessionCookie } from '../../../../lib/auth.js';
 import { saveActivities } from '../../../../lib/activity-store.js';
 import { createPlatformActivity } from '../../../../lib/platform-activity.js';
 import { selectGitHubEmail } from '../../../../lib/github-email.js';
+import { resolveGitHubCallbackBaseUrl } from '../../../../lib/github-oauth.js';
+import { getSiteUrl } from '../../../../lib/site.js';
 
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 
-function getBaseUrl(hdrs) {
-  const host = hdrs.get('x-forwarded-host') || hdrs.get('host') || 'localhost:3000';
-  const proto = hdrs.get('x-forwarded-proto') || 'http';
-  return `${proto}://${host}`;
-}
-
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
-  const hdrs = await headers();
-  const baseUrl = getBaseUrl(hdrs);
+  const baseUrl = resolveGitHubCallbackBaseUrl(
+    request.url,
+    getSiteUrl(),
+    process.env.NODE_ENV === 'production'
+  );
 
   if (!code) {
     return NextResponse.redirect(`${baseUrl}?auth_error=no_code`);

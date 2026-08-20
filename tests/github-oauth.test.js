@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildGitHubAuthorizationUrl } from '../lib/github-oauth.js';
+import { buildGitHubAuthorizationUrl, resolveGitHubCallbackBaseUrl } from '../lib/github-oauth.js';
+import { resolveSessionCookieDomain } from '../lib/auth-config.js';
 
 test('uses the callback registered on the GitHub OAuth application', () => {
   const url = new URL(buildGitHubAuthorizationUrl('client-id'));
@@ -18,4 +19,25 @@ test('suggests a valid nominated login without forwarding invalid input', () => 
 
   assert.equal(hintedUrl.searchParams.get('login'), 'octo-cat');
   assert.equal(invalidUrl.searchParams.has('login'), false);
+});
+
+test('uses the canonical site origin after a production OAuth callback', () => {
+  assert.equal(
+    resolveGitHubCallbackBaseUrl(
+      'https://devglobe.dev/api/auth/callback?code=redacted',
+      'https://www.devglobe.dev',
+      true
+    ),
+    'https://www.devglobe.dev'
+  );
+  assert.equal(
+    resolveGitHubCallbackBaseUrl('http://localhost:3000/api/auth/callback', 'https://www.devglobe.dev', false),
+    'http://localhost:3000'
+  );
+});
+
+test('shares production session cookies between the canonical www host and apex', () => {
+  assert.equal(resolveSessionCookieDomain('https://www.devglobe.dev', true), 'devglobe.dev');
+  assert.equal(resolveSessionCookieDomain('https://www.devglobe.dev', false), undefined);
+  assert.equal(resolveSessionCookieDomain('https://app.example.com', true), undefined);
 });
