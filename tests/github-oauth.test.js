@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildGitHubAuthorizationUrl, resolveGitHubCallbackBaseUrl } from '../lib/github-oauth.js';
-import { resolveSessionCookieDomain, SESSION_COOKIE_NAME } from '../lib/auth-config.js';
+import { resolveSessionCookieDomain, selectSessionToken, SESSION_COOKIE_NAME } from '../lib/auth-config.js';
 
 test('uses the callback registered on the GitHub OAuth application', () => {
   const url = new URL(buildGitHubAuthorizationUrl('client-id'));
@@ -41,4 +41,14 @@ test('shares production session cookies between the canonical www host and apex'
   assert.equal(resolveSessionCookieDomain('https://www.devglobe.dev', true), 'devglobe.dev');
   assert.equal(resolveSessionCookieDomain('https://www.devglobe.dev', false), undefined);
   assert.equal(resolveSessionCookieDomain('https://app.example.com', true), undefined);
+});
+
+test('selectSessionToken prefers the current cookie and falls back to the legacy one', () => {
+  const both = { devglobe_session_v2: 'new', devglobe_session: 'old' };
+  assert.equal(selectSessionToken(name => both[name]), 'new');
+
+  const legacyOnly = { devglobe_session: 'old' };
+  assert.equal(selectSessionToken(name => legacyOnly[name]), 'old');
+
+  assert.equal(selectSessionToken(() => undefined), null);
 });
