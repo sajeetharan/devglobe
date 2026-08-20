@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildGitHubAuthorizationUrl, resolveGitHubCallbackBaseUrl } from '../lib/github-oauth.js';
-import { resolveSessionCookieDomain } from '../lib/auth-config.js';
+import { resolveSessionCookieDomain, SESSION_COOKIE_NAME } from '../lib/auth-config.js';
 
 test('uses the callback registered on the GitHub OAuth application', () => {
   const url = new URL(buildGitHubAuthorizationUrl('client-id'));
@@ -37,6 +37,7 @@ test('uses the canonical site origin after a production OAuth callback', () => {
 });
 
 test('shares production session cookies between the canonical www host and apex', () => {
+  assert.equal(SESSION_COOKIE_NAME, 'devglobe_session_v2');
   assert.equal(resolveSessionCookieDomain('https://www.devglobe.dev', true), 'devglobe.dev');
   assert.equal(resolveSessionCookieDomain('https://www.devglobe.dev', false), undefined);
   assert.equal(resolveSessionCookieDomain('https://app.example.com', true), undefined);

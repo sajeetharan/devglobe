@@ -16,6 +16,7 @@ import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
+import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
 import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
@@ -89,7 +90,7 @@ export default function Home() {
   useEffect(() => {
     async function loadSession() {
       try {
-        const res = await fetch('/api/auth/session');
+        const res = await fetch('/api/auth/session', { cache: 'no-store', credentials: 'same-origin' });
         const data = await res.json();
         if (data.user) {
           setUser(data.user);
@@ -303,12 +304,13 @@ export default function Home() {
   }, [developers, recordCardActivity]);
 
   const handleOpenCardFeature = useCallback(() => {
-    const developer = selectedDev || (user ? developers.find(item => item.login === user.login) : null);
+    const developer = resolveIdentityCardDeveloper(selectedDev, user, developers);
     if (developer) {
       handleGenerateCard(developer);
       return;
     }
-    document.querySelector('#search-bar input')?.focus();
+    setTourStep('search');
+    requestAnimationFrame(() => document.querySelector('#search-bar input')?.focus());
   }, [developers, handleGenerateCard, selectedDev, user]);
 
   const handleOpenCompareFeature = useCallback(() => {
