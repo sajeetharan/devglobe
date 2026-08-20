@@ -1,6 +1,7 @@
 import '../styles/main.css';
 import { getSiteUrl } from '../lib/site.js';
 import WebMcpProvider from '../components/WebMcpProvider.jsx';
+import AppInsights from '../components/AppInsights.jsx';
 
 const siteUrl = getSiteUrl();
 const title = 'DevGlobe: Developer Discovery for Humans & AI Agents';
@@ -154,6 +155,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <WebMcpProvider />
+        <AppInsights connectionString={process.env.APPLICATIONINSIGHTS_CONNECTION_STRING} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}

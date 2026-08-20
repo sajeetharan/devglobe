@@ -40,6 +40,7 @@
   "dependencies": {
     "@azure/cosmos": "^4.10.0",
     "@fontsource/manrope": "^5.3.0",
+    "@microsoft/applicationinsights-web": "^3.4.3",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@vercel/og": "^0.11.1",
     "d3": "^7.9.0",
