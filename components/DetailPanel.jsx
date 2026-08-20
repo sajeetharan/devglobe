@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 import * as d3 from 'd3';
 import { formatNum, formatRelativeTime, formatUsd, isStaleData } from '../lib/format.js';
 import { DIMENSIONS, SCORE_METHODOLOGY } from '../lib/scoring.js';

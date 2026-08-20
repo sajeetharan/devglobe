@@ -38,4 +38,4 @@ features:
 
 ## Two deployments, one product
 
-The interactive Next.js application runs at [www.devglobe.dev](https://www.devglobe.dev) on Vercel. This static documentation site is published independently through GitHub Pages so reference material remains fast, indexable, and available without application credentials.
+The interactive Next.js application runs at [www.devglobe.dev](https://www.devglobe.dev) on Azure Container Apps. This static documentation site is published independently through GitHub Pages so reference material remains fast, indexable, and available without application credentials.

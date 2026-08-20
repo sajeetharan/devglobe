@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 import { defaultReadmeAbout, generateProfileReadme } from '../lib/profile-readme.js';
 
 const MODES = ['edit', 'source'];

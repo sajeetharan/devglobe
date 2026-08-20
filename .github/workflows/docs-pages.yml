@@ -52,6 +52,8 @@ jobs:
 
       - name: Verify hosted agent resources
         run: npm run docs:check-live
+        env:
+          LIVE_SITE_URL: https://devglobe-web.victoriousground-cbcea081.eastus.azurecontainerapps.io
 
       - name: Run application tests
         run: npm test

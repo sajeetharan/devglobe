@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 import styles from './AddMeModal.module.css';
 
 const PENDING_CLAIM_KEY = 'devglobe-pending-claim';

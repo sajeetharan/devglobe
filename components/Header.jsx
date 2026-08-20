@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 import UserMenu from './UserMenu.jsx';
 
 const marketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
@@ -12,7 +12,7 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
       <div className="header__brand" onClick={onHome} style={{ cursor: 'pointer' }}>
         <img src="/devglobe.png" alt="DevGlobe" className="header__logo" />
         <h1 className="header__title">DevGlobe</h1>
-        <span className="header__subtitle">Where Developers and AI Agents Connect</span>
+        <span className="header__subtitle">The discovery layer for the agentic web: connecting developers and AI agents to build together.</span>
       </div>
       <div className="header__actions">
         <button type="button" onClick={onStartTour} className="btn btn--tour" aria-label="Start quick tour" title="Quick tour">

@@ -19,16 +19,6 @@ const nextConfig = {
       },
     ];
   },
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'dev-globe-viz.vercel.app' }],
-        destination: 'https://www.devglobe.dev/:path*',
-        permanent: true,
-      },
-    ];
-  },
   async rewrites() {
     return [
       {

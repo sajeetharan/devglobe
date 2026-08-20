@@ -32,7 +32,7 @@ The app runs with sample data out of the box — no API keys needed for developm
 │   ├── enrich-and-upload.js# SO enrichment + geocoding + Cosmos DB
 │   └── build-dataset.js    # Pipeline orchestrator
 ├── api/
-│   └── developers.js       # Vercel serverless endpoint
+│   └── developers.js       # Developer API endpoint
 └── data/
     └── developers-sample.json  # Sample data for local dev
 ```

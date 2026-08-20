@@ -1,6 +1,6 @@
 ---
 title: Development and deployment
-description: Run DevGlobe locally, build the documentation, and understand Vercel and GitHub Pages deployments.
+description: Run DevGlobe locally, build the documentation, and understand Azure and GitHub Pages deployments.
 ---
 
 # Development and deployment
@@ -32,7 +32,8 @@ Set `DOCS_BASE=/` for a future custom documentation domain. Set `DOCS_SITE_URL` 
 
 | Surface | Host | Workflow |
 |---|---|---|
-| Dynamic application and APIs | Vercel | `.github/workflows/deploy.yml` |
+| Dynamic application and private APIs | Azure Container Apps | `.github/workflows/deploy.yml` |
+| Public read APIs and scheduled tasks | Azure Functions | `.github/workflows/deploy-azure-functions.yml` |
 | Static documentation | GitHub Pages | `.github/workflows/docs-pages.yml` |
 
 The Pages workflow builds on pull requests and deploys only pushes to `main`. It does not export or replace the dynamic application.

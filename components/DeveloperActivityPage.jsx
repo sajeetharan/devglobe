@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { track } from '@vercel/analytics';
+import { track } from '../lib/analytics.js';
 import { formatNum, formatRelativeTime } from '../lib/format.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { useActivityFeed } from './useActivityFeed.js';

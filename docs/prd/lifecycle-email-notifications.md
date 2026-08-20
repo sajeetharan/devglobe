@@ -109,7 +109,7 @@ Provider logs supply initial delivery visibility. Product analytics and durable 
 
 1. Create a Resend account and verify the sending domain.
 2. Run `npm run setup-contacts-container` against the target Cosmos database.
-3. Configure `RESEND_API_KEY`, a verified `EMAIL_FROM`, and `COSMOS_CONTACTS_CONTAINER` in Vercel and the review-script environment.
+3. Configure `RESEND_API_KEY`, a verified `EMAIL_FROM`, and `COSMOS_CONTACTS_CONTAINER` in Azure Container Apps and the review-script environment.
 4. Deploy and test with one controlled first claim and one controlled nomination approval.
 5. Monitor Resend delivery logs and application errors.
 6. Add durable notification events, retries, verification, and preference controls only if delivery volume warrants them.
