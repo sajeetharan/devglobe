@@ -33,9 +33,21 @@ test('generateProfileReadme builds a profile-styled README', () => {
   assert.match(markdown, /Ranked \*\*#12 globally\*\* on DevGlobe/);
   assert.match(markdown, /github-readme-stats\.vercel\.app\/api\?username=octo-dev/);
   assert.match(markdown, /## 🛠️ Tech Stack/);
+  assert.match(markdown, /\*\*Languages & Frameworks\*\*/);
   assert.match(markdown, /img\.shields\.io\/badge\/TypeScript-3178C6/);
   assert.match(markdown, /stackoverflow\.com\/users\/flair\/12345\.png/);
   assert.match(markdown, /https:\/\/devglobe\.test\/api\/badge\/octo-dev\.svg/);
+});
+
+test('generateProfileReadme adds an italic subtitle only from a multi-sentence bio', () => {
+  const multi = generateProfileReadme(developer({ bio: 'Principal engineer. I build developer tools and APIs.' }));
+  assert.ok(multi.includes('*Principal engineer\\.*'));
+
+  const single = generateProfileReadme(developer({ bio: 'Building tools and APIs' }));
+  assert.doesNotMatch(single, /\n\*Building tools and APIs\*/);
+
+  const explicit = generateProfileReadme(developer({ bio: null }), { headline: 'Open to collaboration' });
+  assert.match(explicit, /\*Open to collaboration\*/);
 });
 
 test('generateProfileReadme escapes profile-sourced Markdown and omits unavailable sections', () => {
