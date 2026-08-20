@@ -26,7 +26,7 @@ const SAMPLES_BY_MODE = {
   ],
 };
 
-export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenCompareFeature, compareCount = 0 }) {
+export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0 }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('text');
   const [topN, setTopN] = useState(50);
@@ -195,13 +195,27 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
             type="button"
             className="feature-action feature-action--card"
             onClick={onOpenCardFeature}
-            aria-label="Generate identity card"
-            title="Generate identity card"
+            aria-label="Generate your developer identity card"
+            title="Generate your developer identity card"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <circle cx="8.5" cy="8.5" r="1.5" />
               <path d="M21 15l-5-5L5 21" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="feature-action feature-action--readme"
+            onClick={onOpenReadmeFeature}
+            aria-label={readmeTooltip}
+            title={readmeTooltip}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 3h11l5 5v13H4z" />
+              <path d="M14 3v6h6" />
+              <path d="M8 13h8" />
+              <path d="M8 17h6" />
             </svg>
           </button>
           <button

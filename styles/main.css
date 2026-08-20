@@ -522,6 +522,14 @@ body {
   background: rgba(8, 145, 178, 0.18);
 }
 
+.feature-action--readme {
+  color: #a78bfa;
+}
+
+.feature-action--readme:hover {
+  background: rgba(139, 92, 246, 0.16);
+}
+
 .feature-action--compare {
   color: #fbbf24;
 }

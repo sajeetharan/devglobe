@@ -22,6 +22,7 @@ import dynamic from 'next/dynamic';
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
 const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
 const PENDING_README_KEY = 'devglobe-pending-readme';
+const PENDING_HOME_README_KEY = 'devglobe-pending-home-readme';
 let cachedDeveloperDataset = null;
 
 export default function Home() {
@@ -313,6 +314,39 @@ export default function Home() {
     requestAnimationFrame(() => document.querySelector('#search-bar input')?.focus());
   }, [developers, handleGenerateCard, selectedDev, user]);
 
+  const handleOpenReadmeFeature = useCallback(() => {
+    if (!user) {
+      try { localStorage.setItem(PENDING_HOME_README_KEY, '1'); } catch { /* OAuth can continue without persistence. */ }
+      track('github_auth_started', { source: 'home_readme' });
+      window.location.assign('/api/auth/github');
+      return;
+    }
+    const developer = resolveIdentityCardDeveloper(null, user, developers);
+    const claimed = Boolean(
+      developer?.claimed || claimedLogins.has(user.login) || claimedLogins.has(user.login.toLowerCase())
+    );
+    if (!developer || !claimed) {
+      void handleClaim({ openCard: false, openReadme: true });
+      return;
+    }
+    track('profile_readme_opened', { login: developer.login, source: 'home' });
+    setCardRequest(0);
+    setCardContext(null);
+    setSelectedDev(developer);
+    setSidebarOpen(false);
+    setReadmeRequest(request => request + 1);
+  }, [claimedLogins, developers, handleClaim, user]);
+
+  // Resume a "Generate README" request started from the home menu before sign-in.
+  useEffect(() => {
+    if (!user || developers.length === 0) return;
+    let pending = false;
+    try { pending = localStorage.getItem(PENDING_HOME_README_KEY) === '1'; } catch { return; }
+    if (!pending) return;
+    try { localStorage.removeItem(PENDING_HOME_README_KEY); } catch { /* best-effort cleanup */ }
+    handleOpenReadmeFeature();
+  }, [user, developers, handleOpenReadmeFeature]);
+
   const handleOpenCompareFeature = useCallback(() => {
     setCardRequest(0);
     setCardContext(null);
@@ -488,6 +522,14 @@ export default function Home() {
         onGenerateCard={handleGenerateCard}
         onSearchState={handleTourSearchState}
         onOpenCardFeature={handleOpenCardFeature}
+        onOpenReadmeFeature={handleOpenReadmeFeature}
+        readmeTooltip={
+          !user
+            ? 'Sign in with GitHub to generate a README for your profile'
+            : claimStatus === 'claimed'
+              ? 'Generate a README for your GitHub profile'
+              : 'Claim your profile to generate your GitHub README'
+        }
         onOpenCompareFeature={handleOpenCompareFeature}
         compareCount={compareDevs.length}
       />
