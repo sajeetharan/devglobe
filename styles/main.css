@@ -3923,6 +3923,263 @@ body {
   transform: translateY(-1px);
 }
 
+.btn--readme {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid rgba(46, 164, 79, 0.5);
+  border-radius: 6px;
+  background: rgba(46, 164, 79, 0.14);
+  color: #56d364;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn--readme:hover {
+  background: rgba(46, 164, 79, 0.24);
+}
+
+.btn--readme-locked {
+  border-color: rgba(139, 148, 158, 0.5);
+  background: rgba(139, 148, 158, 0.1);
+  color: var(--text-secondary);
+}
+
+.btn--readme:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+/* =============== README Generator =============== */
+
+.readme-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 560;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.15s ease;
+}
+
+.readme-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(820px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-strong);
+}
+
+.readme-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.readme-modal__header {
+  padding: 24px 56px 18px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.readme-modal__header > span {
+  color: #56d364;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.readme-modal__header h2 {
+  margin: 5px 0 6px;
+  color: var(--text-primary);
+  font-size: 22px;
+  letter-spacing: 0;
+}
+
+.readme-modal__header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.readme-modal__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 24px 0;
+}
+
+.readme-modal__tabs button {
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.readme-modal__tabs button[aria-selected="true"] {
+  border-bottom-color: #56d364;
+  color: var(--text-primary);
+}
+
+.readme-modal__panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.readme-modal__field {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  padding: 20px 24px 24px;
+}
+
+.readme-modal__field > span {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.readme-modal__field textarea {
+  width: 100%;
+  min-height: 190px;
+  resize: vertical;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.readme-modal__field textarea:focus {
+  border-color: #56d364;
+  box-shadow: 0 0 0 3px rgba(46, 164, 79, 0.14);
+}
+
+.readme-modal__field small {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.readme-modal__source {
+  min-height: 280px;
+  height: calc(100% - 44px);
+  margin: 20px 24px 24px;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #060911;
+  color: #b7c9e8;
+  font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.readme-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.readme-modal__status {
+  flex: 1;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.readme-modal__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid #2ea44f;
+  border-radius: 6px;
+  background: #238636;
+  color: #fff;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.readme-modal__action--secondary {
+  border-color: var(--border);
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+@media (max-width: 620px) {
+  .readme-modal__backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .readme-modal {
+    width: 100%;
+    max-height: 92dvh;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .readme-modal__header,
+  .readme-modal__field,
+  .readme-modal__footer {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .readme-modal__tabs {
+    padding-left: 16px;
+  }
+
+  .readme-modal__source {
+    margin-right: 16px;
+    margin-left: 16px;
+    min-height: 190px;
+  }
+
+  .readme-modal__footer {
+    flex-wrap: wrap;
+  }
+
+  .readme-modal__status {
+    flex-basis: 100%;
+  }
+}
+
 /* =============== Card Modal =============== */
 
 .ai-profile-modal__backdrop {
