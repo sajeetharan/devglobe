@@ -3,13 +3,23 @@
 import { useEffect } from 'react';
 
 // Initializes Application Insights browser RUM (users, sessions, page views).
-export default function AppInsights({ connectionString }) {
+// The connection string is fetched at runtime from /api/telemetry-config so it
+// can be configured via a Container App env var without rebuilding the image.
+export default function AppInsights({ connectionString: connectionStringProp }) {
   useEffect(() => {
-    if (!connectionString || typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return;
     let cancelled = false;
 
     (async () => {
       try {
+        let connectionString = connectionStringProp;
+        if (!connectionString) {
+          const res = await fetch('/api/telemetry-config', { cache: 'no-store' });
+          if (!res.ok) return;
+          ({ connectionString } = await res.json());
+        }
+        if (cancelled || !connectionString) return;
+
         const { ApplicationInsights } = await import('@microsoft/applicationinsights-web');
         if (cancelled) return;
         const appInsights = new ApplicationInsights({
@@ -27,7 +37,7 @@ export default function AppInsights({ connectionString }) {
     })();
 
     return () => { cancelled = true; };
-  }, [connectionString]);
+  }, [connectionStringProp]);
 
   return null;
 }

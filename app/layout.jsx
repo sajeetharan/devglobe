@@ -155,7 +155,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <WebMcpProvider />
-        <AppInsights connectionString={process.env.APPLICATIONINSIGHTS_CONNECTION_STRING} />
+        <AppInsights />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
