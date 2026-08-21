@@ -13,6 +13,7 @@ import ClaimStatusModal from '../components/ClaimStatusModal.jsx';
 import AiProfileModal from '../components/AiProfileModal.jsx';
 import IntroductionInboxModal from '../components/IntroductionInboxModal.jsx';
 import ContributionOpportunitiesModal from '../components/ContributionOpportunitiesModal.jsx';
+import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
@@ -56,6 +57,7 @@ export default function Home() {
   const [showAiProfile, setShowAiProfile] = useState(false);
   const [showIntroductions, setShowIntroductions] = useState(false);
   const [showContributions, setShowContributions] = useState(false);
+  const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
   const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
   const [tourStep, setTourStep] = useState(null);
@@ -92,6 +94,16 @@ export default function Home() {
       sessionStorage.setItem(key, '1');
     } catch { /* Analytics can still record the visit without session storage. */ }
     track('referral_landing', { referrer: referrer.toLowerCase() });
+  }, []);
+
+  useEffect(() => {
+    function syncSimilarLogin() {
+      const login = new URLSearchParams(window.location.search).get('similar')?.trim();
+      setSimilarLogin(/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(login || '') ? login : '');
+    }
+    syncSimilarLogin();
+    window.addEventListener('popstate', syncSimilarLogin);
+    return () => window.removeEventListener('popstate', syncSimilarLogin);
   }, []);
 
   // Fetch session on mount
@@ -504,6 +516,32 @@ export default function Home() {
     }
   }, []);
 
+  const handleOpenSimilar = useCallback((login) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('similar', login);
+    window.history.pushState({}, '', url);
+    setSimilarLogin(login);
+  }, []);
+
+  const handleCloseSimilar = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('similar');
+    window.history.replaceState({}, '', url);
+    setSimilarLogin('');
+  }, []);
+
+  const handleSimilarityResults = useCallback((results) => {
+    hasActiveSearchRef.current = true;
+    const byLogin = new Map(developers.map(developer => [developer.login.toLowerCase(), developer]));
+    setFiltered(results.map(result => ({ ...byLogin.get(result.login.toLowerCase()), ...result })));
+  }, [developers]);
+
+  const handleSelectSimilar = useCallback((developer) => {
+    handleSelectDev(developer);
+    handleCloseSimilar();
+    track('next_action_selected', { action: 'open_similar_developer', journey: 'profile_similarity' });
+  }, [handleCloseSimilar, handleSelectDev]);
+
   const handleToggleSidebar = useCallback(() => {
     setSidebarView('leaderboard');
     setSidebarOpen(prev => sidebarView === 'leaderboard' ? !prev : true);
@@ -605,6 +643,7 @@ export default function Home() {
         onEditAiProfile={() => setShowAiProfile(true)}
         onOpenIntroductions={() => setShowIntroductions(true)}
         onOpenContributions={() => setShowContributions(true)}
+        onOpenSimilar={handleOpenSimilar}
         onOpenProfile={handleOpenOwnProfile}
         onGenerateCard={handleGenerateOwnCard}
         completionVersion={completionVersion}
@@ -691,6 +730,7 @@ export default function Home() {
             onClose={handleCloseDetail}
             onCardGenerated={targetLogin => recordPlatformActivity('generated_card', targetLogin)}
             onReadmeGenerated={targetLogin => recordPlatformActivity('generated_readme', targetLogin)}
+            onOpenSimilar={handleOpenSimilar}
             claimedLogins={claimedLogins}
             user={user}
             onClaim={handleClaim}
@@ -719,6 +759,14 @@ export default function Home() {
         )}
         {showIntroductions && <IntroductionInboxModal onClose={() => setShowIntroductions(false)} />}
         {showContributions && <ContributionOpportunitiesModal onClose={() => setShowContributions(false)} />}
+        {similarLogin && (
+          <SimilarDevelopersModal
+            login={similarLogin}
+            onClose={handleCloseSimilar}
+            onResults={handleSimilarityResults}
+            onSelect={handleSelectSimilar}
+          />
+        )}
       </main>
     </div>
   );
