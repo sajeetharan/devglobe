@@ -21,6 +21,7 @@ export default function ContributionOpportunitiesModal({ onClose }) {
   const [preferences, setPreferences] = useState(null);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
+  const [languageQuery, setLanguageQuery] = useState('');
   const modalRef = useRef(null);
 
   async function load() {
@@ -128,6 +129,11 @@ export default function ContributionOpportunitiesModal({ onClose }) {
   }
 
   const isHacktoberfest = preferences?.campaign === 'hacktoberfest-2026';
+  const visibleLanguages = preferences && result
+    ? result.options.languages
+      .filter(language => language.includes(languageQuery.trim().toLowerCase()))
+      .sort((left, right) => Number(preferences.languages.includes(right)) - Number(preferences.languages.includes(left)) || left.localeCompare(right))
+    : [];
 
   return (
     <div className="contribution-modal__backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}>
@@ -172,14 +178,30 @@ export default function ContributionOpportunitiesModal({ onClose }) {
               </div>
             </div>
             <div className="contribution-preferences__group contribution-preferences__languages">
-              <strong>Preferred languages</strong>
+              <div className="contribution-preferences__languages-heading">
+                <strong>Preferred languages</strong>
+                <span>{preferences.languages.length}/5 selected</span>
+              </div>
+              <div className="contribution-preferences__language-tools">
+                <input
+                  type="search"
+                  value={languageQuery}
+                  onChange={event => setLanguageQuery(event.target.value)}
+                  placeholder="Filter languages"
+                  aria-label="Filter preferred languages"
+                />
+                {preferences.languages.length > 0 && (
+                  <button type="button" onClick={() => setPreferences(current => ({ ...current, languages: [] }))}>Clear</button>
+                )}
+              </div>
               <div className="contribution-preferences__choices contribution-preferences__choices--languages">
-                {result.options.languages.map(language => (
+                {visibleLanguages.map(language => (
                   <label key={language}>
                     <input type="checkbox" checked={preferences.languages.includes(language)} onChange={() => toggleLanguage(language)} disabled={!preferences.languages.includes(language) && preferences.languages.length >= 5} />
                     <span>{language}</span>
                   </label>
                 ))}
+                {visibleLanguages.length === 0 && <span className="contribution-preferences__no-languages">No matching languages</span>}
               </div>
             </div>
             <label className="contribution-preferences__field">
