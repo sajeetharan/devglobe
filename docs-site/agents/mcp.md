@@ -59,6 +59,26 @@ Discovery tools return MCP `structuredContent` with stable schemas while retaini
 
 The endpoint advertises its [MCP server card](https://www.devglobe.dev/.well-known/mcp/server-card.json), documentation, and [Agent Skill index](https://www.devglobe.dev/.well-known/agent-skills/index.json) through HTTP `Link` headers.
 
+## Errors and retry guidance
+
+Every tool error is a structured envelope, not a bare string:
+
+```json
+{ "error": { "code": "rate_limited", "message": "...", "retryable": true, "retryAfterSeconds": 1800 } }
+```
+
+| Code | Retryable | Notes |
+|---|---|---|
+| `authentication_required` | No | Fix the bearer token first |
+| `invalid_request` | No | Fix the tool input first |
+| `not_found` | No | Unknown developer login or request id |
+| `conflict` | No | Developer isn't accepting verified agent requests |
+| `rate_limited` | Yes | Wait `retryAfterSeconds` before retrying `request_introduction` |
+| `unavailable` | Yes | Transient backend/config issue; back off |
+| `upstream_error` | Yes | Unexpected failure calling DevGlobe; back off exponentially |
+
+Only retryable errors ever include `retryAfterSeconds`, and only when DevGlobe can compute a concrete wait. When it's absent on a retryable error, use exponential backoff (e.g. 1s, 2s, 4s, capped, up to 3 attempts) instead of retrying immediately. Never retry a non-retryable error without changing the input or credentials — the outcome won't change.
+
 ## Privacy-safe telemetry
 
 DevGlobe records the MCP method, known tool name, success or error outcome, latency, and aggregate result count. Raw prompts, search arguments, profile content, credentials, and private contact details are not included in usage events.

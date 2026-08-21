@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   AgentRequestValidationError,
   authenticateAgent,
+  computeRetryAfterSeconds,
   createIntroductionDocument,
   normalizeIntroductionRequest,
   parseAgentKeys,
@@ -21,30 +22,39 @@ function authenticateRequest(request) {
   return authenticateAgent(request.headers.get('authorization'), configuredKeys);
 }
 
+/**
+ * Standard error envelope for this route: every non-2xx response carries a
+ * stable `code` (for programmatic handling) alongside the human message, so
+ * MCP tool callers can branch on `code` instead of parsing prose.
+ */
+function apiError(code, message, status) {
+  return NextResponse.json({ error: { code, message, retryable: status >= 500 } }, { status });
+}
+
 export async function GET(request) {
   let agent;
   try {
     agent = authenticateRequest(request);
   } catch (error) {
     console.error('Agent key configuration error:', error.message);
-    return NextResponse.json({ error: 'Agent authentication is not configured' }, { status: 503 });
+    return apiError('unavailable', 'Agent authentication is not configured', 503);
   }
-  if (!agent) return NextResponse.json({ error: 'Invalid or missing agent credentials' }, { status: 401 });
+  if (!agent) return apiError('authentication_required', 'Invalid or missing agent credentials', 401);
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   const developerLogin = searchParams.get('developerLogin');
   if (!/^[a-f\d-]{36}$/i.test(id || '') || !developerLogin) {
-    return NextResponse.json({ error: 'Request id and developer login are required' }, { status: 400 });
+    return apiError('invalid_request', 'Request id and developer login are required', 400);
   }
 
   const introductions = getCosmosContainer(process.env.COSMOS_INTRODUCTIONS_CONTAINER || 'agent-introductions');
-  if (!introductions) return NextResponse.json({ error: 'Introduction requests are not configured' }, { status: 503 });
+  if (!introductions) return apiError('unavailable', 'Introduction requests are not configured', 503);
 
   try {
     const { resource } = await introductions.item(id, developerLogin).read();
     if (!resource || resource.agentId !== agent.id) {
-      return NextResponse.json({ error: 'Introduction request not found' }, { status: 404 });
+      return apiError('not_found', 'Introduction request not found', 404);
     }
     const expired = resource.status === 'pending' && resource.expiresAt <= new Date().toISOString();
     const status = expired ? 'expired' : resource.status;
@@ -64,9 +74,9 @@ export async function GET(request) {
       },
     }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    if (error.code === 404) return NextResponse.json({ error: 'Introduction request not found' }, { status: 404 });
+    if (error.code === 404) return apiError('not_found', 'Introduction request not found', 404);
     console.error('Agent introduction status error:', error.message);
-    return NextResponse.json({ error: 'Failed to load introduction request' }, { status: 500 });
+    return apiError('upstream_error', 'Failed to load introduction request', 500);
   }
 }
 
@@ -76,11 +86,11 @@ export async function POST(request) {
     agent = authenticateRequest(request);
   } catch (error) {
     console.error('Agent key configuration error:', error.message);
-    return NextResponse.json({ error: 'Agent authentication is not configured' }, { status: 503 });
+    return apiError('unavailable', 'Agent authentication is not configured', 503);
   }
 
   if (!agent) {
-    return NextResponse.json({ error: 'Invalid or missing agent credentials' }, { status: 401 });
+    return apiError('authentication_required', 'Invalid or missing agent credentials', 401);
   }
 
   let input;
@@ -88,13 +98,13 @@ export async function POST(request) {
     input = normalizeIntroductionRequest(await request.json());
   } catch (error) {
     const message = error instanceof AgentRequestValidationError ? error.message : 'Invalid request body';
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError('invalid_request', message, 400);
   }
 
   const developers = getCosmosContainer();
   const introductions = getCosmosContainer(process.env.COSMOS_INTRODUCTIONS_CONTAINER || 'agent-introductions');
   if (!developers || !introductions) {
-    return NextResponse.json({ error: 'Introduction requests are not configured' }, { status: 503 });
+    return apiError('unavailable', 'Introduction requests are not configured', 503);
   }
 
   try {
@@ -108,19 +118,27 @@ export async function POST(request) {
     }).fetchAll();
     const publicAiProfile = getPublicAiProfile(matches[0]?.aiProfile);
     if (!publicAiProfile?.acceptsAgentRequests || publicAiProfile.contactPolicy !== 'verified-agents') {
-      return NextResponse.json({ error: 'Developer is not accepting verified agent requests' }, { status: 409 });
+      return apiError('conflict', 'Developer is not accepting verified agent requests', 409);
     }
 
     const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-    const { resources: counts } = await introductions.items.query({
-      query: 'SELECT VALUE COUNT(1) FROM c WHERE c.agentId = @agentId AND c.createdAt >= @since',
+    const { resources: windowRequests } = await introductions.items.query({
+      query: 'SELECT c.createdAt FROM c WHERE c.agentId = @agentId AND c.createdAt >= @since ORDER BY c.createdAt ASC',
       parameters: [
         { name: '@agentId', value: agent.id },
         { name: '@since', value: since },
       ],
     }).fetchAll();
-    if ((counts[0] || 0) >= getRateLimit()) {
-      return NextResponse.json({ error: 'Agent introduction rate limit exceeded' }, { status: 429 });
+    if (windowRequests.length >= getRateLimit()) {
+      const retryAfterSeconds = computeRetryAfterSeconds(windowRequests[0].createdAt, RATE_LIMIT_WINDOW_MS);
+      return NextResponse.json({
+        error: {
+          code: 'rate_limited',
+          message: 'Agent introduction rate limit exceeded',
+          retryable: true,
+          retryAfterSeconds,
+        },
+      }, { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } });
     }
 
     const document = createIntroductionDocument(input, agent);
@@ -138,6 +156,6 @@ export async function POST(request) {
     }, { status: 201 });
   } catch (error) {
     console.error('Agent introduction error:', error.message);
-    return NextResponse.json({ error: 'Failed to create introduction request' }, { status: 500 });
+    return apiError('upstream_error', 'Failed to create introduction request', 500);
   }
 }
