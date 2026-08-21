@@ -5,7 +5,7 @@ import { track } from '../lib/analytics.js';
 import ProfileCompletionChecklist from './ProfileCompletionChecklist.jsx';
 import ProfileInsights from './ProfileInsights.jsx';
 
-export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenContributions, onOpenProfile, onGenerateCard, completionVersion, claimStatus }) {
+export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, claimStatus }) {
   const [open, setOpen] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState('idle');
   const [digestPreference, setDigestPreference] = useState(null);
@@ -164,6 +164,12 @@ export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onO
                 onCloseMenu={() => setOpen(false)}
               />
               <ProfileInsights />
+              <button className="user-menu__item" onClick={() => { onOpenSimilar(user.login); setOpen(false); }}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2" /><path d="M2 19a6 6 0 0112 0M14 18a4 4 0 018 0" />
+                </svg>
+                Developers like me
+              </button>
               <button className="user-menu__item" onClick={() => { onOpenContributions(); setOpen(false); }}>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M9 18h6M10 22h4" /><path d="M8.5 14.5A7 7 0 1115.5 14.5L14 16h-4z" />

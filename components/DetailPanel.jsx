@@ -14,7 +14,7 @@ import { resolveReadmeAccess } from '../lib/profile-readme.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
 
-export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGenerated, claimedLogins, user, onClaim, readmeRequest = 0, openCardOnMount = false, claimSuccess = false }) {
+export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGenerated, onOpenSimilar, claimedLogins, user, onClaim, readmeRequest = 0, openCardOnMount = false, claimSuccess = false }) {
   const [fullData, setFullData] = useState(null);
   const [showCard, setShowCard] = useState(false);
   const [showReadmeGenerator, setShowReadmeGenerator] = useState(false);
@@ -196,6 +196,12 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
               {SCORE_METHODOLOGY.short}
             </p>
             <div className="detail-header__links">
+              <button type="button" className="btn btn--similar" onClick={() => onOpenSimilar(dev.login)}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2" /><path d="M2 19a6 6 0 0112 0M14 18a4 4 0 018 0" />
+                </svg>
+                Similar developers
+              </button>
               {user?.login.toLowerCase() !== dev.login.toLowerCase() && (
                 <button
                   type="button"

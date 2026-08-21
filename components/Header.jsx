@@ -6,7 +6,7 @@ import UserMenu from './UserMenu.jsx';
 
 const marketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
 
-export default function Header({ onHome, theme, onToggleTheme, user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenContributions, onOpenProfile, onGenerateCard, completionVersion, claimStatus, sidebarOpen, onToggleSidebar, activityOpen, onOpenActivity, onAddMe, onStartTour }) {
+export default function Header({ onHome, theme, onToggleTheme, user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, claimStatus, sidebarOpen, onToggleSidebar, activityOpen, onOpenActivity, onAddMe, onStartTour }) {
   return (
     <header className="header">
       <div className="header__brand" onClick={onHome} style={{ cursor: 'pointer' }}>
@@ -122,7 +122,7 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
           </svg>
           <span className="btn__label">Sponsor</span>
         </a>
-        <UserMenu user={user} onLogout={onLogout} onClaim={onClaim} onEditAiProfile={onEditAiProfile} onOpenIntroductions={onOpenIntroductions} onOpenContributions={onOpenContributions} onOpenProfile={onOpenProfile} onGenerateCard={onGenerateCard} completionVersion={completionVersion} claimStatus={claimStatus} />
+        <UserMenu user={user} onLogout={onLogout} onClaim={onClaim} onEditAiProfile={onEditAiProfile} onOpenIntroductions={onOpenIntroductions} onOpenContributions={onOpenContributions} onOpenSimilar={onOpenSimilar} onOpenProfile={onOpenProfile} onGenerateCard={onGenerateCard} completionVersion={completionVersion} claimStatus={claimStatus} />
       </div>
     </header>
   );
