@@ -5009,6 +5009,68 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.contribution-campaign {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 7px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.contribution-campaign legend {
+  margin-bottom: 7px;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.contribution-campaign__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(360px, 100%);
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.contribution-campaign__options label {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.contribution-campaign__options input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.contribution-campaign__options span {
+  display: grid;
+  place-items: center;
+  min-height: 30px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.contribution-campaign__options input:checked + span {
+  background: #f97316;
+  color: #111827;
+}
+
+.contribution-campaign__options input:focus-visible + span {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
 .contribution-preferences__group,
 .contribution-preferences__field {
   display: grid;
@@ -5154,6 +5216,16 @@ body {
   font-size: 13px;
   line-height: 1.4;
   overflow-wrap: anywhere;
+}
+
+.contribution-result__campaign {
+  justify-self: start;
+  padding: 3px 6px;
+  border: 1px solid rgba(249, 115, 22, 0.65);
+  border-radius: 4px;
+  color: #fb923c;
+  font-size: 9px;
+  font-weight: 700;
 }
 
 .contribution-result__reasons {

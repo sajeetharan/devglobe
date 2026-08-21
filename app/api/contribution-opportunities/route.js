@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '../../../lib/auth.js';
 import { getCosmosContainer } from '../../../lib/cosmos.js';
 import {
+  CONTRIBUTION_CAMPAIGNS,
   CONTRIBUTION_DIFFICULTIES,
   CONTRIBUTION_INTERESTS,
   CONTRIBUTION_LANGUAGES,
@@ -30,7 +31,12 @@ class RecommendationRateLimitError extends Error {
 }
 
 function options() {
-  return { interests: CONTRIBUTION_INTERESTS, difficulties: CONTRIBUTION_DIFFICULTIES, languages: CONTRIBUTION_LANGUAGES };
+  return {
+    campaigns: CONTRIBUTION_CAMPAIGNS,
+    interests: CONTRIBUTION_INTERESTS,
+    difficulties: CONTRIBUTION_DIFFICULTIES,
+    languages: CONTRIBUTION_LANGUAGES,
+  };
 }
 
 function mutationError(request) {

@@ -49,9 +49,11 @@ test('normalizes finite interests, languages, and difficulty', () => {
     interests: ['documentation', 'testing'],
     languages: ['javascript'],
     difficulty: 'beginner',
+    campaign: 'all',
   });
   assert.throws(() => normalizeContributionPreferences({ interests: ['money'], languages: [], difficulty: 'easy' }), ContributionPreferenceError);
   assert.throws(() => normalizeContributionPreferences({ interests: [], languages: ['brainfuck'], difficulty: 'beginner' }), ContributionPreferenceError);
+  assert.throws(() => normalizeContributionPreferences({ interests: [], languages: [], difficulty: 'beginner', campaign: 'october' }), ContributionPreferenceError);
 });
 
 test('accepts only fresh public unassigned issues with contribution guidance', () => {
@@ -106,6 +108,29 @@ test('discovers public issues and verifies repository contribution guidance', as
   assert.equal(candidates[0].hasContributionGuide, true);
   assert.ok(requested[0].includes('language%3A%22JavaScript%22'));
   assert.ok(requested[0].includes('label%3A%22good%20first%20issue%22'));
+});
+
+test('requires and searches for the Hacktoberfest label in campaign mode', async () => {
+  const candidates = [
+    candidate({ issue: { id: 1, labels: [{ name: 'good first issue' }] } }),
+    candidate({ issue: { id: 2, labels: [{ name: 'good first issue' }, { name: 'Hacktoberfest' }] } }),
+  ];
+  const preferences = {
+    interests: ['documentation'],
+    languages: ['javascript'],
+    difficulty: 'beginner',
+    campaign: 'hacktoberfest-2026',
+  };
+  const requested = [];
+  const fetchImpl = async url => {
+    requested.push(url);
+    if (url.includes('/search/issues')) return new Response(JSON.stringify({ items: [] }), { status: 200 });
+    throw new Error(`Unexpected request: ${url}`);
+  };
+
+  assert.deepEqual(rankContributionOpportunities(candidates, preferences, [], now).map(item => item.id), ['2']);
+  await fetchGitHubContributionCandidates(preferences, { fetchImpl, token: 'token', now });
+  assert.ok(requested[0].includes('label%3A%22hacktoberfest%22'));
 });
 
 test('reports unavailable discovery when GitHub is not configured', async () => {
