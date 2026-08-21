@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '../../../lib/auth.js';
 import { getCosmosContainer } from '../../../lib/cosmos.js';
+import { isAllowedMutationOrigin } from '../../../lib/request-origin.js';
 import {
   CONTRIBUTION_CAMPAIGNS,
   CONTRIBUTION_DIFFICULTIES,
@@ -43,8 +44,7 @@ function mutationError(request) {
   if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') {
     return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 415 });
   }
-  const origin = request.headers.get('origin');
-  if (origin && origin !== new URL(request.url).origin) {
+  if (!isAllowedMutationOrigin(request)) {
     return NextResponse.json({ error: 'Cross-origin mutation denied' }, { status: 403 });
   }
   return null;
