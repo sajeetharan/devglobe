@@ -45,14 +45,12 @@ Public search and profile lookup do not require credentials. To use introduction
 
 ## Tools
 
-- `search_developers` searches public profiles and can require agent availability or an active self-declared opportunity type.
+- `search_developers` searches public profiles and can require agent availability.
 - `get_developer_profile` returns one public profile.
 - `request_introduction` creates a pending request for an opted-in developer.
 - `get_introduction_status` lets the requesting agent poll its request. After acceptance it returns only the developer's public GitHub URL.
 
 Private AI profile settings and private contact details are never returned.
-
-Opportunity-aware searches may pass `opportunityType` as `employment`, `contract`, `open-source`, `speaking`, or `mentoring`. Matching profiles return only active public preferences, their expiry, and an explicit match reason. Expired preferences are omitted before MCP filtering.
 
 Public discovery tools provide schema-validated `structuredContent` with canonical profile URLs, match explanations, public evidence, freshness, agent availability, and the methodology disclaimer. JSON text content remains available for older clients.
 
@@ -115,6 +113,33 @@ DEVGLOBE_MCP_ALLOWED_ORIGINS=https://trusted-agent-console.example
 ```
 
 The endpoint does not create server-side MCP sessions. `GET` and `DELETE` session operations are intentionally unsupported, while tool calls use `POST` requests.
+
+## Errors & Retry Guidance
+
+Every MCP tool error returns a structured envelope instead of a bare string:
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Agent introduction rate limit exceeded",
+    "retryable": true,
+    "retryAfterSeconds": 1800
+  }
+}
+```
+
+| Code | Meaning | Retryable | Guidance |
+| --- | --- | --- | --- |
+| `authentication_required` | Missing or invalid `DEVGLOBE_AGENT_TOKEN` / bearer credential | No | Fix credentials before retrying; retrying without changing the token will always fail the same way. |
+| `invalid_request` | Input failed validation (bad login, reason too short, etc.) | No | Correct the input; retrying unchanged input will always fail. |
+| `not_found` | Referenced developer or request id does not exist | No | Do not retry; re-check the id or login. |
+| `conflict` | The developer is not accepting verified agent requests | No | Do not retry; the developer's consent settings, not a transient condition, caused this. |
+| `rate_limited` | The per-agent introduction rate limit was exceeded | Yes | Wait at least `retryAfterSeconds` (also echoed in the HTTP `Retry-After` header on the underlying API response) before retrying the same call. |
+| `unavailable` | A required backend dependency isn't configured | Yes | Safe to retry with backoff; this reflects a temporary deployment/config issue, not the request itself. |
+| `upstream_error` | An unexpected failure calling DevGlobe's API | Yes | Retry with exponential backoff (e.g. 1s, 2s, 4s, capped, up to 3 attempts) before surfacing the failure. |
+
+Only `error.retryable === true` responses include `retryAfterSeconds`, and only when DevGlobe can compute a concrete wait time (currently: rate limiting on `request_introduction`). When `retryAfterSeconds` is absent on a retryable error, use exponential backoff instead of retrying immediately. Never retry a non-retryable error without changing the input or credentials first — repeating it will not change the outcome and wastes the agent's rate-limit budget.
 
 ## Consent Lifecycle
 
