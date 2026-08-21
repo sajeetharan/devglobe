@@ -45,12 +45,14 @@ Public search and profile lookup do not require credentials. To use introduction
 
 ## Tools
 
-- `search_developers` searches public profiles and can require agent availability.
+- `search_developers` searches public profiles and can require agent availability or an active self-declared opportunity type.
 - `get_developer_profile` returns one public profile.
 - `request_introduction` creates a pending request for an opted-in developer.
 - `get_introduction_status` lets the requesting agent poll its request. After acceptance it returns only the developer's public GitHub URL.
 
 Private AI profile settings and private contact details are never returned.
+
+Opportunity-aware searches may pass `opportunityType` as `employment`, `contract`, `open-source`, `speaking`, or `mentoring`. Matching profiles return only active public preferences, their expiry, and an explicit match reason. Expired preferences are omitted before MCP filtering.
 
 Public discovery tools provide schema-validated `structuredContent` with canonical profile URLs, match explanations, public evidence, freshness, agent availability, and the methodology disclaimer. JSON text content remains available for older clients.
 
