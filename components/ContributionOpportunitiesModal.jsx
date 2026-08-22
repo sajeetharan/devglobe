@@ -21,6 +21,7 @@ export default function ContributionOpportunitiesModal({ onClose }) {
   const [preferences, setPreferences] = useState(null);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [languageQuery, setLanguageQuery] = useState('');
   const modalRef = useRef(null);
 
@@ -98,6 +99,7 @@ export default function ContributionOpportunitiesModal({ onClose }) {
     event.preventDefault();
     setStatus('saving');
     setError('');
+    setNotice('');
     try {
       const response = await fetch('/api/contribution-opportunities', {
         method: 'PUT',
@@ -107,6 +109,7 @@ export default function ContributionOpportunitiesModal({ onClose }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save preferences');
       await load();
+      setNotice('Matches updated');
     } catch (saveError) {
       setError(saveError.message);
       setStatus('ready');
@@ -129,6 +132,8 @@ export default function ContributionOpportunitiesModal({ onClose }) {
   }
 
   const isHacktoberfest = preferences?.campaign === 'hacktoberfest-2026';
+  const hasPreferenceChanges = Boolean(preferences && result?.preferences
+    && JSON.stringify(preferences) !== JSON.stringify(result.preferences));
   const visibleLanguages = preferences && result
     ? result.options.languages
       .filter(language => language.includes(languageQuery.trim().toLowerCase()))
@@ -137,20 +142,26 @@ export default function ContributionOpportunitiesModal({ onClose }) {
 
   return (
     <div className="contribution-modal__backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}>
-      <section className="contribution-modal" role="dialog" aria-modal="true" aria-labelledby="contribution-title" ref={modalRef} tabIndex="-1">
-        <button type="button" className="contribution-modal__close" onClick={onClose} aria-label="Close contribution opportunities">&times;</button>
-        <span className="contribution-modal__eyebrow">{isHacktoberfest ? 'HACKTOBERFEST 2026' : 'OPEN SOURCE, READY FOR HELP'}</span>
-        <h2 id="contribution-title">{isHacktoberfest ? 'Open Source Passport' : 'Contribution opportunities'}</h2>
-        <p className="contribution-modal__intro">
-          {isHacktoberfest
-            ? 'Find fresh, contribution-ready Hacktoberfest issues matched to your skills. Choose meaningful work and follow each project’s contribution guide.'
-            : 'Fresh, unassigned issues from public repositories with contribution guidance.'}
-        </p>
+      <section className="contribution-modal" role="dialog" aria-modal="true" aria-labelledby="contribution-title" aria-describedby="contribution-intro" ref={modalRef} tabIndex="-1">
+        <button type="button" className="contribution-modal__close" onClick={onClose} aria-label="Close contribution opportunities"><span aria-hidden="true" /></button>
+        <header className="contribution-modal__header">
+          <span className="contribution-modal__eyebrow">{isHacktoberfest ? 'HACKTOBERFEST 2026' : 'OPEN SOURCE, READY FOR HELP'}</span>
+          <h2 id="contribution-title">{isHacktoberfest ? 'Open Source Passport' : 'Contribution opportunities'}</h2>
+          <p className="contribution-modal__intro" id="contribution-intro">
+            {isHacktoberfest
+              ? 'Find contribution-ready Hacktoberfest issues matched to your skills and interests.'
+              : 'Fresh, unassigned issues from public repositories with contribution guidance.'}
+          </p>
+        </header>
 
         {preferences && result && (
           <form className="contribution-preferences" onSubmit={savePreferences}>
+            <div className="contribution-preferences__heading">
+              <div><strong>Tune your matches</strong><span>Recommendations refresh only when you apply changes.</span></div>
+              <span>{preferences.interests.length + preferences.languages.length} preferences selected</span>
+            </div>
             <fieldset className="contribution-campaign">
-              <legend>Campaign</legend>
+              <legend><span>Campaign</span><small>Choose a focused event or browse everything</small></legend>
               <div className="contribution-campaign__options">
                 {result.options.campaigns.map(campaign => (
                   <label key={campaign}>
@@ -166,8 +177,11 @@ export default function ContributionOpportunitiesModal({ onClose }) {
                 ))}
               </div>
             </fieldset>
-            <div className="contribution-preferences__group">
-              <strong>Interests</strong>
+            <fieldset className="contribution-preferences__group">
+              <legend className="contribution-preferences__section-heading">
+                <strong>Interests</strong>
+                <span>Optional</span>
+              </legend>
               <div className="contribution-preferences__choices">
                 {result.options.interests.map(interest => (
                   <label key={interest}>
@@ -176,12 +190,12 @@ export default function ContributionOpportunitiesModal({ onClose }) {
                   </label>
                 ))}
               </div>
-            </div>
-            <div className="contribution-preferences__group contribution-preferences__languages">
-              <div className="contribution-preferences__languages-heading">
+            </fieldset>
+            <fieldset className="contribution-preferences__group contribution-preferences__languages">
+              <legend className="contribution-preferences__languages-heading">
                 <strong>Preferred languages</strong>
-                <span>{preferences.languages.length}/5 selected</span>
-              </div>
+                <span aria-live="polite">{preferences.languages.length}/5 selected</span>
+              </legend>
               <div className="contribution-preferences__language-tools">
                 <input
                   type="search"
@@ -203,45 +217,82 @@ export default function ContributionOpportunitiesModal({ onClose }) {
                 ))}
                 {visibleLanguages.length === 0 && <span className="contribution-preferences__no-languages">No matching languages</span>}
               </div>
+            </fieldset>
+            <div className="contribution-preferences__actions">
+              <label className="contribution-preferences__field">
+                <strong>Difficulty</strong>
+                <select value={preferences.difficulty} onChange={event => setPreferences(current => ({ ...current, difficulty: event.target.value }))}>
+                  {result.options.difficulties.map(difficulty => <option value={difficulty} key={difficulty}>{difficulty}</option>)}
+                </select>
+              </label>
+              <div className="contribution-preferences__submit">
+                <span aria-live="polite">{hasPreferenceChanges ? 'Changes not applied' : notice}</span>
+                <button type="submit" className="btn contribution-preferences__save" disabled={status === 'saving' || !hasPreferenceChanges}>
+                  {status === 'saving' ? 'Updating matches...' : 'Update matches'}
+                </button>
+              </div>
             </div>
-            <label className="contribution-preferences__field">
-              <strong>Difficulty</strong>
-              <select value={preferences.difficulty} onChange={event => setPreferences(current => ({ ...current, difficulty: event.target.value }))}>
-                {result.options.difficulties.map(difficulty => <option value={difficulty} key={difficulty}>{difficulty}</option>)}
-              </select>
-            </label>
-            <button type="submit" className="btn contribution-preferences__save" disabled={status === 'saving'}>{status === 'saving' ? 'Updating...' : 'Update matches'}</button>
           </form>
         )}
 
-        {status === 'loading' && <p className="contribution-modal__state">{isHacktoberfest ? 'Finding Hacktoberfest issues for your passport...' : 'Finding contribution-ready issues...'}</p>}
-        {status === 'error' && <p className="contribution-modal__state contribution-modal__state--error">{error}</p>}
+        {status === 'loading' && (
+          <div className="contribution-modal__state contribution-modal__state--loading" role="status">
+            <span className="contribution-modal__spinner" aria-hidden="true" />
+            <div>
+              <strong>{isHacktoberfest ? 'Building your passport' : 'Finding contribution-ready issues'}</strong>
+              <span>{isHacktoberfest ? 'Checking fresh Hacktoberfest issues against your preferences.' : 'Checking fresh public issues against your preferences.'}</span>
+            </div>
+          </div>
+        )}
+        {status === 'error' && (
+          <div className="contribution-modal__state contribution-modal__state--error" role="alert">
+            <div><strong>Could not load opportunities</strong><span>{error}</span></div>
+            <button type="button" onClick={load}>Try again</button>
+          </div>
+        )}
         {error && status !== 'error' && <p className="contribution-modal__state contribution-modal__state--error">{error}</p>}
-        {status === 'ready' && result?.unavailable && <p className="contribution-modal__state">Recommendations are temporarily unavailable. Your preferences are still saved.</p>}
+        {status === 'ready' && result?.unavailable && (
+          <div className="contribution-modal__state" role="status">
+            <div><strong>Recommendations are taking a break</strong><span>Your preferences are saved. Try refreshing in a moment.</span></div>
+            <button type="button" onClick={load}>Refresh</button>
+          </div>
+        )}
         {status === 'ready' && !result?.unavailable && result?.opportunities.length === 0 && (
-          <p className="contribution-modal__state">
-            {isHacktoberfest
-              ? 'No Hacktoberfest issues match these preferences yet. Try another language or difficulty, or check all opportunities.'
-              : 'No contribution-ready issues match these preferences yet. Try another language or difficulty.'}
-          </p>
+          <div className="contribution-modal__state contribution-modal__state--empty" role="status">
+            <div>
+              <strong>No matches yet</strong>
+              <span>{isHacktoberfest ? 'Try broader preferences or browse all contribution opportunities.' : 'Try another language, interest, or difficulty.'}</span>
+            </div>
+            {isHacktoberfest && <button type="button" onClick={() => selectCampaign('all')}>Browse all</button>}
+          </div>
         )}
 
         {result?.opportunities.length > 0 && (
           <div className="contribution-results" aria-live="polite">
-            {result.opportunities.map(opportunity => (
-              <article className="contribution-result" key={opportunity.id}>
-                <div className="contribution-result__heading">
-                  <span>{opportunity.repository}</span>
-                  <button type="button" onClick={() => dismiss(opportunity.id)} aria-label={`Dismiss ${opportunity.title}`} title="Dismiss recommendation">&times;</button>
-                </div>
-                {opportunity.labels.includes('hacktoberfest') && <span className="contribution-result__campaign">Hacktoberfest 2026</span>}
-                <h3>{opportunity.title}</h3>
-                <div className="contribution-result__reasons">
-                  {opportunity.reasons.map(reason => <span key={reason}>{reason}</span>)}
-                </div>
-                <a href={opportunity.url} target="_blank" rel="noopener noreferrer" onClick={() => track('next_action_selected', { action: 'open_contribution_issue', campaign: result.preferences.campaign, journey: 'contribution' })}>Open issue on GitHub</a>
-              </article>
-            ))}
+            <div className="contribution-results__header">
+              <div><strong>Your matches</strong><span>{result.opportunities.length} contribution-ready {result.opportunities.length === 1 ? 'issue' : 'issues'}</span></div>
+              <span>Fresh and unassigned</span>
+            </div>
+            <div className="contribution-results__list">
+              {result.opportunities.map(opportunity => (
+                <article className="contribution-result" key={opportunity.id}>
+                  <div className="contribution-result__content">
+                    <div className="contribution-result__heading">
+                      <span>{opportunity.repository}</span>
+                      {opportunity.labels.includes('hacktoberfest') && <span className="contribution-result__campaign">Hacktoberfest 2026</span>}
+                    </div>
+                    <h3>{opportunity.title}</h3>
+                    <div className="contribution-result__reasons">
+                      {opportunity.reasons.map(reason => <span key={reason}>{reason}</span>)}
+                    </div>
+                  </div>
+                  <div className="contribution-result__actions">
+                    <a href={opportunity.url} target="_blank" rel="noopener noreferrer" onClick={() => track('next_action_selected', { action: 'open_contribution_issue', campaign: result.preferences.campaign, journey: 'contribution' })}>Open on GitHub</a>
+                    <button type="button" onClick={() => dismiss(opportunity.id)} aria-label={`Dismiss ${opportunity.title}`} title="Dismiss recommendation">Dismiss</button>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         )}
       </section>
