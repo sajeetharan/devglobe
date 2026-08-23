@@ -516,6 +516,36 @@ export default function Home() {
     }
   }, []);
 
+  // Deep link support: /?dev=login opens that developer's panel and flies
+  // the globe to their location on load (see share page's "Explore" link).
+  const deepLinkHandledRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandledRef.current) return;
+    const login = new URLSearchParams(window.location.search).get('dev')?.trim();
+    if (!login || !/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(login)) return;
+
+    const existing = developers.find(candidate => candidate.login?.toLowerCase() === login.toLowerCase());
+    if (existing) {
+      deepLinkHandledRef.current = true;
+      handleSelectDev(existing);
+      track('shared_profile_link_opened', { login: existing.login });
+      return;
+    }
+
+    if (!developers.length) return; // wait for the initial batch before falling back to a fetch
+    deepLinkHandledRef.current = true;
+    fetch(`/api/developer?id=${encodeURIComponent(login)}`, { cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) return;
+        const developer = await response.json();
+        if (developer?.login) {
+          handleSelectDev(developer);
+          track('shared_profile_link_opened', { login: developer.login });
+        }
+      })
+      .catch(() => {});
+  }, [developers, handleSelectDev]);
+
   const handleOpenSimilar = useCallback((login) => {
     const url = new URL(window.location.href);
     url.searchParams.set('similar', login);
@@ -579,6 +609,11 @@ export default function Home() {
   const handleCloseDetail = useCallback(() => {
     setCardContext(null);
     setSelectedDev(null);
+    if (new URLSearchParams(window.location.search).has('dev')) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('dev');
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
   }, []);
 
   const handleToggleCompare = useCallback((dev) => {
