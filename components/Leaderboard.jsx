@@ -332,7 +332,7 @@ export default function Leaderboard({
         <TrendingPanel
           trending={trending}
           error={trendingError}
-          onSelectDev={entry => onSelectDevByLogin?.(entry.login)}
+          onSelectLogin={onSelectDevByLogin}
         />
       )}
     </aside>

@@ -518,6 +518,24 @@ export default function Home() {
     }
   }, []);
 
+  // Opens a developer's panel by login, resolving the full record from the
+  // loaded dataset first and falling back to a fetch (used by the Trending
+  // panel, which only has a lightweight per-developer projection).
+  const handleSelectDevByLogin = useCallback((login) => {
+    const existing = developers.find(candidate => candidate.login?.toLowerCase() === login.toLowerCase());
+    if (existing) {
+      handleSelectDev(existing);
+      return;
+    }
+    fetch(`/api/developer?id=${encodeURIComponent(login)}`, { cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) return;
+        const developer = await response.json();
+        if (developer?.login) handleSelectDev(developer);
+      })
+      .catch(() => {});
+  }, [developers, handleSelectDev]);
+
   // Deep link support: /?dev=login opens that developer's panel and flies
   // the globe to their location on load (see share page's "Explore" link).
   const deepLinkHandledRef = useRef(false);
@@ -544,24 +562,6 @@ export default function Home() {
           handleSelectDev(developer);
           track('shared_profile_link_opened', { login: developer.login });
         }
-      })
-      .catch(() => {});
-  }, [developers, handleSelectDev]);
-
-  // Opens a developer's panel by login, resolving the full record from the
-  // loaded dataset first and falling back to a fetch (used by the Trending
-  // panel, which only has a lightweight per-developer projection).
-  const handleSelectDevByLogin = useCallback((login) => {
-    const existing = developers.find(candidate => candidate.login?.toLowerCase() === login.toLowerCase());
-    if (existing) {
-      handleSelectDev(existing);
-      return;
-    }
-    fetch(`/api/developer?id=${encodeURIComponent(login)}`, { cache: 'no-store' })
-      .then(async response => {
-        if (!response.ok) return;
-        const developer = await response.json();
-        if (developer?.login) handleSelectDev(developer);
       })
       .catch(() => {});
   }, [developers, handleSelectDev]);
