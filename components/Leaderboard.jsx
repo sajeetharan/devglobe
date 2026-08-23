@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { formatNum, formatUsd } from '../lib/format.js';
 import { extractCountry, normalizeCountry, countryKey } from '../lib/country.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
@@ -8,6 +9,7 @@ import { compareOssWorth } from '../lib/oss-worth.js';
 import SpecialTags from './SpecialTags.jsx';
 import GlobalActivityFeed from './GlobalActivityFeed.jsx';
 import AgentNetworkPanel from './AgentNetworkPanel.jsx';
+import TrendingPanel from './TrendingPanel.jsx';
 
 const ITEM_HEIGHT = 62;
 const BUFFER = 10;
@@ -28,6 +30,9 @@ export default function Leaderboard({
   onViewChange,
   agentGlobeLayerVisible = false,
   onToggleAgentGlobeLayer,
+  trending,
+  trendingError,
+  onSelectDevByLogin,
 }) {
   const listRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -160,6 +165,15 @@ export default function Leaderboard({
         >
           Agents
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeView === 'trending'}
+          className={activeView === 'trending' ? 'sidebar__tab sidebar__tab--active' : 'sidebar__tab'}
+          onClick={() => onViewChange?.('trending')}
+        >
+          Trending
+        </button>
         <button className="sidebar__close-btn" onClick={onClose} aria-label="Close sidebar" title="Close sidebar">
           &times;
         </button>
@@ -206,6 +220,9 @@ export default function Leaderboard({
               <option key={name} value={name}>{name.length > 15 ? name.slice(0, 14) + '…' : name} ({count})</option>
             ))}
           </select>
+          <Link href="/countries" className="sidebar__stats-link" title="Country & region statistics">
+            📊 Country stats
+          </Link>
           <select value={langFilter} onChange={e => setLangFilter(e.target.value)}>
             <option value="">All Languages</option>
             {languages.map(l => <option key={l} value={l}>{l}</option>)}
@@ -309,6 +326,13 @@ export default function Leaderboard({
         <AgentNetworkPanel
           globeLayerVisible={agentGlobeLayerVisible}
           onToggleGlobeLayer={onToggleAgentGlobeLayer}
+        />
+      )}
+      {activeView === 'trending' && (
+        <TrendingPanel
+          trending={trending}
+          error={trendingError}
+          onSelectDev={entry => onSelectDevByLogin?.(entry.login)}
         />
       )}
     </aside>
