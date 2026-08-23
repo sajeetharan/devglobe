@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useMemo, useState, forwardRef, useImperativeHandle, useCallback } from 'react';
 import GlobeGL from 'react-globe.gl';
+import * as d3 from 'd3';
 import { getPlatformColor } from '../lib/scoring.js';
 import { formatNum } from '../lib/format.js';
 import { extractCountry, countryKey } from '../lib/country.js';
@@ -54,6 +55,19 @@ const arcEndLat = d => d.endLat;
 const arcEndLng = d => d.endLng;
 const arcColor = d => d.color;
 const arcLabel = d => d.label;
+
+// Hexbin clustering (#30): above this camera altitude the globe is dense
+// enough (26k+ points) that individual points blur together, so we switch
+// to grouped hex clusters until the user zooms back in.
+const HEX_ZOOM_THRESHOLD = 1.8;
+const HEX_ZOOM_DEBOUNCE_MS = 150;
+const hexColorScale = d3.scaleSequentialSqrt(d3.interpolateYlOrRd).domain([0, 60]);
+const hexBinLat = d => d.lat;
+const hexBinLng = d => d.lng;
+const hexTopColor = bin => hexColorScale(bin.points.length);
+const hexSideColor = bin => hexColorScale(bin.points.length);
+const hexAltitude = bin => Math.min(0.35, 0.02 + Math.sqrt(bin.points.length) * 0.012);
+const hexLabel = bin => `${bin.points.length} developer${bin.points.length === 1 ? '' : 's'} in this area`;
 
 function createAvatarMarker(developer, onSelectDev, setAutoRotate) {
   const marker = document.createElement('div');
@@ -214,6 +228,7 @@ const Globe = forwardRef(function Globe({
   onClearCountry,
   agentNetworkVisible = false,
   tooltipDisabled = false,
+  trendingLogins = [],
 }, ref) {
   const globeEl = useRef();
   const tooltipRef = useRef(null);
@@ -226,6 +241,7 @@ const Globe = forwardRef(function Globe({
   const [pointLimit, setPointLimit] = useState(800);
   const [colorMode, setColorMode] = useState('score'); // 'score' | 'language'
   const [languageFilter, setLanguageFilter] = useState('');
+  const [cameraAltitude, setCameraAltitude] = useState(null);
   const isLight = theme === 'light';
 
   useEffect(() => {
@@ -256,6 +272,19 @@ const Globe = forwardRef(function Globe({
       .sort((a, b) => b.score - a.score)
       .slice(0, pointLimit);
   }, [developers, pointLimit, selectedCountry]);
+
+  // Hexbin clustering (#30) draws aggregated bins, not one mesh per developer,
+  // so it can safely use the full filtered dataset instead of the top-N
+  // pointLimit slice used for individual points — that's the whole point of
+  // clustering at 26k+ developers.
+  const hexSourceDevs = useMemo(() => {
+    let list = developers.filter(d => d.lat != null && d.lng != null);
+    if (selectedCountry) {
+      const wanted = countryKey(selectedCountry);
+      list = list.filter(d => d.location && countryKey(extractCountry(d.location)) === wanted);
+    }
+    return list;
+  }, [developers, selectedCountry]);
 
   const featuredGeoDevs = useMemo(() => (
     agentNetworkVisible ? geoDevs.filter(developer => developer.agentReady) : geoDevs
@@ -344,6 +373,25 @@ const Globe = forwardRef(function Globe({
       });
   }, [hoverDev]);
 
+  // Rose pulsing rings for the top trending gainers (#24) — layered on top of
+  // whichever base ring set (score or agent-network) is currently active.
+  const trendingLoginSet = useMemo(() => new Set(trendingLogins), [trendingLogins]);
+
+  const trendingRings = useMemo(() => {
+    if (agentNetworkVisible || !trendingLoginSet.size) return [];
+    return geoDevs
+      .filter(d => trendingLoginSet.has(d.login))
+      .map(d => ({
+        lat: d.lat,
+        lng: d.lng,
+        maxR: 5,
+        propagationSpeed: 4,
+        repeatPeriod: 1000,
+        color: '#fb7185', // rose — distinct from the score/language ring colors
+        login: d.login,
+      }));
+  }, [agentNetworkVisible, geoDevs, trendingLoginSet]);
+
   // Pulsing rings for top 10 developers + active hovered developer's collaborators
   const ringsData = useMemo(() => {
     if (agentNetworkVisible) {
@@ -381,11 +429,11 @@ const Globe = forwardRef(function Globe({
           color: '#38bdf8',
           login: c.login,
         }));
-      return [...base, ...collabRings];
+      return [...base, ...trendingRings, ...collabRings];
     }
 
-    return base;
-  }, [agentNetworkVisible, featuredGeoDevs, geoDevs, hoverDev]);
+    return [...base, ...trendingRings];
+  }, [agentNetworkVisible, featuredGeoDevs, geoDevs, hoverDev, trendingRings]);
 
   const displayPointAltitude = useCallback(developer => {
     if (!agentNetworkVisible) return pointAltitude(developer);
@@ -460,7 +508,28 @@ const Globe = forwardRef(function Globe({
       controls.rotateSpeed = 0.6;
       controls.zoomSpeed = 0.8;
     }
+    // Seed the hexbin/points threshold from the initial camera position.
+    setCameraAltitude(globe.pointOfView().altitude);
   }, []);
+
+  // Debounced zoom tracking (#30): switches between individual points and
+  // hex-bin clusters based on camera altitude, without re-binning on every
+  // frame of a drag/zoom gesture.
+  const zoomDebounceRef = useRef(null);
+  const handleZoom = useCallback(({ altitude }) => {
+    if (zoomDebounceRef.current) clearTimeout(zoomDebounceRef.current);
+    zoomDebounceRef.current = setTimeout(() => {
+      setCameraAltitude(altitude);
+    }, HEX_ZOOM_DEBOUNCE_MS);
+  }, []);
+
+  useEffect(() => () => {
+    if (zoomDebounceRef.current) clearTimeout(zoomDebounceRef.current);
+  }, []);
+
+  const hexModeActive = !agentNetworkVisible
+    && cameraAltitude != null
+    && cameraAltitude > HEX_ZOOM_THRESHOLD;
 
   // Fly to target
   useEffect(() => {
@@ -552,6 +621,18 @@ const Globe = forwardRef(function Globe({
   const handleClick = useCallback((point) => {
     if (point) onSelectDev(point);
   }, [onSelectDev]);
+
+  // Click a hex cluster (#30) to zoom into that region, which drops the
+  // camera below HEX_ZOOM_THRESHOLD and dissolves the cluster back into
+  // individual points on the next zoom tick.
+  const handleHexClick = useCallback((bin) => {
+    if (!bin?.points?.length || !globeEl.current) return;
+    const lat = bin.points.reduce((sum, p) => sum + p.lat, 0) / bin.points.length;
+    const lng = bin.points.reduce((sum, p) => sum + p.lng, 0) / bin.points.length;
+    globeEl.current.pointOfView({ lat, lng, altitude: 1.2 }, 900);
+    const controls = globeEl.current.controls();
+    if (controls) controls.autoRotate = false;
+  }, []);
 
   const polygonAltitude = useCallback((f) => (
     f === hoverCountry || f === selectedFeature ? POLYGON_ALTITUDE_ACTIVE : POLYGON_ALTITUDE
@@ -660,6 +741,7 @@ const Globe = forwardRef(function Globe({
           atmosphereColor={isLight ? '#7ba7d9' : '#3a7ecf'}
           atmosphereAltitude={0.25}
           onGlobeReady={handleGlobeReady}
+          onZoom={handleZoom}
           polygonsData={countryFeatures}
           polygonAltitude={polygonAltitude}
           polygonCapColor={polygonCapColor}
@@ -670,27 +752,38 @@ const Globe = forwardRef(function Globe({
           onPolygonHover={handleCountryHover}
           onPolygonClick={handleCountryClick}
           onGlobeClick={handleGlobeClick}
-          pointsData={geoDevs}
+          pointsData={hexModeActive ? [] : geoDevs}
           pointLat={devLat}
           pointLng={devLng}
           pointAltitude={displayPointAltitude}
           pointRadius={displayPointRadius}
           pointColor={displayPointColor}
           pointResolution={5}
-          htmlElementsData={avatarDevs}
+          hexBinPointsData={hexModeActive ? hexSourceDevs : []}
+          hexBinPointLat={hexBinLat}
+          hexBinPointLng={hexBinLng}
+          hexBinResolution={4}
+          hexMargin={0.2}
+          hexTopColor={hexTopColor}
+          hexSideColor={hexSideColor}
+          hexAltitude={hexAltitude}
+          hexLabel={hexLabel}
+          hexTransitionDuration={400}
+          onHexClick={handleHexClick}
+          htmlElementsData={hexModeActive ? [] : avatarDevs}
           htmlLat={avatarLat}
           htmlLng={avatarLng}
           htmlAltitude={avatarAltitude}
           htmlElement={avatarElement}
           htmlTransitionDuration={250}
-          ringsData={ringsData}
+          ringsData={hexModeActive ? [] : ringsData}
           ringLat={devLat}
           ringLng={devLng}
           ringMaxRadius={ringMaxRadius}
           ringPropagationSpeed={ringPropagationSpeed}
           ringRepeatPeriod={ringRepeatPeriod}
           ringColor={ringColor}
-          labelsData={labelDevs}
+          labelsData={hexModeActive ? [] : labelDevs}
           labelLat={devLat}
           labelLng={devLng}
           labelText={labelText}
@@ -717,7 +810,13 @@ const Globe = forwardRef(function Globe({
         />
       </div>
       <div className="globe-legend">
-        {agentNetworkVisible ? (
+        {hexModeActive ? (
+          <>
+            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(2) }} />Few developers</span>
+            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(60) }} />Many developers</span>
+            <span className="globe-legend__item">Zoom in or click a cluster to see individual developers</span>
+          </>
+        ) : agentNetworkVisible ? (
           <>
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#22d3ee' }} />Open to verified agents</span>
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#64748b', opacity: 0.35 }} />Developer context</span>
@@ -741,8 +840,11 @@ const Globe = forwardRef(function Globe({
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#6366f1' }} />Emerging</span>
           </>
         )}
+        {trendingRings.length > 0 && (
+          <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#fb7185' }} />🔥 Trending</span>
+        )}
       </div>
-      {!agentNetworkVisible && (
+      {!agentNetworkVisible && !hexModeActive && (
         <div className="globe-color-mode">
           <div className="globe-color-mode__toggle" role="group" aria-label="Globe color mode">
             <button
