@@ -60,6 +60,8 @@ export default function Home() {
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
   const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
+  const [trending, setTrending] = useState(null);
+  const [trendingError, setTrendingError] = useState('');
   const [tourStep, setTourStep] = useState(null);
   const [tourMatch, setTourMatch] = useState(null);
   const globeRef = useRef(null);
@@ -516,6 +518,38 @@ export default function Home() {
     }
   }, []);
 
+  // Opens a developer's panel by login, resolving the full record from the
+  // loaded dataset first and falling back to a fetch (used by the Trending
+  // panel, which only has a lightweight per-developer projection).
+  const handleSelectDevByLogin = useCallback((login) => {
+    const existing = developers.find(candidate => candidate.login?.toLowerCase() === login.toLowerCase());
+    if (existing) {
+      handleSelectDev(existing);
+      return;
+    }
+    fetch(`/api/developer?id=${encodeURIComponent(login)}`, { cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) return;
+        const developer = await response.json();
+        if (developer?.login) handleSelectDev(developer);
+      })
+      .catch(() => {});
+  }, [developers, handleSelectDev]);
+
+  // Trending (#24): fetched once and shared between the sidebar panel and
+  // the globe's highlight rings, so both stay in sync off a single request.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/trending', { cache: 'no-store' })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to load trending developers');
+        if (!cancelled) setTrending(data);
+      })
+      .catch(err => { if (!cancelled) setTrendingError(err.message); });
+    return () => { cancelled = true; };
+  }, []);
+
   const handleOpenSimilar = useCallback((login) => {
     const url = new URL(window.location.href);
     url.searchParams.set('similar', login);
@@ -702,6 +736,7 @@ export default function Home() {
           onClearCountry={handleClearCountry}
           agentNetworkVisible={agentGlobeLayerVisible}
           tooltipDisabled={Boolean(selectedDev || compareDevs.length === 2)}
+          trendingLogins={trending?.gainers?.slice(0, 10).map(entry => entry.login) || []}
         />
         <Leaderboard
           developers={filtered}
@@ -719,6 +754,9 @@ export default function Home() {
           onViewChange={setSidebarView}
           agentGlobeLayerVisible={agentGlobeLayerVisible}
           onToggleAgentGlobeLayer={setAgentGlobeLayerVisible}
+          trending={trending}
+          trendingError={trendingError}
+          onSelectDevByLogin={handleSelectDevByLogin}
         />
         {sidebarOpen && (
           <div className="sidebar-backdrop" onClick={handleCloseSidebar} />
