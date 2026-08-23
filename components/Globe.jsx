@@ -5,6 +5,7 @@ import GlobeGL from 'react-globe.gl';
 import { getPlatformColor } from '../lib/scoring.js';
 import { formatNum } from '../lib/format.js';
 import { extractCountry, countryKey } from '../lib/country.js';
+import { getLanguageColor } from '../lib/language-colors.js';
 
 // Low-res Natural Earth countries (177 features), pinned to the commit that added
 // the dataset so the shapes can't change under us. Second entry is a mirror.
@@ -223,6 +224,8 @@ const Globe = forwardRef(function Globe({
   const [hoverCountry, setHoverCountry] = useState(null);
   const [hoverDev, setHoverDev] = useState(null);
   const [pointLimit, setPointLimit] = useState(800);
+  const [colorMode, setColorMode] = useState('score'); // 'score' | 'language'
+  const [languageFilter, setLanguageFilter] = useState('');
   const isLight = theme === 'light';
 
   useEffect(() => {
@@ -257,6 +260,27 @@ const Globe = forwardRef(function Globe({
   const featuredGeoDevs = useMemo(() => (
     agentNetworkVisible ? geoDevs.filter(developer => developer.agentReady) : geoDevs
   ), [agentNetworkVisible, geoDevs]);
+
+  // Languages present in the current view, ranked by how many devs use them,
+  // for the language-mode legend and filter dropdown.
+  const topLanguagesPresent = useMemo(() => {
+    const counts = new Map();
+    geoDevs.forEach(developer => {
+      if (!developer.topLanguage) return;
+      counts.set(developer.topLanguage, (counts.get(developer.topLanguage) || 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([language]) => language)
+      .slice(0, 15);
+  }, [geoDevs]);
+
+  // Reset an out-of-view language filter (e.g. after a country filter change).
+  useEffect(() => {
+    if (languageFilter && !topLanguagesPresent.includes(languageFilter)) {
+      setLanguageFilter('');
+    }
+  }, [languageFilter, topLanguagesPresent]);
 
   const labelDevs = useMemo(() => {
     if (agentNetworkVisible) return featuredGeoDevs.slice(0, 80);
@@ -374,9 +398,13 @@ const Globe = forwardRef(function Globe({
   }, [agentNetworkVisible]);
 
   const displayPointColor = useCallback(developer => {
-    if (!agentNetworkVisible) return pointColor(developer);
-    return developer.agentReady ? '#22d3ee' : 'rgba(100, 116, 139, 0.16)';
-  }, [agentNetworkVisible]);
+    if (agentNetworkVisible) return developer.agentReady ? '#22d3ee' : 'rgba(100, 116, 139, 0.16)';
+    if (colorMode === 'language') {
+      if (languageFilter && developer.topLanguage !== languageFilter) return 'rgba(100, 116, 139, 0.12)';
+      return getLanguageColor(developer.topLanguage);
+    }
+    return pointColor(developer);
+  }, [agentNetworkVisible, colorMode, languageFilter]);
 
   // Developers per country, keyed the same way the leaderboard filters
   const devCountByCountry = useMemo(() => {
@@ -694,6 +722,17 @@ const Globe = forwardRef(function Globe({
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#22d3ee' }} />Open to verified agents</span>
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#64748b', opacity: 0.35 }} />Developer context</span>
           </>
+        ) : colorMode === 'language' ? (
+          topLanguagesPresent.length ? (
+            topLanguagesPresent.slice(0, 8).map(language => (
+              <span key={language} className="globe-legend__item">
+                <span className="globe-legend__dot" style={{ background: getLanguageColor(language) }} />
+                {language}
+              </span>
+            ))
+          ) : (
+            <span className="globe-legend__item">No language data in view</span>
+          )
         ) : (
           <>
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#fbbf24' }} />Elite (80+)</span>
@@ -703,6 +742,41 @@ const Globe = forwardRef(function Globe({
           </>
         )}
       </div>
+      {!agentNetworkVisible && (
+        <div className="globe-color-mode">
+          <div className="globe-color-mode__toggle" role="group" aria-label="Globe color mode">
+            <button
+              type="button"
+              className={`globe-color-mode__btn${colorMode === 'score' ? ' globe-color-mode__btn--active' : ''}`}
+              onClick={() => setColorMode('score')}
+              aria-pressed={colorMode === 'score'}
+            >
+              Score
+            </button>
+            <button
+              type="button"
+              className={`globe-color-mode__btn${colorMode === 'language' ? ' globe-color-mode__btn--active' : ''}`}
+              onClick={() => setColorMode('language')}
+              aria-pressed={colorMode === 'language'}
+            >
+              Language
+            </button>
+          </div>
+          {colorMode === 'language' && topLanguagesPresent.length > 0 && (
+            <select
+              className="globe-color-mode__filter"
+              value={languageFilter}
+              onChange={e => setLanguageFilter(e.target.value)}
+              aria-label="Filter globe by language"
+            >
+              <option value="">All languages</option>
+              {topLanguagesPresent.map(language => (
+                <option key={language} value={language}>{language}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
       <div className="tooltip" ref={tooltipRef} />
     </>
   );
