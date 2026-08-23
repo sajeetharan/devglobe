@@ -213,6 +213,7 @@ const Globe = forwardRef(function Globe({
   onClearCountry,
   agentNetworkVisible = false,
   tooltipDisabled = false,
+  trendingLogins = [],
 }, ref) {
   const globeEl = useRef();
   const tooltipRef = useRef(null);
@@ -344,6 +345,8 @@ const Globe = forwardRef(function Globe({
       login: d.login,
     }));
 
+    let rings = base;
+
     if (hoverDev?.collaborators?.length && hoverDev.lat != null && hoverDev.lng != null) {
       const collabRings = hoverDev.collaborators
         .filter(c => c.lat != null && c.lng != null)
@@ -357,11 +360,30 @@ const Globe = forwardRef(function Globe({
           color: '#38bdf8',
           login: c.login,
         }));
-      return [...base, ...collabRings];
+      rings = [...base, ...collabRings];
     }
 
-    return base;
-  }, [agentNetworkVisible, featuredGeoDevs, geoDevs, hoverDev]);
+    // Trending developers (#24) get their own pulsing color so they stand
+    // out from the plain top-10-by-score rings above.
+    if (trendingLogins.length) {
+      const trendingSet = new Set(trendingLogins.map(login => login.toLowerCase()));
+      const alreadyRinged = new Set(rings.map(r => r.login?.toLowerCase()));
+      const trendingRings = geoDevs
+        .filter(d => trendingSet.has(d.login?.toLowerCase()) && !alreadyRinged.has(d.login?.toLowerCase()))
+        .map(d => ({
+          lat: d.lat,
+          lng: d.lng,
+          maxR: 5,
+          propagationSpeed: 2.5,
+          repeatPeriod: 1000,
+          color: '#f97316',
+          login: d.login,
+        }));
+      rings = [...rings, ...trendingRings];
+    }
+
+    return rings;
+  }, [agentNetworkVisible, featuredGeoDevs, geoDevs, hoverDev, trendingLogins]);
 
   const displayPointAltitude = useCallback(developer => {
     if (!agentNetworkVisible) return pointAltitude(developer);
@@ -700,6 +722,9 @@ const Globe = forwardRef(function Globe({
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#34d399' }} />Strong (60+)</span>
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#3b82f6' }} />Solid (40+)</span>
             <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#6366f1' }} />Emerging</span>
+            {trendingLogins.length > 0 && (
+              <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#f97316' }} />Trending</span>
+            )}
           </>
         )}
       </div>
