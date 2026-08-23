@@ -819,6 +819,58 @@ body {
   display: inline-block;
 }
 
+/* Globe color mode toggle (score vs language) */
+.globe-color-mode {
+  position: fixed;
+  bottom: 88px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 40;
+}
+
+.globe-color-mode__toggle {
+  display: flex;
+  background: var(--bg-panel-85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px;
+}
+
+.globe-color-mode__btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.globe-color-mode__btn:hover {
+  color: var(--text-primary);
+}
+
+.globe-color-mode__btn--active {
+  background: var(--accent-blue);
+  color: #fff;
+}
+
+.globe-color-mode__filter {
+  background: var(--bg-panel-85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
 /* Recent activity */
 .recent-activity {
   position: fixed;
@@ -3924,6 +3976,17 @@ body {
   .globe-legend {
     font-size: 10px;
     padding: 6px 10px;
+  }
+  .globe-color-mode {
+    bottom: 78px;
+    left: 12px;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 24px);
+  }
+  .globe-color-mode__btn,
+  .globe-color-mode__filter {
+    font-size: 10px;
+    padding: 5px 10px;
   }
 }
 
