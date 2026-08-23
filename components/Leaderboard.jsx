@@ -8,6 +8,7 @@ import { compareOssWorth } from '../lib/oss-worth.js';
 import SpecialTags from './SpecialTags.jsx';
 import GlobalActivityFeed from './GlobalActivityFeed.jsx';
 import AgentNetworkPanel from './AgentNetworkPanel.jsx';
+import TrendingPanel from './TrendingPanel.jsx';
 
 const ITEM_HEIGHT = 62;
 const BUFFER = 10;
@@ -28,6 +29,9 @@ export default function Leaderboard({
   onViewChange,
   agentGlobeLayerVisible = false,
   onToggleAgentGlobeLayer,
+  trending,
+  trendingError,
+  onSelectDevByLogin,
 }) {
   const listRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -159,6 +163,15 @@ export default function Leaderboard({
           onClick={() => onViewChange?.('agents')}
         >
           Agents
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeView === 'trending'}
+          className={activeView === 'trending' ? 'sidebar__tab sidebar__tab--active' : 'sidebar__tab'}
+          onClick={() => onViewChange?.('trending')}
+        >
+          Trending
         </button>
         <button className="sidebar__close-btn" onClick={onClose} aria-label="Close sidebar" title="Close sidebar">
           &times;
@@ -309,6 +322,13 @@ export default function Leaderboard({
         <AgentNetworkPanel
           globeLayerVisible={agentGlobeLayerVisible}
           onToggleGlobeLayer={onToggleAgentGlobeLayer}
+        />
+      )}
+      {activeView === 'trending' && (
+        <TrendingPanel
+          trending={trending}
+          error={trendingError}
+          onSelectLogin={onSelectDevByLogin}
         />
       )}
     </aside>
