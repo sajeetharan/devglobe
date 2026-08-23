@@ -20,6 +20,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const [showReadmeGenerator, setShowReadmeGenerator] = useState(false);
   const [followState, setFollowState] = useState('idle');
   const [followError, setFollowError] = useState('');
+  const [deepLinkCopied, setDeepLinkCopied] = useState(false);
   const radarRef = useRef(null);
   const heatmapRef = useRef(null);
   const langRef = useRef(null);
@@ -32,6 +33,18 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
     track('card_generated', { login: dev.login });
     onCardGenerated?.(dev.login);
     setShowCard(true);
+  };
+
+  const handleCopyDeepLink = async () => {
+    const deepLink = `${getSiteUrl()}/?dev=${encodeURIComponent(dev.login)}`;
+    try {
+      await navigator.clipboard.writeText(deepLink);
+      setDeepLinkCopied(true);
+      track('profile_link_copied', { login: dev.login });
+      setTimeout(() => setDeepLinkCopied(false), 2000);
+    } catch {
+      // Clipboard access can fail (e.g. permissions); the button simply won't confirm.
+    }
   };
 
   useEffect(() => {
@@ -222,6 +235,23 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
               )}
                 <Link href={`/developer/${encodeURIComponent(dev.login)}`}>Impact History</Link>
                 <a href={`/share/${encodeURIComponent(dev.login)}#get-your-badge`} target="_blank" rel="noopener noreferrer">Get Badge ↗</a>
+                <button
+                  type="button"
+                  className="btn btn--copylink"
+                  onClick={handleCopyDeepLink}
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    {deepLinkCopied ? (
+                      <path d="m5 12 4 4L19 6" />
+                    ) : (
+                      <>
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </>
+                    )}
+                  </svg>
+                  {deepLinkCopied ? 'Copied!' : 'Copy Link'}
+                </button>
                 <button
                   type="button"
                   className="btn btn--readme"
