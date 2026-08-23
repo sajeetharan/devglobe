@@ -375,12 +375,15 @@ const Globe = forwardRef(function Globe({
 
   // Rose pulsing rings for the top trending gainers (#24) — layered on top of
   // whichever base ring set (score or agent-network) is currently active.
-  const trendingLoginSet = useMemo(() => new Set(trendingLogins), [trendingLogins]);
+  const trendingLoginSet = useMemo(
+    () => new Set(trendingLogins.map(login => login.toLowerCase())),
+    [trendingLogins],
+  );
 
   const trendingRings = useMemo(() => {
     if (agentNetworkVisible || !trendingLoginSet.size) return [];
     return geoDevs
-      .filter(d => trendingLoginSet.has(d.login))
+      .filter(d => d.login && trendingLoginSet.has(d.login.toLowerCase()))
       .map(d => ({
         lat: d.lat,
         lng: d.lng,

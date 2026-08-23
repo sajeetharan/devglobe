@@ -2027,6 +2027,139 @@ body {
   color: var(--accent-blue);
 }
 
+/* Trending panel (#24) */
+.trending-panel__header {
+  padding: 18px 14px 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.trending-panel__header > span {
+  color: #f97316;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.trending-panel__header h2 {
+  margin: 4px 0;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.trending-panel__header p,
+.trending-panel__state {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.trending-panel__state {
+  padding: 24px 14px;
+}
+
+.trending-panel__section {
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
+}
+
+.trending-panel__section h3 {
+  margin: 14px 14px 4px;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.trending-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trending-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.trending-item:hover {
+  background: var(--bg-hover);
+}
+
+.trending-item__rank {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 24px;
+  text-align: right;
+}
+
+.trending-item__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.trending-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.trending-item__name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trending-item__meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trending-item__stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.trending-item__delta {
+  font-size: 13px;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.trending-item__indicator {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.trending-item__indicator--up {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.trending-item__indicator--down {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.14);
+}
+
+.trending-item__indicator--new {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.14);
+}
+
 /* Detail panel */
 .detail-panel {
   position: fixed;
