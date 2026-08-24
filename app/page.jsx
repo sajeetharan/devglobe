@@ -570,7 +570,7 @@ export default function Home() {
   // the globe's highlight rings, so both stay in sync off a single request.
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/trending', { cache: 'no-store' })
+    fetch('/api/trending')
       .then(async response => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Unable to load trending developers');
