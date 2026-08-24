@@ -4,6 +4,7 @@ const nextConfig = {
   output: 'standalone',
   outputFileTracingIncludes: {
     '/api/card': ['./node_modules/@fontsource/manrope/files/manrope-latin-*-normal.woff'],
+    '/docs/mcp-server': ['./docs/mcp-server.md'],
   },
   async headers() {
     return [
