@@ -141,6 +141,9 @@ test('negotiates a Markdown homepage with token metadata', async () => {
   assert.match(await response.text(), /# DevGlobe/);
 });
 
-test('includes MCP documentation in the standalone deployment artifact', () => {
+test('includes MCP documentation in standalone and Docker build inputs', async () => {
   assert.deepEqual(nextConfig.outputFileTracingIncludes['/docs/mcp-server'], ['./docs/mcp-server.md']);
+
+  const dockerIgnore = await fs.readFile('.dockerignore', 'utf8');
+  assert.match(dockerIgnore, /^!docs\/mcp-server\.md$/m);
 });
