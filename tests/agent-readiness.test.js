@@ -140,3 +140,7 @@ test('negotiates a Markdown homepage with token metadata', async () => {
   assert.ok(Number(response.headers.get('x-markdown-tokens')) > 0);
   assert.match(await response.text(), /# DevGlobe/);
 });
+
+test('includes MCP documentation in the standalone deployment artifact', () => {
+  assert.deepEqual(nextConfig.outputFileTracingIncludes['/docs/mcp-server'], ['./docs/mcp-server.md']);
+});
