@@ -25,7 +25,7 @@ function relativeTime(timestamp) {
 }
 
 export default function GlobalActivityFeed({ active }) {
-  const [selectedSource, setSelectedSource] = useState('github');
+  const [selectedSource, setSelectedSource] = useState('devglobe');
   const {
     activities,
     loading,
