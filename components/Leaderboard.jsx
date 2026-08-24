@@ -10,6 +10,7 @@ import SpecialTags from './SpecialTags.jsx';
 import GlobalActivityFeed from './GlobalActivityFeed.jsx';
 import AgentNetworkPanel from './AgentNetworkPanel.jsx';
 import TrendingPanel from './TrendingPanel.jsx';
+import LocalPanel from './LocalPanel.jsx';
 
 const ITEM_HEIGHT = 62;
 const BUFFER = 10;
@@ -174,6 +175,15 @@ export default function Leaderboard({
         >
           Trending
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeView === 'local'}
+          className={activeView === 'local' ? 'sidebar__tab sidebar__tab--active' : 'sidebar__tab'}
+          onClick={() => onViewChange?.('local')}
+        >
+          Local
+        </button>
         <button className="sidebar__close-btn" onClick={onClose} aria-label="Close sidebar" title="Close sidebar">
           &times;
         </button>
@@ -332,6 +342,12 @@ export default function Leaderboard({
         <TrendingPanel
           trending={trending}
           error={trendingError}
+          onSelectLogin={onSelectDevByLogin}
+        />
+      )}
+      {activeView === 'local' && (
+        <LocalPanel
+          developers={developers}
           onSelectLogin={onSelectDevByLogin}
         />
       )}
