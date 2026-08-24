@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { publicApiUrl } from '../lib/public-api.js';
 import { formatNum } from '../lib/format.js';
 import { getLanguageColor } from '../lib/language-colors.js';
 
@@ -19,7 +18,7 @@ export default function CountryStatsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(publicApiUrl('/api/country-stats'), { cache: 'no-store' })
+    fetch('/api/country-stats', { cache: 'no-store' })
       .then(async response => {
         const body = await response.json();
         if (!response.ok) throw new Error(body.error || 'Unable to load country statistics');
