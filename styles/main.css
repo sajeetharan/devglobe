@@ -193,6 +193,38 @@ body {
   font-size: 9px;
 }
 
+.activity-banner__campaign {
+  display: inline-flex;
+  min-height: 28px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, #f97316 65%, var(--border));
+  border-radius: 6px;
+  background: color-mix(in srgb, #f97316 14%, transparent);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.activity-banner__campaign span {
+  color: #fb923c;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.activity-banner__campaign strong {
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.activity-banner__campaign:hover {
+  border-color: #f97316;
+  background: color-mix(in srgb, #f97316 22%, transparent);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -4108,6 +4140,12 @@ body {
   }
   .activity-banner__detail {
     min-width: 0;
+  }
+  .activity-banner__campaign {
+    margin-left: auto;
+  }
+  .activity-banner__campaign span {
+    display: none;
   }
   .globe-avatar-marker {
     width: 20px;
