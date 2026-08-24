@@ -636,6 +636,18 @@ export default function Home() {
     }
   }, []);
 
+  // Deep link support: /?country=Name (e.g. linked from /countries, #3)
+  // selects that country the same way choosing it from the sidebar filter
+  // does. Runs once; doesn't fight the user if they clear the filter after.
+  const countryDeepLinkHandledRef = useRef(false);
+  useEffect(() => {
+    if (countryDeepLinkHandledRef.current) return;
+    const country = new URLSearchParams(window.location.search).get('country')?.trim();
+    if (!country) return;
+    countryDeepLinkHandledRef.current = true;
+    handleSelectCountry(country);
+  }, [handleSelectCountry]);
+
   const handleClearCountry = useCallback(() => {
     setSelectedCountry('');
   }, []);

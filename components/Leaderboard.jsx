@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { formatNum, formatUsd } from '../lib/format.js';
 import { extractCountry, normalizeCountry, countryKey } from '../lib/country.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
@@ -219,6 +220,9 @@ export default function Leaderboard({
               <option key={name} value={name}>{name.length > 15 ? name.slice(0, 14) + '…' : name} ({count})</option>
             ))}
           </select>
+          <Link href="/countries" className="sidebar__stats-link" title="Country & region statistics">
+            📊 Country stats
+          </Link>
           <select value={langFilter} onChange={e => setLangFilter(e.target.value)}>
             <option value="">All Languages</option>
             {languages.map(l => <option key={l} value={l}>{l}</option>)}
