@@ -1,9 +1,10 @@
 import { CosmosClient } from '@azure/cosmos';
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { getPublicAiProfile } from '../../../lib/ai-profile.js';
 import { withNumericScore } from '../../../lib/developer-score.js';
+import { apiError } from '../../../lib/api-error.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
@@ -31,9 +32,11 @@ export async function GET(request) {
   const id = searchParams.get('id');
 
   if (!id) {
-    return NextResponse.json(
-      { error: 'Query parameter "id" is required' },
-      { status: 400 }
+    return apiError(
+      400,
+      'missing_developer_id',
+      'Query parameter "id" is required.',
+      'Call /api/developer?id=<github-login>.',
     );
   }
 
@@ -42,7 +45,7 @@ export async function GET(request) {
     const data = await getSampleData();
     const dev = data.find(d => d.login === id || d.id === id);
     if (!dev) {
-      return NextResponse.json({ error: 'Developer not found' }, { status: 404 });
+      return apiError(404, 'developer_not_found', 'Developer not found.', 'Check the GitHub login or use /api/search to discover profiles.');
     }
     return NextResponse.json(withPublicAiProfile(dev));
   }
@@ -57,10 +60,7 @@ export async function GET(request) {
     }).fetchAll();
 
     if (resources.length === 0) {
-      return NextResponse.json(
-        { error: 'Developer not found' },
-        { status: 404 }
-      );
+      return apiError(404, 'developer_not_found', 'Developer not found.', 'Check the GitHub login or use /api/search to discover profiles.');
     }
 
     return NextResponse.json(withPublicAiProfile(resources[0]), {
@@ -74,7 +74,7 @@ export async function GET(request) {
     const data = await getSampleData();
     const dev = data.find(d => d.login === id || d.id === id);
     if (!dev) {
-      return NextResponse.json({ error: 'Developer not found' }, { status: 404 });
+      return apiError(404, 'developer_not_found', 'Developer not found.', 'Check the GitHub login or use /api/search to discover profiles.');
     }
     return NextResponse.json(withPublicAiProfile(dev));
   }

@@ -14,6 +14,7 @@ DevGlobe publishes machine-readable discovery without claiming authentication ca
 | API catalog | [/.well-known/api-catalog](https://www.devglobe.dev/.well-known/api-catalog) |
 | OpenAPI 3.1 | [/openapi.json](https://www.devglobe.dev/openapi.json) |
 | MCP server card | [/.well-known/mcp/server-card.json](https://www.devglobe.dev/.well-known/mcp/server-card.json) |
+| OAuth protected resource | [/.well-known/oauth-protected-resource](https://www.devglobe.dev/.well-known/oauth-protected-resource) |
 | Agent Skills index | [/.well-known/agent-skills/index.json](https://www.devglobe.dev/.well-known/agent-skills/index.json) |
 | Authentication guide | [/auth.md](https://www.devglobe.dev/auth.md) |
 | Agent-oriented overview | [/llms.txt](https://www.devglobe.dev/llms.txt) |
@@ -22,7 +23,7 @@ The homepage advertises these resources through RFC 8288 `Link` headers. An `Acc
 
 ## Authentication boundary
 
-Public search and profile lookup are anonymous. Introduction tools use pre-issued static bearer credentials. These credentials are **not OAuth grants**, and DevGlobe does not publish OAuth authorization-server or protected-resource metadata.
+Public search and profile lookup are anonymous. Introduction tools use pre-issued static bearer credentials. RFC 9728 protected-resource metadata publishes the `developers:read`, `introductions:read`, and `introductions:write` permission names for least-privilege discovery. These credentials are **not OAuth grants**, and the metadata intentionally omits `authorization_servers` until DevGlobe operates an OAuth 2.1 issuer with authorization and token endpoints.
 
 ## WebMCP
 

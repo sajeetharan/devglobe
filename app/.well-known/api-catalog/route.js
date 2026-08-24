@@ -14,6 +14,7 @@ export function GET() {
         ],
         describedby: [
           { href: `${siteUrl}/.well-known/mcp/server-card.json`, type: 'application/json' },
+          { href: `${siteUrl}/.well-known/oauth-protected-resource`, type: 'application/json' },
           { href: `${siteUrl}/.well-known/agent-skills/index.json`, type: 'application/json' },
         ],
         item: [

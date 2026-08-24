@@ -4556,6 +4556,18 @@ body {
   margin: 0;
 }
 
+.agent-readable-summary {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: normal;
+  border: 0;
+}
+
 .profile-insights__periods {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
