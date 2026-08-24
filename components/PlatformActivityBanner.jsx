@@ -41,6 +41,13 @@ export default function PlatformActivityBanner() {
       </Link>
       <a className="activity-banner__detail" href={activity.url}>{activity.description}</a>
       <time dateTime={activity.createdAt}>{relativeTime(activity.createdAt)}</time>
+      <Link className="activity-banner__campaign" href="/hacktoberfest" aria-label="Explore Hacktoberfest 2026 contribution opportunities">
+        <span>Hacktoberfest 2026</span>
+        <strong>Find your issue</strong>
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" />
+        </svg>
+      </Link>
     </aside>
   );
 }
