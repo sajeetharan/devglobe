@@ -1659,7 +1659,7 @@ body {
 
 .sidebar__tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: repeat(5, 1fr) auto;
   align-items: center;
   gap: 4px;
   padding: 10px 12px;
@@ -2427,6 +2427,140 @@ body {
 .trending-item__indicator--new {
   color: #f97316;
   background: rgba(249, 115, 22, 0.14);
+}
+
+/* Local leaderboards panel (#25) */
+.local-panel__header {
+  padding: 18px 14px 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.local-panel__header > span {
+  color: #22c55e;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.local-panel__header h2 {
+  margin: 4px 0;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.local-panel__header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.local-panel__header--detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.local-panel__back {
+  align-self: flex-start;
+  margin-bottom: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #22c55e;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.local-panel__back:hover {
+  text-decoration: underline;
+}
+
+.local-panel__search {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.local-panel__search input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+}
+
+.local-panel__search input:focus {
+  border-color: #22c55e;
+}
+
+.local-panel__state {
+  padding: 24px 14px;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.local-panel__country-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.local-panel__country-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 20px;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.local-panel__country-list button:hover {
+  background: var(--bg-hover);
+}
+
+.local-panel__country-count {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.local-panel__section {
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
+}
+
+.local-panel__section h3 {
+  margin: 14px 14px 4px;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.local-panel__section h3 span {
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+}
+
+.local-panel__badge {
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.14);
+  color: #22c55e;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Detail panel */
