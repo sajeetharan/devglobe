@@ -13,6 +13,7 @@ import { GET as getRobots } from '../app/robots.txt/route.js';
 import { GET as getUnknownApi } from '../app/api/[...path]/route.js';
 import { GET as searchDevelopers } from '../app/api/search/route.js';
 import { GET as getDeveloper } from '../app/api/developer/route.js';
+import { dynamic as mcpDocsRendering, GET as getMcpDocs } from '../app/docs/mcp-server/route.js';
 import { middleware } from '../middleware.js';
 
 test('advertises agent discovery resources from the homepage', async () => {
@@ -142,8 +143,13 @@ test('negotiates a Markdown homepage with token metadata', async () => {
 });
 
 test('includes MCP documentation in standalone and Docker build inputs', async () => {
+  assert.equal(mcpDocsRendering, 'force-static');
   assert.deepEqual(nextConfig.outputFileTracingIncludes['/docs/mcp-server'], ['./docs/mcp-server.md']);
 
   const dockerIgnore = await fs.readFile('.dockerignore', 'utf8');
   assert.match(dockerIgnore, /^!docs\/mcp-server\.md$/m);
+
+  const response = await getMcpDocs();
+  assert.equal(response.headers.get('content-type'), 'text/markdown; charset=utf-8');
+  assert.match(await response.text(), /^# DevGlobe MCP Server/m);
 });
