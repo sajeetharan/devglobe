@@ -6,9 +6,13 @@ import nextConfig from '../next.config.js';
 import { GET as getSkillIndex } from '../app/.well-known/agent-skills/index.json/route.js';
 import { GET as getApiCatalog } from '../app/.well-known/api-catalog/route.js';
 import { GET as getMcpCard } from '../app/.well-known/mcp/server-card.json/route.js';
+import { GET as getProtectedResource } from '../app/.well-known/oauth-protected-resource/route.js';
 import { GET as getOpenApi } from '../app/openapi.json/route.js';
 import { GET as getAuth } from '../app/auth.md/route.js';
 import { GET as getRobots } from '../app/robots.txt/route.js';
+import { GET as getUnknownApi } from '../app/api/[...path]/route.js';
+import { GET as searchDevelopers } from '../app/api/search/route.js';
+import { GET as getDeveloper } from '../app/api/developer/route.js';
 import { middleware } from '../middleware.js';
 
 test('advertises agent discovery resources from the homepage', async () => {
@@ -19,6 +23,7 @@ test('advertises agent discovery resources from the homepage', async () => {
   assert.match(link, /openapi\.json.*rel="service-desc"/);
   assert.match(link, /mcp\/server-card\.json/);
   assert.match(link, /agent-skills\/index\.json/);
+  assert.match(link, /oauth-protected-resource.*rel="oauth-protected-resource"/);
   assert.match(link, /auth\.md/);
 });
 
@@ -33,6 +38,13 @@ test('serves a valid API catalog and OpenAPI description', async () => {
   assert.equal(openApiResponse.headers.get('content-type'), 'application/openapi+json');
   assert.equal(openApi.openapi, '3.1.0');
   assert.deepEqual(Object.keys(openApi.paths), ['/api/search', '/api/developer', '/mcp']);
+  assert.equal(openApi.components.securitySchemes.agentBearer.scheme, 'bearer');
+  assert.deepEqual(openApi['x-scopes-supported'], [
+    'developers:read',
+    'introductions:read',
+    'introductions:write',
+  ]);
+  assert.equal(openApi.components.schemas.Error.required.includes('hint'), true);
 });
 
 test('describes the MCP server tools and authentication boundary', async () => {
@@ -41,10 +53,64 @@ test('describes the MCP server tools and authentication boundary', async () => {
   assert.equal(card.capabilities.tools.names.length, 4);
   assert.deepEqual(card.authentication.publicTools, ['search_developers', 'get_developer_profile']);
   assert.equal(card.authentication.scheme, 'bearer');
+  assert.equal(card.authentication.scopes.introductionsWrite, 'introductions:write');
 
   const auth = await getAuth().text();
   assert.match(auth, /pre-issued agent credentials/);
   assert.match(auth, /does not operate an OAuth authorization server/);
+  assert.match(auth, /introductions:write/);
+});
+
+test('publishes RFC 9728 protected-resource scopes without claiming an authorization server', async () => {
+  const response = getProtectedResource();
+  const metadata = await response.json();
+
+  assert.equal(metadata.resource.endsWith('/mcp'), true);
+  assert.deepEqual(metadata.scopes_supported, [
+    'developers:read',
+    'introductions:read',
+    'introductions:write',
+  ]);
+  assert.deepEqual(metadata.bearer_methods_supported, ['header']);
+  assert.equal('authorization_servers' in metadata, false);
+});
+
+test('homepage source contains meaningful server-rendered content for no-JavaScript clients', async () => {
+  const source = await fs.readFile('app/page.jsx', 'utf8');
+  const summary = source.match(/<section className="agent-readable-summary"[\s\S]*?<\/section>/)?.[0] || '';
+  const text = summary.replace(/<[^>]+>/g, ' ').replace(/[{}\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  assert.match(summary, /<h1[^>]*>/);
+  assert.ok(text.length >= 500, `Expected at least 500 characters, received ${text.length}`);
+  assert.match(text, /public API or stateless MCP endpoint/);
+});
+
+test('not-found page provides markdown-style recovery links', async () => {
+  const source = await fs.readFile('app/not-found.jsx', 'utf8');
+  assert.match(source, /404: Resource not found/);
+  assert.match(source, /# Where to look next/);
+  assert.match(source, /\/sitemap\.xml/);
+  assert.match(source, /\/llms\.txt/);
+  assert.match(source, /\/openapi\.json/);
+});
+
+test('unknown and invalid public API requests return structured JSON errors', async () => {
+  const responses = [
+    getUnknownApi(new Request('https://www.devglobe.dev/api/does-not-exist')),
+    await searchDevelopers(new Request('https://www.devglobe.dev/api/search')),
+    await getDeveloper(new Request('https://www.devglobe.dev/api/developer')),
+  ];
+
+  for (const response of responses) {
+    const body = await response.json();
+    assert.match(response.headers.get('content-type'), /application\/json/);
+    assert.equal(typeof body.error, 'string');
+    assert.equal(typeof body.code, 'string');
+    assert.equal(typeof body.hint, 'string');
+  }
+  assert.equal(responses[0].status, 404);
+  assert.equal(responses[1].status, 400);
+  assert.equal(responses[2].status, 400);
 });
 
 test('publishes an Agent Skills digest matching the served artifact', async () => {

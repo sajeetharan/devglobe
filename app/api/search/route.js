@@ -1,7 +1,8 @@
 import { CosmosClient } from '@azure/cosmos';
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server.js';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { apiError } from '../../../lib/api-error.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
@@ -52,9 +53,11 @@ export async function GET(request) {
   const top = searchParams.get('top') || '10';
 
   if (!q) {
-    return NextResponse.json(
-      { error: 'Query parameter "q" is required' },
-      { status: 400 }
+    return apiError(
+      400,
+      'missing_search_query',
+      'Query parameter "q" is required.',
+      'Call /api/search?q=<skills-or-location>&mode=text&top=10.',
     );
   }
 
@@ -75,10 +78,7 @@ export async function GET(request) {
 
     if (mode === 'vector') {
       if (!OPENAI_ENDPOINT || !OPENAI_KEY) {
-        return NextResponse.json(
-          { error: 'OpenAI not configured for vector search' },
-          { status: 500 }
-        );
+        return apiError(503, 'vector_search_unavailable', 'Vector search is unavailable.', 'Retry with mode=text.');
       }
       const embedding = await getEmbedding(q);
       const { resources } = await container.items.query({
@@ -119,10 +119,7 @@ export async function GET(request) {
     } else {
       // Hybrid: client-side RRF fusion of vector + text results
       if (!OPENAI_ENDPOINT || !OPENAI_KEY) {
-        return NextResponse.json(
-          { error: 'OpenAI not configured for hybrid search' },
-          { status: 500 }
-        );
+        return apiError(503, 'hybrid_search_unavailable', 'Hybrid search is unavailable.', 'Retry with mode=text.');
       }
       const searchTerm = q.toLowerCase();
       const embedding = await getEmbedding(q);
@@ -170,9 +167,6 @@ export async function GET(request) {
     return NextResponse.json({ query: q, mode, count: results.length, results });
   } catch (err) {
     console.error('Search error:', err.message);
-    return NextResponse.json(
-      { error: 'Search failed' },
-      { status: 500 }
-    );
+    return apiError(500, 'search_failed', 'Search failed.', 'Retry later or use the text search mode.');
   }
 }

@@ -713,6 +713,31 @@ export default function Home() {
 
   return (
     <div id="app" className={tourStep ? 'tour-active' : ''} aria-busy={loading}>
+      <section className="agent-readable-summary" aria-labelledby="devglobe-summary-title">
+        <h1 id="devglobe-summary-title">DevGlobe developer discovery for humans and AI agents</h1>
+        <p>
+          DevGlobe is a global directory of more than 26,000 public open-source developer profiles.
+          Search by name, GitHub username, location, programming language, contribution history, or
+          agent availability. Profiles combine public GitHub and Stack Overflow signals into
+          transparent rankings, language expertise, project activity, and consent-based collaboration
+          preferences. Private contact details are never exposed through public search.
+        </p>
+        <p>
+          Humans can explore the interactive globe, compare developers, review country statistics,
+          discover contribution opportunities, and create shareable developer identity cards. AI
+          agents can use the public API or stateless MCP endpoint to search profiles and inspect public
+          expertise. Introduction requests require a scoped DevGlobe bearer credential and remain
+          consent-gated: the developer decides whether to accept before any contact can proceed.
+        </p>
+        <nav aria-label="Agent and developer resources">
+          <a href="/agents">Agent setup</a>
+          <a href="/docs/mcp-server">MCP documentation</a>
+          <a href="/openapi.json">OpenAPI description</a>
+          <a href="/.well-known/api-catalog">API catalog</a>
+          <a href="/llms.txt">Agent guide</a>
+          <a href="/sitemap.xml">Sitemap</a>
+        </nav>
+      </section>
       {loading && <LoadingOverlay datasetCount={datasetCount} stage={loadingStage} />}
       <Header
         onHome={handleHome}
