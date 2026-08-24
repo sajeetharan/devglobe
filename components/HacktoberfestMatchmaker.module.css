@@ -69,9 +69,9 @@
 .toolHeading span:last-child { color: var(--match-cyan); }
 .form { padding: 24px; }
 .form label { display: block; margin-bottom: 8px; color: var(--match-text); font-size: 13px; font-weight: 750; }
-.inputRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; min-height: 52px; border: 1px solid #405569; background: #081019; }
+.inputRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; min-height: 48px; border: 1px solid #405569; background: #081019; }
 .inputRow > span { padding-left: 16px; color: var(--match-muted); font-size: 16px; }
-.inputRow input { min-width: 0; height: 50px; border: 0; outline: 0; background: transparent; color: var(--match-text); font: inherit; font-size: 15px; }
+.inputRow input { min-width: 0; height: 46px; border: 0; outline: 0; background: transparent; color: var(--match-text); font: inherit; font-size: 15px; }
 .inputRow button { align-self: stretch; min-width: 150px; border: 0; background: var(--match-orange); color: #fff; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
 .inputRow button:hover { background: #ea650b; }
 .inputRow button:disabled { cursor: wait; opacity: 0.7; }
