@@ -135,7 +135,7 @@ test('remote MCP forwards bearer credentials for introduction tools', async () =
   let authorization;
   let requestBody;
   const fetchImpl = async (url, options) => {
-    assert.equal(new URL(url).pathname, '/api/agent/introductions');
+    assert.equal(new URL(url).href, 'http://localhost:3000/api/agent/introductions');
     authorization = options.headers.Authorization;
     requestBody = JSON.parse(options.body);
     return Response.json({ request: { id: 'request-id', status: 'pending' } }, { status: 201 });
