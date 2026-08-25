@@ -209,7 +209,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
               {SCORE_METHODOLOGY.short}
             </p>
             <div className="detail-header__links">
-              <button type="button" className="btn btn--similar" onClick={() => onOpenSimilar(dev.login)}>
+              <button type="button" className="profile-action" onClick={() => onOpenSimilar(dev.login)}>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2" /><path d="M2 19a6 6 0 0112 0M14 18a4 4 0 018 0" />
                 </svg>
@@ -218,7 +218,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
               {user?.login.toLowerCase() !== dev.login.toLowerCase() && (
                 <button
                   type="button"
-                  className={`btn btn--follow${followState === 'following' ? ' btn--follow-active' : ''}`}
+                  className={`profile-action${followState === 'following' ? ' profile-action--active' : ''}`}
                   onClick={handleFollow}
                   disabled={followState === 'loading' || followState === 'saving'}
                   aria-pressed={followState === 'following'}
@@ -229,15 +229,15 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                   {followState === 'following' ? 'Following' : followState === 'saving' ? 'Saving...' : 'Follow'}
                 </button>
               )}
-              <a href={merged.githubUrl || `https://github.com/${dev.login}`} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+              <a className="profile-action" href={merged.githubUrl || `https://github.com/${dev.login}`} target="_blank" rel="noopener noreferrer">GitHub <ExternalLinkIcon /></a>
               {merged.soUserId && (
-                <a href={`https://stackoverflow.com/users/${merged.soUserId}`} target="_blank" rel="noreferrer">StackOverflow ↗</a>
+                <a className="profile-action" href={`https://stackoverflow.com/users/${merged.soUserId}`} target="_blank" rel="noreferrer">Stack Overflow <ExternalLinkIcon /></a>
               )}
-                <Link href={`/developer/${encodeURIComponent(dev.login)}`}>Impact History</Link>
-                <a href={`/share/${encodeURIComponent(dev.login)}#get-your-badge`} target="_blank" rel="noopener noreferrer">Get Badge ↗</a>
+                <Link className="profile-action" href={`/developer/${encodeURIComponent(dev.login)}`}>Impact history</Link>
+                <a className="profile-action" href={`/share/${encodeURIComponent(dev.login)}#get-your-badge`} target="_blank" rel="noopener noreferrer">Get badge <ExternalLinkIcon /></a>
                 <button
                   type="button"
-                  className="btn btn--copylink"
+                  className="profile-action"
                   onClick={handleCopyDeepLink}
                 >
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -254,7 +254,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                 </button>
                 <button
                   type="button"
-                  className="btn btn--readme"
+                  className="profile-action profile-action--readme"
                   onClick={handleReadmeAccess}
                 >
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -263,7 +263,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                   {readmeAccess === 'generate' ? 'Generate README' : 'Preview README'}
                 </button>
                 <button
-                className="btn btn--share"
+                className="profile-action profile-action--primary"
                 onClick={handleGenerateCard}
               >
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -760,6 +760,14 @@ function renderLanguages(container, languages) {
 }
 
 /* ─── Card Modal ─── */
+
+function ExternalLinkIcon() {
+  return (
+    <svg className="profile-action__external" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6 3H3v10h10v-3" /><path d="M9 3h4v4M13 3 7 9" />
+    </svg>
+  );
+}
 
 function CardModal({ dev, claimSuccess, onClose }) {
   const [loading, setLoading] = useState(true);
