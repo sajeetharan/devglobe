@@ -5,6 +5,7 @@
  *   node scripts/review-nominations.js list                          # show pending/rejected nominations
  *   node scripts/review-nominations.js status <username>
  *   node scripts/review-nominations.js approve <username> [reviewer]
+ *   node scripts/review-nominations.js import <username> [reviewer] [--apply]
  *   node scripts/review-nominations.js refresh <username>
  *   node scripts/review-nominations.js reject <username> [reviewer] [reason]
  *
@@ -23,6 +24,7 @@ import {
   normalizeUsername,
   enrichFromGitHub,
   geocodeLocation,
+  buildAdminImportedDeveloper,
 } from '../lib/nominate.js';
 import { buildNominationApprovedEmail, sendLifecycleEmail } from '../lib/lifecycle-email.js';
 import { getDeveloperContact } from '../lib/developer-contact-store.js';
@@ -189,6 +191,55 @@ async function approve(container, username, reviewer, refresh = false) {
   console.log(`  ✓ "${username}" ${refresh ? 'details refreshed' : 'approved and now public'}.`);
 }
 
+async function importDeveloper(container, username, reviewer, apply) {
+  const existing = await findDeveloperByLogin(container, username);
+  if (existing) {
+    console.error(`"${username}" already exists with source "${existing.source || 'unknown'}".`);
+    process.exit(1);
+  }
+
+  const ghRes = await fetch(`https://api.github.com/users/${username}`, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'devglobe-review',
+      ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+    },
+  });
+  if (!ghRes.ok) {
+    console.error(`Could not fetch GitHub profile for "${username}" (status ${ghRes.status}).`);
+    process.exit(1);
+  }
+
+  const enriched = await enrichFromGitHub(username, await ghRes.json());
+  if (enriched.enrichmentStatus !== 'complete') {
+    console.error(`Refusing to import "${username}": enrichment is ${enriched.enrichmentStatus} (${enriched.enrichmentError || 'unknown reason'}).`);
+    process.exit(1);
+  }
+
+  const location = enriched.githubLocation || 'Unknown';
+  const coordinates = await geocodeLocation(location);
+  const developer = buildAdminImportedDeveloper(enriched, { location, coordinates, reviewer });
+  const { resources: publicDevelopers } = await container.items.query({
+    query: `SELECT c.id, c.login, c.followers, c.totalStars, c.totalForks, c.totalWatchers,
+      c.totalCommits, c.soUserId, c.soReputation, c.soAnswers, c.soAcceptRate, c.soBadges
+      FROM c WHERE NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved'`,
+  }).fetchAll();
+  const scored = scoreDeveloperForDataset(developer, publicDevelopers);
+
+  console.log(`${apply ? 'Importing' : 'Would import'} @${scored.login} (${scored.name}) — ${scored.location}, ${scored.topLanguage || 'no primary language'}, score ${scored.score}.`);
+  if (!apply) {
+    console.log('Dry run only. Add --apply to create the public profile.');
+    return;
+  }
+
+  if (await findDeveloperByLogin(container, username)) {
+    console.error(`"${username}" was created concurrently. No write performed.`);
+    process.exit(1);
+  }
+  await container.items.create(scored);
+  console.log(`  ✓ "${username}" imported and now public.`);
+}
+
 async function reject(container, username, reviewer, reason) {
   const dev = await requireNomination(container, username);
 
@@ -229,6 +280,13 @@ async function main() {
       if (!username) { console.error('Usage: review-nominations.js approve <username> [reviewer]'); process.exit(1); }
       await approve(container, username, rest[0]);
       break;
+    case 'import': {
+      if (!username) { console.error('Usage: review-nominations.js import <username> [reviewer] [--apply]'); process.exit(1); }
+      const apply = rest.includes('--apply');
+      const reviewer = rest.find(value => value !== '--apply') || null;
+      await importDeveloper(container, username, reviewer, apply);
+      break;
+    }
     case 'refresh':
       if (!username) { console.error('Usage: review-nominations.js refresh <username>'); process.exit(1); }
       await approve(container, username, null, true);
@@ -242,6 +300,7 @@ async function main() {
   list                                Show pending/rejected nominations
   status <u>                          Show the full developer/nomination document
   approve <u> [reviewer]              Approve and make public (same document)
+  import <u> [reviewer] [--apply]     Import a verified public GitHub profile (dry run by default)
   refresh <u>                         Re-fetch details without changing visibility status
   reject <u> [reviewer] [reason]      Reject (same document, excluded from public reads)`);
       process.exit(cmd ? 1 : 0);
