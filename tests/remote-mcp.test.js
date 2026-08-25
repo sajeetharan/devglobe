@@ -105,11 +105,37 @@ test('remote MCP performs anonymous public developer discovery', async () => {
   assert.equal(response.result.structuredContent.results[0].availableForAgents, true);
 });
 
+test('remote MCP uses the configured public API instead of fetching its own origin', async () => {
+  const requestedOrigins = [];
+  const fetchImpl = async url => {
+    const parsed = new URL(url);
+    requestedOrigins.push(parsed.origin);
+    return parsed.pathname === '/api/search'
+      ? Response.json({ results: [{ login: 'open-dev' }] })
+      : Response.json({ login: 'open-dev' });
+  };
+
+  await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0',
+    id: 9,
+    method: 'tools/call',
+    params: { name: 'search_developers', arguments: { query: 'React', limit: 1 } },
+  }), {
+    fetchImpl,
+    apiBaseUrl: 'https://devglobe-public-api.azurewebsites.net',
+  }));
+
+  assert.deepEqual(requestedOrigins, [
+    'https://devglobe-public-api.azurewebsites.net',
+    'https://devglobe-public-api.azurewebsites.net',
+  ]);
+});
+
 test('remote MCP forwards bearer credentials for introduction tools', async () => {
   let authorization;
   let requestBody;
   const fetchImpl = async (url, options) => {
-    assert.equal(new URL(url).pathname, '/api/agent/introductions');
+    assert.equal(new URL(url).href, 'http://localhost:3000/api/agent/introductions');
     authorization = options.headers.Authorization;
     requestBody = JSON.parse(options.body);
     return Response.json({ request: { id: 'request-id', status: 'pending' } }, { status: 201 });
@@ -126,7 +152,10 @@ test('remote MCP forwards bearer credentials for introduction tools', async () =
         project: 'Example UI',
       },
     },
-  }, { Authorization: 'Bearer issued-agent-token' }), { fetchImpl }));
+  }, { Authorization: 'Bearer issued-agent-token' }), {
+    fetchImpl,
+    apiBaseUrl: 'https://devglobe-public-api.azurewebsites.net',
+  }));
   assert.equal(response.result.isError, undefined);
   assert.equal(authorization, 'Bearer issued-agent-token');
   assert.equal(requestBody.developerLogin, 'open-dev');
