@@ -27,6 +27,12 @@ export function GET() {
       publicTools: ['search_developers', 'get_developer_profile'],
       protectedTools: ['request_introduction', 'get_introduction_status'],
       scheme: 'bearer',
+      scopes: {
+        developersRead: 'developers:read',
+        introductionsRead: 'introductions:read',
+        introductionsWrite: 'introductions:write',
+      },
+      protectedResourceMetadata: `${siteUrl}/.well-known/oauth-protected-resource`,
       documentation: `${siteUrl}/docs/mcp-server`,
     },
     discovery: {

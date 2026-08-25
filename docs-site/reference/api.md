@@ -39,6 +39,7 @@ Use an MCP SDK rather than constructing protocol payloads by hand. See the [MCP 
 - Treat `404` as an unknown or unindexed profile.
 - Back off on `429` and do not fan out profile requests unnecessarily.
 - Expect optional metrics and source freshness timestamps.
+- MCP tool errors (including `429` on `request_introduction`) use a structured `{ error: { code, message, retryable, retryAfterSeconds } }` envelope. See [error codes and retry guidance](../agents/mcp#errors-and-retry-guidance) before implementing retry logic.
 
 ## Privacy boundary
 

@@ -8,5 +8,8 @@ temp-query.js
 .env*
 !.env.example
 docs
+!docs/
+docs/*
+!docs/mcp-server.md
 docs-site
 tests

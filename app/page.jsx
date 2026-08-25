@@ -60,6 +60,8 @@ export default function Home() {
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
   const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
+  const [trending, setTrending] = useState(null);
+  const [trendingError, setTrendingError] = useState('');
   const [tourStep, setTourStep] = useState(null);
   const [tourMatch, setTourMatch] = useState(null);
   const globeRef = useRef(null);
@@ -516,6 +518,68 @@ export default function Home() {
     }
   }, []);
 
+  // Opens a developer's panel by login, resolving the full record from the
+  // loaded dataset first and falling back to a fetch (used by the Trending
+  // panel, which only has a lightweight per-developer projection).
+  const handleSelectDevByLogin = useCallback((login) => {
+    const existing = developers.find(candidate => candidate.login?.toLowerCase() === login.toLowerCase());
+    if (existing) {
+      handleSelectDev(existing);
+      return;
+    }
+    fetch(`/api/developer?id=${encodeURIComponent(login)}`, { cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) return;
+        const developer = await response.json();
+        if (developer?.login) handleSelectDev(developer);
+      })
+      .catch(() => {});
+  }, [developers, handleSelectDev]);
+
+  // Deep link support: /?dev=login opens that developer's panel and flies
+  // the globe to their location on load (see share page's "Explore" link).
+  const deepLinkHandledRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandledRef.current) return;
+    const login = new URLSearchParams(window.location.search).get('dev')?.trim();
+    if (!login || !/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(login)) return;
+
+    const existing = developers.find(candidate => candidate.login?.toLowerCase() === login.toLowerCase());
+    if (existing) {
+      deepLinkHandledRef.current = true;
+      handleSelectDev(existing);
+      track('shared_profile_link_opened', { login: existing.login });
+      return;
+    }
+
+    if (!developers.length) return; // wait for the initial batch before falling back to a fetch
+    deepLinkHandledRef.current = true;
+    fetch(`/api/developer?id=${encodeURIComponent(login)}`, { cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) return;
+        const developer = await response.json();
+        if (developer?.login) {
+          handleSelectDev(developer);
+          track('shared_profile_link_opened', { login: developer.login });
+        }
+      })
+      .catch(() => {});
+  }, [developers, handleSelectDev]);
+
+  // Trending (#24): fetched once and shared between the sidebar panel and
+  // the globe's highlight rings, so both stay in sync off a single request.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/trending')
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to load trending developers');
+        if (!cancelled) setTrending(data);
+      })
+      .catch(err => { if (!cancelled) setTrendingError(err.message); });
+    return () => { cancelled = true; };
+  }, []);
+
   const handleOpenSimilar = useCallback((login) => {
     const url = new URL(window.location.href);
     url.searchParams.set('similar', login);
@@ -572,6 +636,18 @@ export default function Home() {
     }
   }, []);
 
+  // Deep link support: /?country=Name (e.g. linked from /countries, #3)
+  // selects that country the same way choosing it from the sidebar filter
+  // does. Runs once; doesn't fight the user if they clear the filter after.
+  const countryDeepLinkHandledRef = useRef(false);
+  useEffect(() => {
+    if (countryDeepLinkHandledRef.current) return;
+    const country = new URLSearchParams(window.location.search).get('country')?.trim();
+    if (!country) return;
+    countryDeepLinkHandledRef.current = true;
+    handleSelectCountry(country);
+  }, [handleSelectCountry]);
+
   const handleClearCountry = useCallback(() => {
     setSelectedCountry('');
   }, []);
@@ -579,6 +655,11 @@ export default function Home() {
   const handleCloseDetail = useCallback(() => {
     setCardContext(null);
     setSelectedDev(null);
+    if (new URLSearchParams(window.location.search).has('dev')) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('dev');
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
   }, []);
 
   const handleToggleCompare = useCallback((dev) => {
@@ -632,6 +713,31 @@ export default function Home() {
 
   return (
     <div id="app" className={tourStep ? 'tour-active' : ''} aria-busy={loading}>
+      <section className="agent-readable-summary" aria-labelledby="devglobe-summary-title">
+        <h1 id="devglobe-summary-title">DevGlobe developer discovery for humans and AI agents</h1>
+        <p>
+          DevGlobe is a global directory of more than 26,000 public open-source developer profiles.
+          Search by name, GitHub username, location, programming language, contribution history, or
+          agent availability. Profiles combine public GitHub and Stack Overflow signals into
+          transparent rankings, language expertise, project activity, and consent-based collaboration
+          preferences. Private contact details are never exposed through public search.
+        </p>
+        <p>
+          Humans can explore the interactive globe, compare developers, review country statistics,
+          discover contribution opportunities, and create shareable developer identity cards. AI
+          agents can use the public API or stateless MCP endpoint to search profiles and inspect public
+          expertise. Introduction requests require a scoped DevGlobe bearer credential and remain
+          consent-gated: the developer decides whether to accept before any contact can proceed.
+        </p>
+        <nav aria-label="Agent and developer resources">
+          <a href="/agents">Agent setup</a>
+          <a href="/docs/mcp-server">MCP documentation</a>
+          <a href="/openapi.json">OpenAPI description</a>
+          <a href="/.well-known/api-catalog">API catalog</a>
+          <a href="/llms.txt">Agent guide</a>
+          <a href="/sitemap.xml">Sitemap</a>
+        </nav>
+      </section>
       {loading && <LoadingOverlay datasetCount={datasetCount} stage={loadingStage} />}
       <Header
         onHome={handleHome}
@@ -702,6 +808,7 @@ export default function Home() {
           onClearCountry={handleClearCountry}
           agentNetworkVisible={agentGlobeLayerVisible}
           tooltipDisabled={Boolean(selectedDev || compareDevs.length === 2)}
+          trendingLogins={trending?.gainers?.slice(0, 10).map(entry => entry.login) || []}
         />
         <Leaderboard
           developers={filtered}
@@ -719,6 +826,9 @@ export default function Home() {
           onViewChange={setSidebarView}
           agentGlobeLayerVisible={agentGlobeLayerVisible}
           onToggleAgentGlobeLayer={setAgentGlobeLayerVisible}
+          trending={trending}
+          trendingError={trendingError}
+          onSelectDevByLogin={handleSelectDevByLogin}
         />
         {sidebarOpen && (
           <div className="sidebar-backdrop" onClick={handleCloseSidebar} />
