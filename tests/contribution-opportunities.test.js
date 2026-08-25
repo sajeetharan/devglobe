@@ -10,7 +10,7 @@ import {
   ContributionOpportunitiesUnavailableError,
   fetchGitHubContributionCandidates,
 } from '../lib/github-contribution-opportunities.js';
-import { reserveGlobalRecommendationRefresh } from '../lib/contribution-opportunity-store.js';
+import { acquireDailyMissionLease, reserveGlobalRecommendationRefresh } from '../lib/contribution-opportunity-store.js';
 
 const now = new Date('2026-08-21T12:00:00.000Z');
 
@@ -183,4 +183,30 @@ test('reports unavailable discovery when repository verification is rate limited
     fetchGitHubContributionCandidates({ languages: ['javascript'], difficulty: 'beginner' }, { fetchImpl, token: 'token', now }),
     ContributionOpportunitiesUnavailableError
   );
+});
+
+test('allows only one daily mission generator until its lease expires', async () => {
+  let resource = null;
+  const container = {
+    item: () => ({
+      read: async () => {
+        if (!resource) throw Object.assign(new Error('missing'), { code: 404 });
+        return { resource };
+      },
+      replace: async (next, options) => {
+        if (options.accessCondition.condition !== resource._etag) throw Object.assign(new Error('conflict'), { code: 412 });
+        resource = { ...next, _etag: 'v2' };
+      },
+    }),
+    items: {
+      create: async next => {
+        if (resource) throw Object.assign(new Error('conflict'), { code: 409 });
+        resource = { ...next, _etag: 'v1' };
+      },
+    },
+  };
+
+  assert.equal(await acquireDailyMissionLease(container, 'OctoCat', '2026-08-21', now), true);
+  assert.equal(await acquireDailyMissionLease(container, 'OctoCat', '2026-08-21', now), false);
+  assert.equal(await acquireDailyMissionLease(container, 'OctoCat', '2026-08-21', new Date(now.getTime() + 31000)), true);
 });

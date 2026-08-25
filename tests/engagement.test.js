@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   EngagementValidationError,
+  aggregateDailyMissionMetrics,
   aggregateProfileInsights,
   createEngagementEvent,
   isAutomatedUserAgent,
@@ -23,6 +24,19 @@ test('allows only documented engagement properties and never stores search text'
     properties: { source: 'search' },
   });
   assert.throws(() => normalizeEngagementEvent({ eventName: 'unknown' }), EngagementValidationError);
+});
+
+test('accepts privacy-safe daily mission funnel events without a target profile', () => {
+  for (const eventName of ['mission_viewed', 'mission_accepted', 'mission_passed', 'mission_completed', 'mission_unavailable', 'mission_exhausted']) {
+    assert.deepEqual(normalizeEngagementEvent({
+      eventName,
+      properties: { journey: 'daily_mission', issueTitle: 'private issue text' },
+    }), {
+      eventName,
+      targetLogin: null,
+      properties: { journey: 'daily_mission' },
+    });
+  }
 });
 
 test('deduplicates rerenders inside a session window without storing raw sessions', () => {
@@ -109,4 +123,62 @@ test('authorizes only the signed-in owner of a claimed profile', () => {
   assert.equal(isVerifiedProfileOwner({ login: 'someone-else' }, { login: 'octocat', claimed: true }), false);
   assert.equal(isVerifiedProfileOwner({ login: 'octocat' }, { login: 'octocat', claimed: false }), false);
   assert.equal(isVerifiedProfileOwner(null, { login: 'octocat', claimed: true }), false);
+});
+
+test('aggregates mission conversion and seven-day returning sessions', () => {
+  const event = (eventName, createdAt, sessionHash) => ({ eventName, createdAt, sessionHash });
+  const metrics = aggregateDailyMissionMetrics([
+    event('mission_viewed', '2026-08-18T12:00:00.000Z', 'returning'),
+    event('mission_accepted', '2026-08-18T12:01:00.000Z', 'returning'),
+    event('mission_viewed', '2026-08-20T12:00:00.000Z', 'returning'),
+    event('mission_completed', '2026-08-20T12:10:00.000Z', 'returning'),
+    event('mission_viewed', '2026-08-21T12:00:00.000Z', 'passing'),
+    event('mission_passed', '2026-08-21T12:01:00.000Z', 'passing'),
+    event('mission_unavailable', '2026-08-21T13:00:00.000Z', 'unavailable'),
+    event('mission_exhausted', '2026-08-21T14:00:00.000Z', 'exhausted'),
+    event('mission_viewed', '2026-08-10T12:00:00.000Z', 'outside-window'),
+  ], { now: new Date('2026-08-22T00:00:00.000Z'), threshold: 1 });
+
+  assert.deepEqual(metrics, {
+    days: 7,
+    privacyThreshold: 1,
+    suppressed: false,
+    uniqueViewers: 2,
+    uniqueAcceptors: 1,
+    uniquePassers: 1,
+    uniqueCompleters: 1,
+    acceptanceRate: 0.5,
+    passRate: 0.5,
+    completionRate: 1,
+    availabilityRate: 0.75,
+    exhaustedPoolRate: 0.25,
+    returningSessions: 1,
+    returningUserRate: 0.5,
+  });
+});
+
+test('suppresses low-volume mission reporting cohorts', () => {
+  const metrics = aggregateDailyMissionMetrics([
+    { eventName: 'mission_viewed', createdAt: '2026-08-21T12:00:00.000Z', sessionHash: 'only-session' },
+  ], { now: new Date('2026-08-22T00:00:00.000Z') });
+
+  assert.equal(metrics.suppressed, true);
+  assert.equal(metrics.uniqueViewers, null);
+  assert.equal(metrics.returningUserRate, null);
+});
+
+test('suppresses each low-volume mission metric and counts recovered availability', () => {
+  const event = (eventName, sessionHash) => ({ eventName, sessionHash, createdAt: '2026-08-21T12:00:00.000Z' });
+  const metrics = aggregateDailyMissionMetrics([
+    event('mission_unavailable', 'recovered'),
+    event('mission_viewed', 'recovered'),
+    event('mission_viewed', 'viewer-2'),
+    event('mission_viewed', 'viewer-3'),
+    event('mission_accepted', 'recovered'),
+  ], { now: new Date('2026-08-22T00:00:00.000Z') });
+
+  assert.equal(metrics.uniqueViewers, 3);
+  assert.equal(metrics.uniqueAcceptors, null);
+  assert.equal(metrics.acceptanceRate, null);
+  assert.equal(metrics.availabilityRate, 1);
 });
