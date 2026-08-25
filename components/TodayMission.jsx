@@ -83,6 +83,10 @@ export default function TodayMission({ active }) {
       });
       const data = await response.json();
       if (requestVersion !== requestVersionRef.current) return;
+      if (response.status === 422) {
+        setMessage(data.error || 'GitHub does not show a completed contribution for this mission yet.');
+        return;
+      }
       if (response.status === 409) {
         await load();
         throw new Error(data.error);
@@ -136,7 +140,7 @@ export default function TodayMission({ active }) {
         <div className="today-mission__content">
           <div className="today-mission__meta">
             <span>{mission.type}</span>
-            <span className={`today-mission__status today-mission__status--${mission.status}`} aria-live="polite">{updating ? 'updating' : mission.status}</span>
+            <span className={`today-mission__status today-mission__status--${mission.status}`} aria-live="polite">{updating ? 'checking' : mission.status}</span>
           </div>
           <h3>{mission.opportunity.title}</h3>
           <p>{mission.opportunity.repository}{mission.opportunity.language ? ` · ${mission.opportunity.language}` : ''}</p>
@@ -147,9 +151,10 @@ export default function TodayMission({ active }) {
           )}
           <div className="today-mission__actions">
             {mission.status === 'offered' && <button type="button" className="today-mission__primary" onClick={() => update('accept')} disabled={updating}>Accept</button>}
-            {mission.status === 'accepted' && <button type="button" className="today-mission__primary" onClick={() => update('complete')} disabled={updating}>Complete</button>}
+            {mission.status === 'accepted' && <button type="button" className="today-mission__primary" onClick={() => update('complete')} disabled={updating}>Verify completion</button>}
             {['offered', 'accepted'].includes(mission.status) && <button type="button" onClick={() => update('pass')} disabled={updating}>Pass</button>}
             <a href={mission.opportunity.url} target="_blank" rel="noopener noreferrer" onClick={() => track('next_action_selected', { action: 'open_daily_mission', journey: 'daily_mission' })}>Open issue</a>
+            {mission.status === 'completed' && mission.completionEvidence?.url && <a href={mission.completionEvidence.url} target="_blank" rel="noopener noreferrer">View merged PR</a>}
           </div>
           {message && <p className="today-mission__error" role="alert">{message}</p>}
         </div>
