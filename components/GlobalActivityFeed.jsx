@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import TodayMission from './TodayMission.jsx';
 import { useGlobalActivityFeed } from './useGlobalActivityFeed.js';
 
 const ACTIVITY_SOURCES = [
@@ -49,6 +50,7 @@ export default function GlobalActivityFeed({ active }) {
 
   return (
     <div className="global-activity">
+      <TodayMission active={active} />
       <div className="global-activity__sources" role="tablist" aria-label="Activity source">
         {ACTIVITY_SOURCES.map(source => (
           <button
