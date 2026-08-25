@@ -11,13 +11,13 @@
 
 An activity feed can explain what happened, but it does not give a developer a reason to act today or return tomorrow. Open-source discovery also asks users to evaluate too many issues before they can contribute.
 
-DevGlobe needs a small, repeatable daily loop that turns known skills into one bounded action without claiming to reserve GitHub work or verify contribution quality.
+DevGlobe needs a small, repeatable daily loop that turns known skills into one bounded action without claiming to reserve GitHub work or judge contribution quality.
 
 ## Product decision
 
 Add **Today’s Mission** above the existing activity feed. Each UTC day, a claimed developer receives one 15-minute, contribution-ready GitHub issue matched with the existing language, interest, difficulty, safety, and contribution-guide rules.
 
-The developer can accept, pass, open, and complete the mission. Completion is a personal workflow signal, not proof that a pull request was opened, merged, or accepted upstream.
+The developer can accept, pass, open, and verify completion of the mission. Completion requires a merged pull request authored by the signed-in GitHub login, linked from the mission issue, and merged after mission acceptance.
 
 ## Goals
 
@@ -30,7 +30,7 @@ The developer can accept, pass, open, and complete the mission. Completion is a 
 ## Non-goals
 
 - Reserving or assigning GitHub issues.
-- Verifying pull requests, reviews, merges, or contribution quality.
+- Judging contribution quality beyond GitHub's merged state.
 - Changing the DevGlobe score or awarding contribution points.
 - Direct developer-to-developer handoff in the MVP.
 - Drawing relay arcs on the globe in the MVP.
@@ -50,8 +50,9 @@ Signed-out visitors see a GitHub sign-in action. Signed-in developers without a 
 3. The mission shows a 15-minute scope, repository, match reasons, and canonical GitHub issue link.
 4. The developer chooses **Accept** or **Pass**.
 5. Pass selects the next item from the already-fetched daily pool and does not consume another GitHub request.
-6. After accepting, the developer can open the issue and mark the mission **Complete**.
-7. The completed state remains visible for the rest of the UTC day. A new mission can be assigned the following day.
+6. After accepting, the developer can open the issue and choose **Verify completion**.
+7. DevGlobe checks public GitHub issue timeline and pull-request data. An issue being closed alone is not completion evidence.
+8. The completed state and merged pull-request link remain visible for the rest of the UTC day. A new mission can be assigned the following day.
 
 ## Functional requirements
 
@@ -83,7 +84,7 @@ Pull-request review and technical-question missions remain future source integra
 - `accepted -> completed`
 - `accepted -> passed`
 
-Completed, passed, stale, and invalid transitions are rejected. A client cannot complete a mission before accepting it.
+Completed, passed, stale, and invalid transitions are rejected. A client cannot complete a mission before accepting it, and the server cannot complete it without current GitHub evidence.
 
 ### Experience
 
@@ -91,7 +92,8 @@ Completed, passed, stale, and invalid transitions are rejected. A client cannot 
 - Keep every action keyboard accessible with a minimum 44px target.
 - Show loading, signed-out, claim-required, unavailable, exhausted, offered, accepted, completed, and mutation-error states.
 - Open only the canonical GitHub URL in a new tab.
-- Do not imply that accepting reserves an issue or that completing verifies upstream work.
+- Do not imply that accepting reserves an issue or that a closed issue proves the developer completed it.
+- Show a retryable error when GitHub verification is unavailable and actionable feedback when no qualifying merged pull request exists.
 
 ## API contract
 
@@ -103,19 +105,19 @@ The response is private and non-cacheable.
 
 ### `POST /api/daily-mission`
 
-Requires same-origin JSON and a signed-in claimed profile. Body: `{ action: "accept" | "pass" | "complete", missionId: "<displayed mission id>" }`. The mission ID binds the action to the mission the developer saw and prevents concurrent tabs from changing a replacement mission. Returns the resulting mission or the next offered mission after a pass.
+Requires same-origin JSON and a signed-in claimed profile. Body: `{ action: "accept" | "pass" | "complete", missionId: "<displayed mission id>" }`. The mission ID binds the action to the mission the developer saw and prevents concurrent tabs from changing a replacement mission. A complete action verifies GitHub before mutation, returns `422` when evidence is absent, and returns `503` when verification is unavailable. Returns the resulting mission or the next offered mission after a pass.
 
 ## Data model
 
 Mission state lives in the claimed developer’s existing `contributionOpportunity` object:
 
-- `dailyMission`: UTC day, issue ID, category, duration, status, timestamps, and bounded public opportunity summary.
+- `dailyMission`: UTC day, issue ID, category, duration, status, timestamps, bounded public opportunity summary, and bounded merged pull-request evidence after verification.
 - `dailyMissionPool`: UTC day and up to eight ranked public opportunity summaries.
 - `dailyMissionHistory`: UTC day and up to eight passed issue IDs.
 
 The assignment ID is deterministic: `<login>:<UTC-day>:<issue-id>`. Updates use the existing developer document’s optimistic concurrency token.
 
-No issue body, comment, email, OAuth credential, private repository detail, or raw browser identity is stored.
+Completion evidence stores only the public pull-request URL, number, merged timestamp, evidence type, and verification timestamp. No issue body, comment, email, OAuth credential, private repository detail, or raw browser identity is stored.
 
 ## Analytics and success metrics
 
@@ -148,6 +150,9 @@ The engagement domain exposes a rolling mission-funnel aggregator for acceptance
 - Maintain existing checks for public active repositories, open unlocked unassigned issues, freshness, meaningful titles, contribution guidance, and known promotional spam.
 - Treat issue labels and titles as untrusted public text and render them as text only.
 - Repository contribution guidance remains authoritative.
+- Use the server GitHub token for public timeline and pull-request reads; do not depend on or store a user OAuth token.
+- A closed issue, another author's pull request, an unmerged pull request, or work merged before acceptance must not complete a mission.
+- Treat GitHub authorization, rate-limit, and upstream failures as unavailable verification without changing mission state.
 
 ## Rollout
 
@@ -162,6 +167,8 @@ The engagement domain exposes a rolling mission-funnel aggregator for acceptance
 - One mission is selected for the UTC day with a deterministic ID and 15-minute duration.
 - Passed issue IDs are excluded from subsequent selection.
 - Accept and complete follow the legal lifecycle; complete-before-accept and stale-day actions fail.
+- Completion accepts only an issue-linked pull request authored by the signed-in login and merged after acceptance.
+- Closed issues, other authors, old or unmerged pull requests, malformed issue URLs, and GitHub failures do not complete a mission.
 - Signed-out and unclaimed users cannot read or mutate missions.
 - Cross-origin and non-JSON mutations fail.
 - Cached recommendation pools avoid new GitHub requests.

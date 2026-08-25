@@ -6,6 +6,7 @@ import { normalizeContributionPreferences, rankContributionOpportunities } from 
 import { ContributionOpportunitiesUnavailableError, fetchGitHubContributionCandidates } from '../../../lib/github-contribution-opportunities.js';
 import { acquireDailyMissionLease, getContributionOpportunityStateContainer, reserveGlobalRecommendationRefresh } from '../../../lib/contribution-opportunity-store.js';
 import { DailyMissionError, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../../../lib/daily-mission.js';
+import { MissionVerificationUnavailableError, verifyGitHubMissionCompletion } from '../../../lib/github-mission-verification.js';
 
 async function getOwner(container, login) {
   const { resources } = await container.items.query({
@@ -108,9 +109,28 @@ export async function POST(request) {
     const { action, missionId } = await request.json();
     const now = new Date();
     const day = missionDay(now);
+    let completionEvidence;
+    if (action === 'complete') {
+      applyMissionAction(owner.developer.contributionOpportunity?.dailyMission, action, now, missionId);
+      const verification = await verifyGitHubMissionCompletion(
+        owner.developer.contributionOpportunity.dailyMission,
+        owner.developer.login,
+        { token: process.env.GITHUB_TOKEN },
+      );
+      if (!verification.completed) {
+        return NextResponse.json(
+          { error: verification.reason, verification },
+          { status: 422, headers: { 'Cache-Control': 'private, no-store' } },
+        );
+      }
+      completionEvidence = verification.evidence;
+    }
     let responseMission;
     const updated = await patchMissionState(owner.container, owner.developer, current => {
-      const changed = applyMissionAction(current.dailyMission, action, now, missionId);
+      const changedMission = applyMissionAction(current.dailyMission, action, now, missionId);
+      const changed = completionEvidence
+        ? { ...changedMission, completionEvidence: { ...completionEvidence, verifiedAt: now.toISOString() } }
+        : changedMission;
       const issueIds = current.dailyMissionHistory?.day === day ? current.dailyMissionHistory.issueIds : [];
       const history = action === 'pass'
         ? { day, issueIds: [...new Set([...issueIds, changed.issueId])].slice(-8) }
@@ -126,6 +146,9 @@ export async function POST(request) {
     });
     return missionResponse(updated.dailyMission);
   } catch (error) {
+    if (error instanceof MissionVerificationUnavailableError) {
+      return NextResponse.json({ error: error.message }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } });
+    }
     if (error instanceof DailyMissionError || error instanceof SyntaxError) {
       const status = error instanceof DailyMissionError && error.message !== 'Unsupported mission action' ? 409 : 400;
       return NextResponse.json({ error: error.message || 'Invalid mission action' }, { status });
