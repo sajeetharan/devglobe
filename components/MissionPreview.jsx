@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { track } from '../lib/analytics.js';
 
 export default function MissionPreview({ signedIn = false, onOpenActivity }) {
+  const [visible, setVisible] = useState(true);
   const [login, setLogin] = useState('');
   const [status, setStatus] = useState('idle');
   const [result, setResult] = useState(null);
@@ -36,8 +37,21 @@ export default function MissionPreview({ signedIn = false, onOpenActivity }) {
     track('mission_preview_signin_selected', { journey: 'mission_preview' });
   }
 
+  if (!visible) return null;
+
   return (
     <section className="mission-preview" aria-labelledby="mission-preview-title">
+      <button
+        type="button"
+        className="mission-preview__close"
+        onClick={() => setVisible(false)}
+        aria-label="Close mission preview"
+        title="Close mission preview"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
       <div className="mission-preview__intro">
         <span>NEW TO OPEN SOURCE?</span>
         <h2 id="mission-preview-title">Preview your mission</h2>
