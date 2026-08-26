@@ -2115,6 +2115,78 @@ body {
 
 .today-mission__error { color: #fca5a5 !important; }
 
+.today-mission__history {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.today-mission__history-heading,
+.today-mission__history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.today-mission__history-heading h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 11px;
+}
+
+.today-mission__history-heading span {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.today-mission__history ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.today-mission__history li {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--overlay-subtle);
+}
+
+.today-mission__history li > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.today-mission__history a {
+  color: var(--mission-link);
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.today-mission__history li > div > a {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-mission__history li span {
+  overflow-wrap: anywhere;
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.today-mission__history a:hover { text-decoration: underline; }
+.today-mission__history a:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
 .global-activity {
   display: flex;
   min-height: 0;
