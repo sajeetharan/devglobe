@@ -620,6 +620,17 @@ body {
   box-shadow: var(--shadow-strong);
 }
 
+.search-bar__error {
+  width: min(100%, 520px);
+  padding: 8px 10px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  background: rgba(127, 29, 29, 0.9);
+  color: #fecaca;
+  font-size: 11px;
+  box-shadow: var(--shadow-strong);
+}
+
 .search-bar__results {
   font-size: 11px;
   color: var(--text-muted);
