@@ -34,6 +34,8 @@ export default function Leaderboard({
   trending,
   trendingError,
   onSelectDevByLogin,
+  totalDeveloperCount,
+  datasetLoading = false,
 }) {
   const listRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -199,8 +201,10 @@ export default function Leaderboard({
             </button>
           )}
         </div>
-        <div className="sidebar__count">
-          {filtered.length} developer{filtered.length !== 1 ? 's' : ''}
+        <div className="sidebar__count" aria-live="polite">
+          {datasetLoading && totalDeveloperCount > filtered.length
+            ? `${formatNum(filtered.length)} of ${formatNum(totalDeveloperCount)} developers loaded`
+            : `${formatNum(filtered.length)} developer${filtered.length !== 1 ? 's' : ''}`}
         </div>
         <div className={`sidebar__compare-control${compareLogins.length ? ' sidebar__compare-control--active' : ''}`}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

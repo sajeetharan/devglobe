@@ -629,6 +629,22 @@ body {
   color: #fecaca;
   font-size: 11px;
   box-shadow: var(--shadow-strong);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.search-bar__error button {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid rgba(254, 202, 202, 0.55);
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
 }
 
 .search-bar__results {
