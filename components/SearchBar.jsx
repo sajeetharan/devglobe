@@ -5,6 +5,7 @@ import SpecialTags from './SpecialTags.jsx';
 import { trackSearchAppearances } from '../lib/analytics.js';
 import { countryKey } from '../lib/country.js';
 import { publicApiUrl } from '../lib/public-api.js';
+import MissionPreview from './MissionPreview.jsx';
 
 const SAMPLES_BY_MODE = {
   text: [
@@ -27,7 +28,7 @@ const SAMPLES_BY_MODE = {
   ],
 };
 
-export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0 }) {
+export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, onOpenActivity, showMissionPreview = true }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('text');
   const [topN, setTopN] = useState(20);
@@ -315,6 +316,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           </button>
         ))}
       </div>
+      {showMissionPreview && <MissionPreview signedIn={signedIn} onOpenActivity={onOpenActivity} />}
     </div>
   );
 }

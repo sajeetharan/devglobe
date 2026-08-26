@@ -7,6 +7,7 @@ import {
   CONTRIBUTION_DIFFICULTIES,
   CONTRIBUTION_INTERESTS,
   CONTRIBUTION_LANGUAGES,
+  CONTRIBUTION_TIME_BUDGETS,
   ContributionPreferenceError,
   normalizeContributionPreferences,
   rankContributionOpportunities,
@@ -37,6 +38,7 @@ function options() {
     interests: CONTRIBUTION_INTERESTS,
     difficulties: CONTRIBUTION_DIFFICULTIES,
     languages: CONTRIBUTION_LANGUAGES,
+    timeBudgets: CONTRIBUTION_TIME_BUDGETS,
   };
 }
 

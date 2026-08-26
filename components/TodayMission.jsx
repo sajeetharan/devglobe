@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { track } from '../lib/analytics.js';
 
-export default function TodayMission({ active }) {
+export default function TodayMission({ active, onOpenContributions }) {
   const [mission, setMission] = useState(null);
   const [completedMissions, setCompletedMissions] = useState([]);
   const [status, setStatus] = useState('loading');
@@ -113,7 +113,10 @@ export default function TodayMission({ active }) {
           <span>FOLLOW THE SUN</span>
           <h2 id="today-mission-title">Today’s Mission</h2>
         </div>
-        <strong>15 min</strong>
+        <div className="today-mission__heading-actions">
+          <strong>{mission?.durationMinutes || 15} min</strong>
+          {onOpenContributions && !['signed-out', 'claim-required'].includes(status) && <button type="button" onClick={onOpenContributions}>Tune mission</button>}
+        </div>
       </div>
 
       {status === 'loading' && <p className="today-mission__state" role="status">Matching one small mission to your skills...</p>}

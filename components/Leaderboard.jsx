@@ -36,6 +36,7 @@ export default function Leaderboard({
   onSelectDevByLogin,
   totalDeveloperCount,
   datasetLoading = false,
+  onOpenContributions,
 }) {
   const listRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -335,7 +336,7 @@ export default function Leaderboard({
       </ul>
         </>
       )}
-      {activeView === 'activity' && <GlobalActivityFeed active />}
+      {activeView === 'activity' && <GlobalActivityFeed active onOpenContributions={onOpenContributions} />}
       {activeView === 'agents' && (
         <AgentNetworkPanel
           globeLayerVisible={agentGlobeLayerVisible}

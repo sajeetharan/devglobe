@@ -796,6 +796,9 @@ export default function Home() {
         readmeTooltip="Preview a generated GitHub profile README"
         onOpenCompareFeature={handleOpenCompareFeature}
         compareCount={compareDevs.length}
+        signedIn={Boolean(user)}
+        onOpenActivity={handleOpenActivity}
+        showMissionPreview={!tourStep}
       />
       <QuickTour
         step={tourStep}
@@ -853,6 +856,7 @@ export default function Home() {
           onSelectDevByLogin={handleSelectDevByLogin}
           totalDeveloperCount={datasetCount}
           datasetLoading={datasetLoading && !searchActive}
+          onOpenContributions={() => setShowContributions(true)}
         />
         {sidebarOpen && (
           <div className="sidebar-backdrop" onClick={handleCloseSidebar} />
