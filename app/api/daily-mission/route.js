@@ -7,6 +7,8 @@ import { ContributionOpportunitiesUnavailableError, fetchGitHubContributionCandi
 import { acquireDailyMissionLease, getContributionOpportunityStateContainer, reserveGlobalRecommendationRefresh } from '../../../lib/contribution-opportunity-store.js';
 import { DailyMissionError, addCompletedMission, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../../../lib/daily-mission.js';
 import { MissionVerificationUnavailableError, verifyGitHubMissionCompletion } from '../../../lib/github-mission-verification.js';
+import { saveActivities } from '../../../lib/activity-store.js';
+import { createPlatformActivity } from '../../../lib/platform-activity.js';
 
 async function getOwner(container, login) {
   const { resources } = await container.items.query({
@@ -61,6 +63,21 @@ function completedMissions(state) {
   return Array.isArray(state?.completedMissions) ? state.completedMissions : [];
 }
 
+async function recordMissionAcceptanceActivity(developer, mission) {
+  if (mission?.status !== 'accepted' || !mission.acceptedAt) return;
+  try {
+    await saveActivities([createPlatformActivity({
+      id: `platform:mission-accepted:${mission.id}`,
+      type: 'mission_accepted',
+      login: developer.login,
+      avatarUrl: developer.avatarUrl,
+      now: new Date(mission.acceptedAt),
+    })]);
+  } catch (error) {
+    console.error('Mission acceptance activity write failed:', error.message);
+  }
+}
+
 export async function GET() {
   try {
     const owner = await loadOwner();
@@ -69,6 +86,7 @@ export async function GET() {
     const day = missionDay(now);
     const state = owner.developer.contributionOpportunity || {};
     if (state.dailyMission?.day === day && state.dailyMission.status !== 'passed') {
+      await recordMissionAcceptanceActivity(owner.developer, state.dailyMission);
       return missionResponse(state.dailyMission, { completedMissions: completedMissions(state) });
     }
 
@@ -155,6 +173,7 @@ export async function POST(request) {
           : completedMissions(current),
       };
     });
+    if (action === 'accept') await recordMissionAcceptanceActivity(owner.developer, updated.dailyMission);
     return missionResponse(updated.dailyMission, { completedMissions: completedMissions(updated) });
   } catch (error) {
     if (error instanceof MissionVerificationUnavailableError) {

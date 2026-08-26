@@ -88,6 +88,24 @@ test('creates platform README activity for the actor and target', () => {
   assert.equal(activity.documentType, 'platform-activity');
 });
 
+test('creates privacy-safe mission acceptance activity', () => {
+  const activity = createPlatformActivity({
+    id: 'platform:mission-accepted:octocat:2026-08-13:101',
+    type: 'mission_accepted',
+    login: 'octocat',
+    avatarUrl: 'https://example.test/octocat.png',
+    now: new Date('2026-08-13T12:00:00Z'),
+  });
+
+  assert.equal(activity.id, 'platform:mission-accepted:octocat:2026-08-13:101');
+  assert.equal(activity.login, 'octocat');
+  assert.equal(activity.avatarUrl, 'https://example.test/octocat.png');
+  assert.equal(activity.description, 'accepted an open-source mission');
+  assert.equal(activity.url, '/developer/octocat');
+  assert.equal(activity.documentType, 'platform-activity');
+  assert.equal('repo' in activity && activity.repo !== null, false);
+});
+
 test('creates stable fallback activities within an hourly window', () => {
   const first = createFallbackActivities(Date.parse('2026-08-13T12:10:00Z'));
   const second = createFallbackActivities(Date.parse('2026-08-13T12:50:00Z'));
