@@ -678,6 +678,7 @@ body {
 }
 
 .mission-preview {
+  position: relative;
   display: grid;
   width: min(760px, calc(100vw - 32px));
   grid-template-columns: minmax(220px, 0.8fr) minmax(320px, 1.2fr);
@@ -690,6 +691,22 @@ body {
   box-shadow: var(--shadow-strong);
 }
 
+.mission-preview__close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 12px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.mission-preview__close:hover { color: var(--text-primary); }
+.mission-preview__close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 2; }
 .mission-preview__intro { display: grid; align-content: center; gap: 3px; }
 .mission-preview__intro > span { color: #4ade80; font-size: 9px; font-weight: 800; }
 .mission-preview__intro h2 { margin: 0; color: var(--text-primary); font-size: 15px; }
@@ -717,6 +734,13 @@ body {
   background: transparent;
   color: var(--text-primary);
   font: 12px var(--font);
+}
+.mission-preview__form input::selection { background: rgba(34, 211, 238, 0.24); color: var(--text-primary); }
+.mission-preview__form input:-webkit-autofill,
+.mission-preview__form input:-webkit-autofill:focus {
+  box-shadow: 0 0 0 1000px var(--bg-card) inset;
+  -webkit-text-fill-color: var(--text-primary);
+  caret-color: var(--text-primary);
 }
 .mission-preview__form button,
 .mission-preview__actions :is(a, button),
