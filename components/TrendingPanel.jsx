@@ -7,7 +7,7 @@ import { formatNum } from '../lib/format.js';
 // itself) so the same data can drive the globe's highlight rings too (#24).
 export default function TrendingPanel({ trending, error, onSelectLogin }) {
   if (error) return <div className="trending-panel__state">{error}</div>;
-  if (!trending) return <div className="trending-panel__state">Loading trending developers...</div>;
+  if (!trending) return <div className="trending-panel__state" role="status">Loading trends...</div>;
 
   const { gainers, newEntries, windowDays, hasHistory } = trending;
 
