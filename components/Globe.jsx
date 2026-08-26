@@ -59,7 +59,17 @@ const arcLabel = d => d.label;
 // Hexbin clustering (#30): above this camera altitude the globe is dense
 // enough (26k+ points) that individual points blur together, so we switch
 // to grouped hex clusters until the user zooms back in.
-const HEX_ZOOM_THRESHOLD = 1.8;
+//
+// Two fixes over the original single-threshold version:
+// 1. Hysteresis — separate enter/exit altitudes so hovering near the boundary
+//    doesn't flicker between points and hexagons every debounce tick.
+// 2. Adaptive resolution — a single fixed hex size looked fine zoomed all the
+//    way out but became a handful of giant, country-swallowing blobs at
+//    closer-but-still-clustered zoom levels. Resolution now scales with
+//    altitude so hexagons stay a reasonable, readable size throughout the
+//    whole clustered range.
+const HEX_ENTER_ALTITUDE = 1.8; // switch to hex bins above this altitude
+const HEX_EXIT_ALTITUDE = 1.5; // switch back to points below this altitude (lower than enter = hysteresis gap)
 const HEX_ZOOM_DEBOUNCE_MS = 150;
 const hexColorScale = d3.scaleSequentialSqrt(d3.interpolateYlOrRd).domain([0, 60]);
 const hexBinLat = d => d.lat;
@@ -68,6 +78,16 @@ const hexTopColor = bin => hexColorScale(bin.points.length);
 const hexSideColor = bin => hexColorScale(bin.points.length);
 const hexAltitude = bin => Math.min(0.35, 0.02 + Math.sqrt(bin.points.length) * 0.012);
 const hexLabel = bin => `${bin.points.length} developer${bin.points.length === 1 ? '' : 's'} in this area`;
+
+// Finer hexagons as the camera gets closer, coarser further out, so bins stay
+// a sensible size across the whole altitude range where clustering is active
+// instead of one fixed grain that's too coarse up close.
+function hexResolutionForAltitude(altitude) {
+  if (altitude == null) return 3;
+  if (altitude > 3.2) return 3; // whole-globe view — country-scale bins
+  if (altitude > 2.4) return 4;
+  return 5; // just above the exit threshold — city-scale bins
+}
 
 function createAvatarMarker(developer, onSelectDev, setAutoRotate) {
   const marker = document.createElement('div');
@@ -240,6 +260,11 @@ const Globe = forwardRef(function Globe({
   const [hoverDev, setHoverDev] = useState(null);
   const [pointLimit, setPointLimit] = useState(800);
   const [colorMode, setColorMode] = useState('score'); // 'score' | 'language'
+  // Collapsed by default on small screens so the globe isn't immediately
+  // covered by controls; desktop keeps the previous always-visible behavior.
+  const [controlsCollapsed, setControlsCollapsed] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 768
+  );
   const [languageFilter, setLanguageFilter] = useState('');
   const [cameraAltitude, setCameraAltitude] = useState(null);
   const isLight = theme === 'light';
@@ -518,6 +543,10 @@ const Globe = forwardRef(function Globe({
   // hex-bin clusters based on camera altitude, without re-binning on every
   // frame of a drag/zoom gesture.
   const zoomDebounceRef = useRef(null);
+  // Tracks which side of the hysteresis gap we're currently on; a plain ref
+  // (not state) since it only needs to influence the very next render's
+  // hexModeActive calculation, not trigger one itself.
+  const hexModeActiveRef = useRef(false);
   const handleZoom = useCallback(({ altitude }) => {
     if (zoomDebounceRef.current) clearTimeout(zoomDebounceRef.current);
     zoomDebounceRef.current = setTimeout(() => {
@@ -531,7 +560,12 @@ const Globe = forwardRef(function Globe({
 
   const hexModeActive = !agentNetworkVisible
     && cameraAltitude != null
-    && cameraAltitude > HEX_ZOOM_THRESHOLD;
+    && (hexModeActiveRef.current
+      ? cameraAltitude > HEX_EXIT_ALTITUDE  // already clustered: only drop out once well below the enter line
+      : cameraAltitude > HEX_ENTER_ALTITUDE); // not yet clustered: need to cross the higher enter line
+  hexModeActiveRef.current = hexModeActive;
+
+  const hexResolution = useMemo(() => hexResolutionForAltitude(cameraAltitude), [cameraAltitude]);
 
   // Fly to target
   useEffect(() => {
@@ -625,7 +659,7 @@ const Globe = forwardRef(function Globe({
   }, [onSelectDev]);
 
   // Click a hex cluster (#30) to zoom into that region, which drops the
-  // camera below HEX_ZOOM_THRESHOLD and dissolves the cluster back into
+  // camera below the hex exit altitude and dissolves the cluster back into
   // individual points on the next zoom tick.
   const handleHexClick = useCallback((bin) => {
     if (!bin?.points?.length || !globeEl.current) return;
@@ -764,7 +798,7 @@ const Globe = forwardRef(function Globe({
           hexBinPointsData={hexModeActive ? hexSourceDevs : []}
           hexBinPointLat={hexBinLat}
           hexBinPointLng={hexBinLng}
-          hexBinResolution={4}
+          hexBinResolution={hexResolution}
           hexMargin={0.2}
           hexTopColor={hexTopColor}
           hexSideColor={hexSideColor}
@@ -811,76 +845,91 @@ const Globe = forwardRef(function Globe({
           onPointClick={handleClick}
         />
       </div>
-      <div className="globe-legend">
-        {hexModeActive ? (
+      <div className={`globe-controls${controlsCollapsed ? ' globe-controls--collapsed' : ''}`}>
+        <button
+          type="button"
+          className="globe-controls__toggle"
+          onClick={() => setControlsCollapsed(v => !v)}
+          aria-expanded={!controlsCollapsed}
+          aria-label={controlsCollapsed ? 'Show map legend and controls' : 'Hide map legend and controls'}
+        >
+          {controlsCollapsed ? 'Map legend ▲' : 'Map legend ▼'}
+        </button>
+        {!controlsCollapsed && (
           <>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(2) }} />Few developers</span>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(60) }} />Many developers</span>
-            <span className="globe-legend__item">Zoom in or click a cluster to see individual developers</span>
+            {!agentNetworkVisible && !hexModeActive && (
+              <div className="globe-color-mode">
+                <div className="globe-color-mode__toggle" role="group" aria-label="Globe color mode">
+                  <button
+                    type="button"
+                    className={`globe-color-mode__btn${colorMode === 'score' ? ' globe-color-mode__btn--active' : ''}`}
+                    onClick={() => setColorMode('score')}
+                    aria-pressed={colorMode === 'score'}
+                  >
+                    Score
+                  </button>
+                  <button
+                    type="button"
+                    className={`globe-color-mode__btn${colorMode === 'language' ? ' globe-color-mode__btn--active' : ''}`}
+                    onClick={() => setColorMode('language')}
+                    aria-pressed={colorMode === 'language'}
+                  >
+                    Language
+                  </button>
+                </div>
+                {colorMode === 'language' && topLanguagesPresent.length > 0 && (
+                  <select
+                    className="globe-color-mode__filter"
+                    value={languageFilter}
+                    onChange={e => setLanguageFilter(e.target.value)}
+                    aria-label="Filter globe by language"
+                  >
+                    <option value="">All languages</option>
+                    {topLanguagesPresent.map(language => (
+                      <option key={language} value={language}>{language}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
+            <div className="globe-legend">
+              {hexModeActive ? (
+                <>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(2) }} />Few developers</span>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(60) }} />Many developers</span>
+                  <span className="globe-legend__item">Zoom in or click a cluster to see individual developers</span>
+                </>
+              ) : agentNetworkVisible ? (
+                <>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#22d3ee' }} />Open to verified agents</span>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#64748b', opacity: 0.35 }} />Developer context</span>
+                </>
+              ) : colorMode === 'language' ? (
+                topLanguagesPresent.length ? (
+                  topLanguagesPresent.slice(0, 8).map(language => (
+                    <span key={language} className="globe-legend__item">
+                      <span className="globe-legend__dot" style={{ background: getLanguageColor(language) }} />
+                      {language}
+                    </span>
+                  ))
+                ) : (
+                  <span className="globe-legend__item">No language data in view</span>
+                )
+              ) : (
+                <>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#fbbf24' }} />Elite (80+)</span>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#34d399' }} />Strong (60+)</span>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#3b82f6' }} />Solid (40+)</span>
+                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#6366f1' }} />Emerging</span>
+                </>
+              )}
+              {trendingRings.length > 0 && (
+                <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#fb7185' }} />🔥 Trending</span>
+              )}
+            </div>
           </>
-        ) : agentNetworkVisible ? (
-          <>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#22d3ee' }} />Open to verified agents</span>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#64748b', opacity: 0.35 }} />Developer context</span>
-          </>
-        ) : colorMode === 'language' ? (
-          topLanguagesPresent.length ? (
-            topLanguagesPresent.slice(0, 8).map(language => (
-              <span key={language} className="globe-legend__item">
-                <span className="globe-legend__dot" style={{ background: getLanguageColor(language) }} />
-                {language}
-              </span>
-            ))
-          ) : (
-            <span className="globe-legend__item">No language data in view</span>
-          )
-        ) : (
-          <>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#fbbf24' }} />Elite (80+)</span>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#34d399' }} />Strong (60+)</span>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#3b82f6' }} />Solid (40+)</span>
-            <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#6366f1' }} />Emerging</span>
-          </>
-        )}
-        {trendingRings.length > 0 && (
-          <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#fb7185' }} />🔥 Trending</span>
         )}
       </div>
-      {!agentNetworkVisible && !hexModeActive && (
-        <div className="globe-color-mode">
-          <div className="globe-color-mode__toggle" role="group" aria-label="Globe color mode">
-            <button
-              type="button"
-              className={`globe-color-mode__btn${colorMode === 'score' ? ' globe-color-mode__btn--active' : ''}`}
-              onClick={() => setColorMode('score')}
-              aria-pressed={colorMode === 'score'}
-            >
-              Score
-            </button>
-            <button
-              type="button"
-              className={`globe-color-mode__btn${colorMode === 'language' ? ' globe-color-mode__btn--active' : ''}`}
-              onClick={() => setColorMode('language')}
-              aria-pressed={colorMode === 'language'}
-            >
-              Language
-            </button>
-          </div>
-          {colorMode === 'language' && topLanguagesPresent.length > 0 && (
-            <select
-              className="globe-color-mode__filter"
-              value={languageFilter}
-              onChange={e => setLanguageFilter(e.target.value)}
-              aria-label="Filter globe by language"
-            >
-              <option value="">All languages</option>
-              {topLanguagesPresent.map(language => (
-                <option key={language} value={language}>{language}</option>
-              ))}
-            </select>
-          )}
-        </div>
-      )}
       <div className="tooltip" ref={tooltipRef} />
     </>
   );
