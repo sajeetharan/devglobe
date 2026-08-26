@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ContributionPreferenceError,
+  estimateContributionMinutes,
   isContributionReadyIssue,
   normalizeContributionPreferences,
   rankContributionOpportunities,
@@ -10,7 +11,7 @@ import {
   ContributionOpportunitiesUnavailableError,
   fetchGitHubContributionCandidates,
 } from '../lib/github-contribution-opportunities.js';
-import { acquireDailyMissionLease, reserveGlobalRecommendationRefresh } from '../lib/contribution-opportunity-store.js';
+import { acquireDailyMissionLease, reserveGlobalRecommendationRefresh, reserveMissionPreview } from '../lib/contribution-opportunity-store.js';
 
 const now = new Date('2026-08-21T12:00:00.000Z');
 
@@ -50,10 +51,22 @@ test('normalizes finite interests, languages, and difficulty', () => {
     languages: ['javascript'],
     difficulty: 'beginner',
     campaign: 'all',
+    availableMinutes: 30,
   });
   assert.throws(() => normalizeContributionPreferences({ interests: ['money'], languages: [], difficulty: 'easy' }), ContributionPreferenceError);
   assert.throws(() => normalizeContributionPreferences({ interests: [], languages: ['brainfuck'], difficulty: 'beginner' }), ContributionPreferenceError);
   assert.throws(() => normalizeContributionPreferences({ interests: [], languages: [], difficulty: 'beginner', campaign: 'october' }), ContributionPreferenceError);
+  assert.throws(() => normalizeContributionPreferences({ interests: [], languages: [], difficulty: 'beginner', availableMinutes: 45 }), ContributionPreferenceError);
+});
+
+test('derives coarse scope and excludes issues above the available time', () => {
+  const documentation = candidate({ issue: { id: 1, title: 'Improve README setup instructions' } });
+  const feature = candidate({ issue: { id: 2, title: 'Add feature for team exports', labels: [{ name: 'good first issue' }, { name: 'enhancement' }] } });
+  const preferences = { interests: [], languages: ['javascript'], difficulty: 'beginner', campaign: 'all', availableMinutes: 15 };
+
+  assert.equal(estimateContributionMinutes(documentation.issue), 15);
+  assert.equal(estimateContributionMinutes(feature.issue), 60);
+  assert.deepEqual(rankContributionOpportunities([feature, documentation], preferences, [], now).map(item => item.id), ['1']);
 });
 
 test('accepts only fresh public unassigned issues with contribution guidance', () => {
@@ -209,4 +222,26 @@ test('allows only one daily mission generator until its lease expires', async ()
   assert.equal(await acquireDailyMissionLease(container, 'OctoCat', '2026-08-21', now), true);
   assert.equal(await acquireDailyMissionLease(container, 'OctoCat', '2026-08-21', now), false);
   assert.equal(await acquireDailyMissionLease(container, 'OctoCat', '2026-08-21', new Date(now.getTime() + 31000)), true);
+});
+
+test('limits previews by opaque client hash with expiring point records', async () => {
+  let resource = null;
+  const container = {
+    item: () => ({
+      read: async () => {
+        if (!resource) throw Object.assign(new Error('missing'), { code: 404 });
+        return { resource };
+      },
+      replace: async next => { resource = { ...next, _etag: `v${next.timestamps.length}` }; },
+    }),
+    items: { create: async next => { resource = { ...next, _etag: 'v1' }; } },
+  };
+
+  for (let index = 0; index < 3; index += 1) {
+    assert.equal(await reserveMissionPreview(container, 'opaque-hash', new Date(now.getTime() + index * 1000)), 0);
+  }
+  assert.ok(await reserveMissionPreview(container, 'opaque-hash', new Date(now.getTime() + 3000)) > 0);
+  assert.equal(resource.documentType, 'mission-preview-quota');
+  assert.ok(resource.ttl > 0);
+  assert.equal(await reserveMissionPreview(container, 'opaque-hash', new Date(now.getTime() + 301000)), 0);
 });

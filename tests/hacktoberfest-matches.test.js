@@ -71,6 +71,7 @@ test('public matcher derives profile languages and returns three Hacktoberfest m
     difficulty: 'beginner',
     interests: [],
     languages: ['typescript', 'javascript'],
+    availableMinutes: 30,
   });
   assert.equal(body.developer.login, 'octocat');
   assert.equal(body.matches.length, 3);

@@ -18,6 +18,12 @@ test('selects one 15-minute mission for the UTC day and skips passed issues', ()
   assert.equal(mission.status, 'offered');
 });
 
+test('uses the ranked opportunity scope when available', () => {
+  const mission = selectDailyMission([{ ...opportunities[0], estimatedMinutes: 30 }], { login: 'octocat', now: NOW });
+
+  assert.equal(mission.durationMinutes, 30);
+});
+
 test('moves a mission through accept and complete states', () => {
   const offered = selectDailyMission(opportunities, { login: 'octocat', now: NOW });
   const accepted = applyMissionAction(offered, 'accept', NOW);

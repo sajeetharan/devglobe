@@ -27,7 +27,7 @@ test('allows only documented engagement properties and never stores search text'
 });
 
 test('accepts privacy-safe daily mission funnel events without a target profile', () => {
-  for (const eventName of ['mission_viewed', 'mission_accepted', 'mission_passed', 'mission_completed', 'mission_unavailable', 'mission_exhausted']) {
+  for (const eventName of ['mission_viewed', 'mission_accepted', 'mission_passed', 'mission_completed', 'mission_unavailable', 'mission_exhausted', 'mission_preview_requested', 'mission_preview_shown', 'mission_preview_signin_selected', 'mission_onboarding_completed']) {
     assert.deepEqual(normalizeEngagementEvent({
       eventName,
       properties: { journey: 'daily_mission', issueTitle: 'private issue text' },

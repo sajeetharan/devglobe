@@ -25,7 +25,7 @@ function relativeTime(timestamp) {
   return `${hours}h ago`;
 }
 
-export default function GlobalActivityFeed({ active }) {
+export default function GlobalActivityFeed({ active, onOpenContributions }) {
   const [selectedSource, setSelectedSource] = useState('devglobe');
   const {
     activities,
@@ -50,7 +50,7 @@ export default function GlobalActivityFeed({ active }) {
 
   return (
     <div className="global-activity">
-      <TodayMission active={active} />
+      <TodayMission active={active} onOpenContributions={onOpenContributions} />
       <div className="global-activity__sources" role="tablist" aria-label="Activity source">
         {ACTIVITY_SOURCES.map(source => (
           <button

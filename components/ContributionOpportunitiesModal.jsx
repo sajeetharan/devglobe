@@ -108,6 +108,7 @@ export default function ContributionOpportunitiesModal({ onClose }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save preferences');
+      track('mission_onboarding_completed', { journey: 'daily_mission' });
       await load();
       setNotice('Matches updated');
     } catch (saveError) {
@@ -223,6 +224,12 @@ export default function ContributionOpportunitiesModal({ onClose }) {
                 <strong>Difficulty</strong>
                 <select value={preferences.difficulty} onChange={event => setPreferences(current => ({ ...current, difficulty: event.target.value }))}>
                   {result.options.difficulties.map(difficulty => <option value={difficulty} key={difficulty}>{difficulty}</option>)}
+                </select>
+              </label>
+              <label className="contribution-preferences__field">
+                <strong>Available time</strong>
+                <select value={preferences.availableMinutes} onChange={event => setPreferences(current => ({ ...current, availableMinutes: Number(event.target.value) }))}>
+                  {result.options.timeBudgets.map(minutes => <option value={minutes} key={minutes}>{minutes} minutes</option>)}
                 </select>
               </label>
               <div className="contribution-preferences__submit">
