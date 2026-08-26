@@ -25,11 +25,16 @@
 }
 
 .nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   min-height: 72px;
   border-bottom: 1px solid var(--match-line);
+  background: color-mix(in srgb, var(--match-bg) 92%, transparent);
+  backdrop-filter: blur(12px);
 }
 
 .brand {
@@ -49,22 +54,25 @@
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
+  grid-template-areas:
+    "intro tool"
+    "criteria tool";
   gap: 64px;
   align-items: start;
   padding: 72px 0 64px;
 }
 
-.intro { padding-top: 34px; }
+.intro { grid-area: intro; padding-top: 34px; }
 .eyebrow { color: var(--match-orange); font-size: 12px; font-weight: 800; }
 .intro h1 { max-width: 520px; margin: 16px 0 20px; font-size: 64px; line-height: 1.02; letter-spacing: 0; }
 .intro > p { max-width: 530px; margin: 0; color: var(--match-muted); font-size: 17px; line-height: 1.65; }
 
-.criteria { margin: 44px 0 0; border-top: 1px solid var(--match-line); }
+.criteria { grid-area: criteria; margin: -20px 0 0; border-top: 1px solid var(--match-line); }
 .criteria div { display: grid; grid-template-columns: 42px 1fr; gap: 12px; padding: 15px 0; border-bottom: 1px solid var(--match-line); }
 .criteria dt { color: var(--match-cyan); font-family: monospace; font-size: 12px; }
 .criteria dd { margin: 0; color: #c9d4dc; font-size: 13px; }
 
-.tool { border: 1px solid var(--match-line); background: rgba(16, 27, 39, 0.96); box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28); }
+.tool { grid-area: tool; border: 1px solid var(--match-line); background: rgba(16, 27, 39, 0.96); box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28); }
 .toolHeading { display: flex; justify-content: space-between; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--match-line); color: var(--match-muted); font-size: 10px; font-weight: 800; }
 .toolHeading span:last-child { color: var(--match-cyan); }
 .form { padding: 24px; }
@@ -117,26 +125,40 @@
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 0 36px; border-top: 1px solid var(--match-line); color: var(--match-muted); font-size: 12px; }
 
 @media (max-width: 920px) {
-  .workspace { grid-template-columns: 1fr; gap: 44px; }
+  .workspace { grid-template-columns: 1fr; grid-template-areas: "intro" "tool" "criteria"; gap: 44px; }
   .intro { max-width: 680px; padding-top: 0; }
   .intro h1 { font-size: 56px; }
-  .criteria { max-width: 560px; }
+  .criteria { max-width: 560px; margin-top: 0; }
 }
 
 @media (max-width: 620px) {
   .nav, .workspace, .footer { width: min(100% - 28px, 1160px); }
-  .workspace { padding: 48px 0; }
+  .nav { min-height: 60px; padding-top: env(safe-area-inset-top); }
+  .workspace { gap: 28px; padding: 32px 0 44px; }
   .nav > a, .footer a { display: inline-flex; min-height: 44px; align-items: center; }
   .intro h1 { font-size: clamp(34px, 12vw, 44px); }
   .intro > p { font-size: 15px; }
+  .toolHeading { padding: 12px 14px; }
+  .form { padding: 18px 14px; }
   .inputRow { grid-template-columns: auto minmax(0, 1fr); }
   .inputRow button { grid-column: 1 / -1; min-height: 48px; }
+  .criteria { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
+  .criteria div { grid-template-columns: 1fr; gap: 6px; padding: 12px 8px; border-right: 1px solid var(--match-line); }
+  .criteria div:last-child { border-right: 0; }
+  .criteria dd { font-size: 11px; line-height: 1.4; }
   .profile { grid-template-columns: 44px minmax(0, 1fr); }
   .languages { grid-column: 1 / -1; justify-content: flex-start; }
   .match { grid-template-columns: 24px minmax(0, 1fr); padding: 17px 16px; }
   .match > a { grid-column: 2; justify-self: stretch; }
   .saveCta, .footer { align-items: flex-start; flex-direction: column; }
   .saveCta > a { display: inline-flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; text-align: center; }
+  .footer { padding-bottom: max(36px, env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 520px) {
+  .criteria { grid-template-columns: 1fr; }
+  .criteria div { grid-template-columns: 32px minmax(0, 1fr); align-items: center; padding: 10px 8px; border-right: 0; }
+  .criteria dd { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

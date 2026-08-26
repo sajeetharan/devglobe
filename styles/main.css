@@ -7365,9 +7365,17 @@ body {
     gap: 4px;
   }
 
-  .header__actions .btn--hacktoberfest,
   .header__actions .btn--docs,
   .header__actions .btn--extension {
+    display: none;
+  }
+
+  .header__actions .btn--hacktoberfest {
+    display: inline-flex;
+  }
+
+  .header__actions .btn--join,
+  .header__actions .btn--activity {
     display: none;
   }
 

@@ -53,11 +53,6 @@ export default function HacktoberfestMatchmaker() {
           <span className={styles.eyebrow}>HACKTOBERFEST 2026</span>
           <h1>Find an issue worth opening.</h1>
           <p>Enter your GitHub username. DevGlobe uses your public language profile to find three fresh, unassigned issues with contribution guidance.</p>
-          <dl className={styles.criteria}>
-            <div><dt>01</dt><dd>Matched to your languages</dd></div>
-            <div><dt>02</dt><dd>Open and unassigned</dd></div>
-            <div><dt>03</dt><dd>Contribution guide verified</dd></div>
-          </dl>
         </header>
 
         <div className={styles.tool} aria-busy={status === 'loading'}>
@@ -153,6 +148,12 @@ export default function HacktoberfestMatchmaker() {
             </section>
           )}
         </div>
+
+        <dl className={styles.criteria}>
+          <div><dt>01</dt><dd>Matched to your languages</dd></div>
+          <div><dt>02</dt><dd>Open and unassigned</dd></div>
+          <div><dt>03</dt><dd>Contribution guide verified</dd></div>
+        </dl>
       </section>
 
       <footer className={styles.footer}>
