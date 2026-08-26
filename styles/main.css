@@ -851,7 +851,7 @@ body {
 
 .spacerr-badge {
   position: fixed;
-  bottom: 64px;
+  bottom: 128px;
   left: 24px;
   z-index: 39;
   display: block;
@@ -865,19 +865,51 @@ body {
   height: 100%;
 }
 
-/* Globe Legend */
-.globe-legend {
+/* Combined globe controls panel (legend + color mode), replacing what used
+   to be two separately-positioned floating boxes stacked on top of each
+   other — one container, one collapse toggle, less visual weight. */
+.globe-controls {
   position: fixed;
   bottom: 24px;
   left: 24px;
+  z-index: 40;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: calc(100vw - 48px);
+}
+
+.globe-controls__toggle {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-panel-85);
+  backdrop-filter: blur(8px);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.globe-controls__toggle:hover {
+  color: var(--text-primary);
+}
+
+.globe-controls--collapsed .globe-controls__toggle {
+  order: 0;
+}
+
+/* Globe Legend */
+.globe-legend {
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 8px 16px;
   background: var(--bg-panel-85);
   backdrop-filter: blur(8px);
   border-radius: 20px;
   border: 1px solid var(--border);
-  z-index: 40;
   font-size: 11px;
   color: var(--text-secondary);
 }
@@ -897,13 +929,10 @@ body {
 
 /* Globe color mode toggle (score vs language) */
 .globe-color-mode {
-  position: fixed;
-  bottom: 88px;
-  left: 24px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  z-index: 40;
 }
 
 .globe-color-mode__toggle {
@@ -4622,11 +4651,13 @@ body {
     font-size: 10px;
     padding: 6px 10px;
   }
-  .globe-color-mode {
-    bottom: 78px;
+  .globe-controls {
+    bottom: 12px;
     left: 12px;
-    flex-wrap: wrap;
     max-width: calc(100vw - 24px);
+  }
+  .globe-color-mode {
+    flex-wrap: wrap;
   }
   .globe-color-mode__btn,
   .globe-color-mode__filter {
