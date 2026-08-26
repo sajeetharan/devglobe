@@ -1,0 +1,170 @@
+name: Daily community discussion
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview today's discussion without publishing it
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  discussions: write
+
+concurrency:
+  group: daily-community-discussion
+  cancel-in-progress: false
+
+jobs:
+  create-discussion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create today's discussion
+        uses: actions/github-script@v8
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        with:
+          script: |
+            const prompts = [
+              {
+                category: 'Ideas',
+                title: 'Feature Friday: what should DevGlobe build next?',
+                body: 'What is one feature that would make DevGlobe more useful to you? Share the workflow it would improve and what a successful version would look like.'
+              },
+              {
+                category: 'General',
+                title: 'How are you discovering open-source collaborators today?',
+                body: 'Tell us how you currently find developers or projects to collaborate with. What works well, and where does the process break down?'
+              },
+              {
+                category: 'Ideas',
+                title: 'Which developer signal should DevGlobe surface next?',
+                body: 'Beyond stars, commits, repository reach, and reputation, which signal would help you understand a developer’s work? How should it be measured?'
+              },
+              {
+                category: 'General',
+                title: 'Show and tell: what are you building this week?',
+                body: 'Share a project, pull request, experiment, or learning goal you are working on. Include a link when it is public and mention where community feedback would help.'
+              },
+              {
+                category: 'Ideas',
+                title: 'What would make developer search more trustworthy?',
+                body: 'Which context, controls, or transparency would help you trust developer search results? We are especially interested in ranking, freshness, consent, and explainability.'
+              },
+              {
+                category: 'General',
+                title: 'What open-source contribution are you proud of?',
+                body: 'Highlight a contribution you made or one from another developer that deserves attention. What made it valuable to the project or community?'
+              },
+              {
+                category: 'Ideas',
+                title: 'How should AI agents collaborate with developers?',
+                body: 'Where should AI agents help with developer discovery and introductions, and where should a human stay in control? Share a concrete scenario if you have one.'
+              },
+              {
+                category: 'General',
+                title: 'What makes an open-source profile useful?',
+                body: 'When evaluating a potential collaborator, what information do you look for first? What is usually missing from developer profiles?'
+              },
+              {
+                category: 'Ideas',
+                title: 'Which DevGlobe workflow needs the most polish?',
+                body: 'Pick one workflow such as search, profiles, comparison, introductions, the globe, MCP, or the VS Code extension. What friction should we remove first?'
+              },
+              {
+                category: 'General',
+                title: 'Community question: what did you learn recently?',
+                body: 'Share one technical lesson, tool, article, or pattern that changed how you work. A short explanation of why it mattered is welcome.'
+              },
+              {
+                category: 'Ideas',
+                title: 'What data source could improve DevGlobe?',
+                body: 'Which public, ethical data source could add useful context to developer discovery? Tell us what it provides and how you would use it.'
+              },
+              {
+                category: 'General',
+                title: 'What makes a great contributor experience?',
+                body: 'Think of a repository that was especially easy to contribute to. Which documentation, automation, or maintainer behavior made the difference?'
+              },
+              {
+                category: 'Ideas',
+                title: 'What should DevGlobe measure for community impact?',
+                body: 'Which outcomes would show that DevGlobe is helping open source communities? Suggest a metric and explain what good progress would mean.'
+              },
+              {
+                category: 'General',
+                title: 'Weekend thread: share a project seeking contributors',
+                body: 'Share a public project that could use contributors. Include the skills needed, a beginner-friendly starting point, and a link to the relevant issue or guide.'
+              }
+            ];
+
+            const now = new Date();
+            const date = now.toISOString().slice(0, 10);
+            const dayNumber = Math.floor(now.getTime() / 86_400_000);
+            const prompt = prompts[dayNumber % prompts.length];
+            const title = `${prompt.title} (${date})`;
+            const codeOfConductUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/blob/main/CODE_OF_CONDUCT.md`;
+            const body = `${prompt.body}\n\n---\n*This daily community prompt is posted automatically. Please follow our [Code of Conduct](${codeOfConductUrl}).*`;
+
+            if (process.env.DRY_RUN === 'true') {
+              core.summary
+                .addHeading(title)
+                .addRaw(body)
+                .write();
+              core.info('Dry run complete; no discussion was created.');
+              return;
+            }
+
+            const repository = await github.graphql(
+              `query($owner: String!, $repo: String!) {
+                repository(owner: $owner, name: $repo) {
+                  id
+                  discussionCategories(first: 25) {
+                    nodes { id name }
+                  }
+                  discussions(first: 25, orderBy: {field: CREATED_AT, direction: DESC}) {
+                    nodes { title }
+                  }
+                }
+              }`,
+              { owner: context.repo.owner, repo: context.repo.repo }
+            );
+
+            if (repository.repository.discussions.nodes.some((discussion) => discussion.title === title)) {
+              core.info(`Discussion already exists: ${title}`);
+              return;
+            }
+
+            const categories = repository.repository.discussionCategories.nodes;
+            const category = categories.find((item) => item.name.toLowerCase() === prompt.category.toLowerCase())
+              ?? categories.find((item) => item.name.toLowerCase() === 'general')
+              ?? categories[0];
+
+            if (!category) {
+              core.setFailed('No discussion categories are available. Enable GitHub Discussions and create at least one category.');
+              return;
+            }
+
+            const result = await github.graphql(
+              `mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+                createDiscussion(input: {
+                  repositoryId: $repositoryId,
+                  categoryId: $categoryId,
+                  title: $title,
+                  body: $body
+                }) {
+                  discussion { url }
+                }
+              }`,
+              {
+                repositoryId: repository.repository.id,
+                categoryId: category.id,
+                title,
+                body
+              }
+            );
+
+            core.notice(`Created discussion: ${result.createDiscussion.discussion.url}`);
