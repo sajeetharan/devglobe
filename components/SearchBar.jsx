@@ -34,6 +34,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const [searching, setSearching] = useState(false);
   const [resultCount, setResultCount] = useState(null);
   const [singleResult, setSingleResult] = useState(null);
+  const [searchError, setSearchError] = useState('');
   const inputRef = useRef(null);
   const abortRef = useRef(null);
   const timerRef = useRef(null);
@@ -43,8 +44,11 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       onReset();
       setResultCount(null);
       setSingleResult(null);
+      setSearchError('');
       return;
     }
+
+    setSearchError('');
 
     if (m === 'text') {
       const lower = q.trim().toLowerCase();
@@ -95,6 +99,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         { signal: controller.signal }
       );
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Search is unavailable.');
       if (!controller.signal.aborted) {
         const results = data.results || [];
         onResults(results);
@@ -107,7 +112,10 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         onSearchState?.({ query: q.trim(), results });
       }
     } catch (e) {
-      if (e.name !== 'AbortError') console.error('Search failed:', e);
+      if (e.name !== 'AbortError') {
+        console.error('Search failed:', e);
+        setSearchError(e.message || 'Search is unavailable.');
+      }
     } finally {
       if (!controller.signal.aborted) setSearching(false);
     }
@@ -153,6 +161,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     setQuery('');
     setResultCount(null);
     setSingleResult(null);
+    setSearchError('');
     onReset();
     inputRef.current?.focus();
   };
@@ -238,6 +247,11 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           </button>
         </div>
       </div>
+      {searchError && query && (
+        <div className="search-bar__error" role="alert">
+          {searchError} Choose Text search or check the Azure OpenAI configuration.
+        </div>
+      )}
       {resultCount !== null && query && (
         <div className="search-bar__feedback">
           <div className="search-bar__results">

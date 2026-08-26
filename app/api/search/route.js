@@ -6,9 +6,14 @@ import { apiError } from '../../../lib/api-error.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
-const OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT;
-const OPENAI_KEY = process.env.AZURE_OPENAI_KEY;
-const EMBEDDING_DEPLOYMENT = process.env.EMBEDDING_DEPLOYMENT || 'text-embedding-3-small';
+const OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT?.trim().replace(/\/$/, '');
+const OPENAI_KEY = process.env.AZURE_OPENAI_KEY?.trim();
+const EMBEDDING_DEPLOYMENT = process.env.EMBEDDING_DEPLOYMENT?.trim() || 'text-embedding-3-small';
+const OPENAI_CONFIGURED = Boolean(
+  OPENAI_ENDPOINT
+  && OPENAI_KEY
+  && !OPENAI_ENDPOINT.includes('your-resource.openai.azure.com')
+);
 
 const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
@@ -36,13 +41,15 @@ function searchSampleData(data, q, limit) {
 }
 
 async function getEmbedding(text) {
-  const url = `${OPENAI_ENDPOINT}/openai/deployments/${EMBEDDING_DEPLOYMENT}/embeddings?api-version=2024-02-01`;
+  const url = `${OPENAI_ENDPOINT}/openai/deployments/${encodeURIComponent(EMBEDDING_DEPLOYMENT)}/embeddings?api-version=2024-02-01`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'api-key': OPENAI_KEY },
     body: JSON.stringify({ input: [text] })
   });
+  if (!res.ok) throw new Error(`Azure OpenAI returned ${res.status}`);
   const data = await res.json();
+  if (!data.data?.[0]?.embedding) throw new Error('Azure OpenAI returned no embedding');
   return data.data[0].embedding;
 }
 
@@ -77,7 +84,7 @@ export async function GET(request) {
     let results;
 
     if (mode === 'vector') {
-      if (!OPENAI_ENDPOINT || !OPENAI_KEY) {
+      if (!OPENAI_CONFIGURED) {
         return apiError(503, 'vector_search_unavailable', 'Vector search is unavailable.', 'Retry with mode=text.');
       }
       const embedding = await getEmbedding(q);
@@ -118,7 +125,7 @@ export async function GET(request) {
 
     } else {
       // Hybrid: client-side RRF fusion of vector + text results
-      if (!OPENAI_ENDPOINT || !OPENAI_KEY) {
+      if (!OPENAI_CONFIGURED) {
         return apiError(503, 'hybrid_search_unavailable', 'Hybrid search is unavailable.', 'Retry with mode=text.');
       }
       const searchTerm = q.toLowerCase();
