@@ -5,7 +5,7 @@ import { isAllowedMutationOrigin } from '../../../lib/request-origin.js';
 import { normalizeContributionPreferences, rankContributionOpportunities } from '../../../lib/contribution-opportunities.js';
 import { ContributionOpportunitiesUnavailableError, fetchGitHubContributionCandidates } from '../../../lib/github-contribution-opportunities.js';
 import { acquireDailyMissionLease, getContributionOpportunityStateContainer, reserveGlobalRecommendationRefresh } from '../../../lib/contribution-opportunity-store.js';
-import { DailyMissionError, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../../../lib/daily-mission.js';
+import { DailyMissionError, addCompletedMission, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../../../lib/daily-mission.js';
 import { MissionVerificationUnavailableError, verifyGitHubMissionCompletion } from '../../../lib/github-mission-verification.js';
 
 async function getOwner(container, login) {
@@ -57,6 +57,10 @@ function missionResponse(mission, extra = {}) {
   return NextResponse.json({ mission, ...extra }, { headers: { 'Cache-Control': 'private, no-store' } });
 }
 
+function completedMissions(state) {
+  return Array.isArray(state?.completedMissions) ? state.completedMissions : [];
+}
+
 export async function GET() {
   try {
     const owner = await loadOwner();
@@ -65,7 +69,7 @@ export async function GET() {
     const day = missionDay(now);
     const state = owner.developer.contributionOpportunity || {};
     if (state.dailyMission?.day === day && state.dailyMission.status !== 'passed') {
-      return missionResponse(state.dailyMission);
+      return missionResponse(state.dailyMission, { completedMissions: completedMissions(state) });
     }
 
     let pool = state.dailyMissionPool?.day === day ? state.dailyMissionPool.opportunities : null;
@@ -90,7 +94,7 @@ export async function GET() {
         dailyMissionPool: { day, opportunities: pool },
       };
     });
-    return missionResponse(updated.dailyMission);
+    return missionResponse(updated.dailyMission, { completedMissions: completedMissions(updated) });
   } catch (error) {
     if (error instanceof ContributionOpportunitiesUnavailableError) return missionResponse(null, { unavailable: true });
     console.error('Daily mission read failed:', error.message);
@@ -142,9 +146,16 @@ export async function POST(request) {
           excludedIssueIds: history.issueIds,
         })
         : changed;
-      return { ...current, dailyMission: responseMission, dailyMissionHistory: history };
+      return {
+        ...current,
+        dailyMission: responseMission,
+        dailyMissionHistory: history,
+        completedMissions: action === 'complete'
+          ? addCompletedMission(current.completedMissions, changed)
+          : completedMissions(current),
+      };
     });
-    return missionResponse(updated.dailyMission);
+    return missionResponse(updated.dailyMission, { completedMissions: completedMissions(updated) });
   } catch (error) {
     if (error instanceof MissionVerificationUnavailableError) {
       return NextResponse.json({ error: error.message }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } });

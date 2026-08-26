@@ -52,7 +52,7 @@ Signed-out visitors see a GitHub sign-in action. Signed-in developers without a 
 5. Pass selects the next item from the already-fetched daily pool and does not consume another GitHub request.
 6. After accepting, the developer can open the issue and choose **Verify completion**.
 7. DevGlobe checks public GitHub issue timeline and pull-request data. An issue being closed alone is not completion evidence.
-8. The completed state and merged pull-request link remain visible for the rest of the UTC day. A new mission can be assigned the following day.
+8. The completed state and merged pull-request link remain visible for the rest of the UTC day. Verified completions are also retained in a bounded mission history with links to the issue and merged pull request. A new mission can be assigned the following day.
 
 ## Functional requirements
 

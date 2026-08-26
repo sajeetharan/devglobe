@@ -5,6 +5,7 @@ import { track } from '../lib/analytics.js';
 
 export default function TodayMission({ active }) {
   const [mission, setMission] = useState(null);
+  const [completedMissions, setCompletedMissions] = useState([]);
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
   const [claimLogin, setClaimLogin] = useState('');
@@ -34,6 +35,7 @@ export default function TodayMission({ active }) {
       }
       if (!response.ok) throw new Error(data.error || 'Unable to load today’s mission');
       setMission(data.mission);
+      setCompletedMissions(Array.isArray(data.completedMissions) ? data.completedMissions : []);
       setStatus(data.unavailable ? 'unavailable' : data.mission ? 'ready' : 'empty');
       if (data.unavailable) {
         track('mission_unavailable', { journey: 'daily_mission' });
@@ -93,6 +95,7 @@ export default function TodayMission({ active }) {
       }
       if (!response.ok) throw new Error(data.error || 'Unable to update today’s mission');
       setMission(data.mission);
+      setCompletedMissions(Array.isArray(data.completedMissions) ? data.completedMissions : []);
       setStatus(data.mission ? 'ready' : 'empty');
       track(`mission_${action === 'complete' ? 'completed' : `${action}ed`}`, { journey: 'daily_mission' });
     } catch (error) {
@@ -158,6 +161,30 @@ export default function TodayMission({ active }) {
           </div>
           {message && <p className="today-mission__error" role="alert">{message}</p>}
         </div>
+      )}
+
+      {completedMissions.length > 0 && (
+        <section className="today-mission__history" aria-labelledby="completed-missions-title">
+          <div className="today-mission__history-heading">
+            <h3 id="completed-missions-title">Completed missions</h3>
+            <span>{completedMissions.length}</span>
+          </div>
+          <ul>
+            {completedMissions.map(completed => (
+              <li key={completed.id}>
+                <div>
+                  <a href={completed.opportunity?.url} target="_blank" rel="noopener noreferrer">
+                    {completed.opportunity?.title || 'Completed issue'}
+                  </a>
+                  <span>{completed.opportunity?.repository || 'GitHub'} · {new Date(completed.completedAt).toLocaleDateString()}</span>
+                </div>
+                {completed.completionEvidence?.url && (
+                  <a href={completed.completionEvidence.url} target="_blank" rel="noopener noreferrer">View PR</a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </section>
   );

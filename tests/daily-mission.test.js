@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DailyMissionError, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../lib/daily-mission.js';
+import { DailyMissionError, addCompletedMission, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../lib/daily-mission.js';
 
 const NOW = new Date('2026-08-25T08:30:00.000Z');
 const opportunities = [
@@ -26,6 +26,16 @@ test('moves a mission through accept and complete states', () => {
   assert.equal(accepted.status, 'accepted');
   assert.equal(completed.status, 'completed');
   assert.equal(completed.completedAt, NOW.toISOString());
+});
+
+test('keeps completed mission history newest first, deduplicated, and bounded', () => {
+  const completed = applyMissionAction(applyMissionAction(selectDailyMission(opportunities, { login: 'octocat', now: NOW }), 'accept', NOW), 'complete', NOW);
+  const previous = Array.from({ length: 25 }, (_, index) => ({ id: `older-${index}`, status: 'completed' }));
+  const history = addCompletedMission(previous, completed);
+
+  assert.equal(history.length, 25);
+  assert.equal(history[0].id, completed.id);
+  assert.equal(addCompletedMission(history, completed).filter(mission => mission.id === completed.id).length, 1);
 });
 
 test('allows a pass but rejects invalid or stale transitions', () => {
