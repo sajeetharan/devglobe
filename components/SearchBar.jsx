@@ -30,7 +30,7 @@ const SAMPLES_BY_MODE = {
 export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0 }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('text');
-  const [topN, setTopN] = useState(50);
+  const [topN, setTopN] = useState(20);
   const [searching, setSearching] = useState(false);
   const [resultCount, setResultCount] = useState(null);
   const [singleResult, setSingleResult] = useState(null);
@@ -57,7 +57,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         (d.login && d.login.toLowerCase().includes(lower)) ||
         (d.name && d.name.toLowerCase().includes(lower)) ||
         (d.location && countryKey(d.location).includes(locationKey))
-      );
+      ).slice(0, topN);
 
       if (results.length === 0) {
         if (abortRef.current) abortRef.current.abort();
@@ -143,6 +143,12 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     const m = e.target.value;
     setMode(m);
     if (query.trim()) doSearch(query, m);
+  };
+
+  const handleUseTextSearch = () => {
+    setMode('text');
+    setSearchError('');
+    doSearch(query, 'text');
   };
 
   const handleTopNChange = (e) => {
@@ -249,7 +255,8 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       </div>
       {searchError && query && (
         <div className="search-bar__error" role="alert">
-          {searchError} Choose Text search or check the Azure OpenAI configuration.
+          <span>AI search is temporarily unavailable.</span>
+          <button type="button" onClick={handleUseTextSearch}>Use Text search</button>
         </div>
       )}
       {resultCount !== null && query && (

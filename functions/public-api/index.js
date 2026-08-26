@@ -1,5 +1,6 @@
 const { PUBLIC_FILTER, environmentValue, getContainer, projectDeveloper } = require('../shared/cosmos');
 const { corsHeaders, json } = require('../shared/http');
+const { fuseRankedResults } = require('../shared/search-ranking');
 
 const LIST_FIELDS = 'c.id, c.login, c.name, c.avatarUrl, c.location, c.lat, c.lng, c.followers, c.publicRepos, c.totalStars, c.totalCommits, c.topLanguage, c.soReputation, c.soAnswers, c.soBadges, c.score, c.specialTags, c.claimed, c.metricsUpdatedAt, c.aiProfile';
 const DETAIL_FIELDS = 'c.id, c.login, c.name, c.avatarUrl, c.bio, c.githubUrl, c.location, c.lat, c.lng, c.followers, c.totalStars, c.totalForks, c.totalWatchers, c.totalCommits, c.topLanguage, c.languages, c.publicRepos, c.topRepos, c.soReputation, c.soAnswers, c.soAcceptRate, c.soBadges, c.soUserId, c.score, c.scoreDimensions, c.scoreWeights, c.scoreHasSO, c.scorePercentile, c.specialTags, c.claimed, c.claimedAt, c.metricsUpdatedAt, c.aiProfile';
@@ -78,10 +79,23 @@ async function search(request) {
     }).fetchAll());
   } else {
     const vector = await embedding(queryText);
-    ({ resources } = await container.items.query({
+    const vectorQuery = container.items.query({
       query: `SELECT TOP ${limit} ${fields}, VectorDistance(c.embedding, @embedding) AS relevance FROM c WHERE ${PUBLIC_FILTER} ORDER BY VectorDistance(c.embedding, @embedding)`,
       parameters: [{ name: '@embedding', value: vector }],
-    }).fetchAll());
+    }).fetchAll();
+
+    if (mode === 'vector') {
+      ({ resources } = await vectorQuery);
+    } else {
+      const [vectorResponse, textResponse] = await Promise.all([
+        vectorQuery,
+        container.items.query({
+          query: `SELECT TOP ${limit} ${fields} FROM c WHERE (CONTAINS(LOWER(c.login), @q) OR CONTAINS(LOWER(c.name), @q) OR CONTAINS(LOWER(c.location), @q) OR CONTAINS(LOWER(c.bio), @q) OR CONTAINS(LOWER(c.topLanguage), @q)) AND ${PUBLIC_FILTER} ORDER BY c.score DESC`,
+          parameters: [{ name: '@q', value: queryText.toLowerCase() }],
+        }).fetchAll(),
+      ]);
+      resources = fuseRankedResults(vectorResponse.resources, textResponse.resources, limit);
+    }
   }
   return json(request, { query: queryText, mode, count: resources.length, results: resources }, 200, 'public, max-age=300');
 }

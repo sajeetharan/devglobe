@@ -26,7 +26,8 @@ const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
 // See #182: fetch a small, fast initial batch for quick Time-to-Interactive,
 // then progressively fetch the rest in the background instead of one huge payload.
 const INITIAL_BATCH_SIZE = 500;
-const BACKGROUND_BATCH_SIZE = 500;
+const BACKGROUND_BATCH_SIZE = 1000;
+const BACKGROUND_UI_FLUSH_SIZE = 5000;
 const PENDING_README_KEY = 'devglobe-pending-readme';
 const PENDING_HOME_README_KEY = 'devglobe-pending-home-readme';
 let cachedDeveloperDataset = null;
@@ -35,6 +36,8 @@ export default function Home() {
   const [developers, setDevelopers] = useState(() => cachedDeveloperDataset?.developers || []);
   const [datasetCount, setDatasetCount] = useState(null);
   const [filtered, setFiltered] = useState(() => cachedDeveloperDataset?.developers || []);
+  const [datasetLoading, setDatasetLoading] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
   const [selectedDev, setSelectedDev] = useState(null);
   const [loading, setLoading] = useState(() => !cachedDeveloperDataset);
   const [loadingStage, setLoadingStage] = useState('connecting');
@@ -310,7 +313,7 @@ export default function Home() {
           })
           .catch(() => {});
         setLoadingStage('downloading');
-        const firstRes = await fetch(`/api/developers?limit=${INITIAL_BATCH_SIZE}&offset=0`, { signal: AbortSignal.timeout(30000) });
+        const firstRes = await fetch(`/api/developers?limit=${INITIAL_BATCH_SIZE}`, { signal: AbortSignal.timeout(30000) });
         if (!firstRes.ok) throw new Error(`Failed to load data: ${firstRes.status}`);
         setLoadingStage('preparing');
         const firstPage = await firstRes.json();
@@ -328,30 +331,47 @@ export default function Home() {
         setLoading(false);
 
         let hasMore = firstPage.hasMore;
+        let nextCursor = firstPage.nextCursor;
         let nextOffset = firstPage.nextOffset;
+        let publishedCount = rawAll.length;
+        setDatasetLoading(hasMore);
+
+        const publishDataset = () => {
+          scored = prepareDeveloperDataset(rawAll);
+          setDevelopers(scored);
+          if (!hasActiveSearchRef.current) setFiltered(scored);
+          claimed = new Set(rawAll.filter(d => d.claimed).map(d => d.login));
+          setClaimedLogins(claimed);
+          cachedDeveloperDataset = { developers: scored, claimedLogins: claimed };
+          publishedCount = rawAll.length;
+        };
+
         while (hasMore && !cancelled) {
-          const pageRes = await fetch(`/api/developers?limit=${BACKGROUND_BATCH_SIZE}&offset=${nextOffset}`, { signal: AbortSignal.timeout(30000) })
+          const pageUrl = nextCursor
+            ? `/api/developers?limit=${BACKGROUND_BATCH_SIZE}&cursor=${encodeURIComponent(nextCursor)}`
+            : `/api/developers?limit=${BACKGROUND_BATCH_SIZE}&offset=${nextOffset}`;
+          const pageRes = await fetch(pageUrl, { signal: AbortSignal.timeout(30000) })
             .catch(() => null);
           if (!pageRes?.ok) break;
           const page = await pageRes.json();
           if (cancelled || !page.developers?.length) break;
 
-          rawAll = rawAll.concat(page.developers);
-          scored = prepareDeveloperDataset(rawAll);
-          setDevelopers(scored);
-          // Don't clobber an active search/filter with the growing full dataset.
-          if (!hasActiveSearchRef.current) setFiltered(scored);
-          claimed = new Set(rawAll.filter(d => d.claimed).map(d => d.login));
-          setClaimedLogins(claimed);
-          cachedDeveloperDataset = { developers: scored, claimedLogins: claimed };
-
+          rawAll.push(...page.developers);
           hasMore = page.hasMore;
+          nextCursor = page.nextCursor;
           nextOffset = page.nextOffset;
+          if (rawAll.length - publishedCount >= BACKGROUND_UI_FLUSH_SIZE || !hasMore) {
+            publishDataset();
+          }
         }
+
+        if (!cancelled && rawAll.length !== publishedCount) publishDataset();
+        if (!cancelled) setDatasetLoading(false);
       } catch (err) {
         if (cancelled) return;
         setError(err.message);
         setLoading(false);
+        setDatasetLoading(false);
       }
     }
     loadData();
@@ -360,6 +380,7 @@ export default function Home() {
 
   const handleSearch = useCallback((results) => {
     hasActiveSearchRef.current = true;
+    setSearchActive(true);
     const developerByLogin = new Map(developers.map(developer => [developer.login, developer]));
     const rankedResults = results.map(result => ({
       ...developerByLogin.get(result.login),
@@ -505,6 +526,7 @@ export default function Home() {
 
   const handleResetFilter = useCallback(() => {
     hasActiveSearchRef.current = false;
+    setSearchActive(false);
     setFiltered(developers);
   }, [developers]);
 
@@ -829,6 +851,8 @@ export default function Home() {
           trending={trending}
           trendingError={trendingError}
           onSelectDevByLogin={handleSelectDevByLogin}
+          totalDeveloperCount={datasetCount}
+          datasetLoading={datasetLoading && !searchActive}
         />
         {sidebarOpen && (
           <div className="sidebar-backdrop" onClick={handleCloseSidebar} />

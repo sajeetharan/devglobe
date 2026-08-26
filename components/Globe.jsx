@@ -245,7 +245,6 @@ const Globe = forwardRef(function Globe({
   const isLight = theme === 'light';
 
   useEffect(() => {
-    setPointLimit(800);
     const expandedLimit = window.innerWidth < 768 ? 1200 : 2500;
 
     if (window.requestIdleCallback) {
@@ -258,7 +257,7 @@ const Globe = forwardRef(function Globe({
 
     const timerId = window.setTimeout(() => setPointLimit(expandedLimit), 1200);
     return () => window.clearTimeout(timerId);
-  }, [developers]);
+  }, []);
 
   const geoDevs = useMemo(() => {
     let list = developers.filter(d => d.lat != null && d.lng != null);
