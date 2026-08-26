@@ -171,15 +171,18 @@
 @media (max-width: 700px) {
   .nav, .hero, .setup, .workflowSection, .boundary, .resources { width: min(100% - 28px, 1120px); }
   .navLinks a:first-child { display: none; }
+  .nav a, .resources a { min-height: 44px; display: inline-flex; align-items: center; }
   .hero { padding: 60px 0 48px; }
-  .hero h1 { font-size: 43px; }
+  .hero h1 { font-size: clamp(34px, 11vw, 43px); }
   .hero > p { font-size: 16px; }
   .heroActions { align-items: flex-start; flex-direction: column; }
+  .heroActions a, .endpoint button, .configMeta button, .workflows button { min-height: 44px; display: inline-flex; align-items: center; }
   .endpoint { grid-template-columns: 1fr auto; gap: 10px; }
   .endpoint span { grid-column: 1 / -1; }
-  .clientPicker { display: grid; grid-template-columns: repeat(2, 1fr); width: 100%; }
-  .clientPicker button { min-width: 0; }
+  .clientPicker { display: flex; width: 100%; overflow-x: auto; }
+  .clientPicker button { min-width: 88px; min-height: 44px; flex: 1 0 auto; }
   .workflows, .boundary { grid-template-columns: 1fr; }
   .boundary { gap: 34px; }
   .resources > span { width: 100%; }
+  .resources { gap: 8px 18px; }
 }
