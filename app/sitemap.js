@@ -7,6 +7,48 @@ const siteUrl = getSiteUrl();
 
 export const revalidate = 86400;
 
+export function buildSitemapEntries(profileLogins, lastModified = new Date()) {
+  const logins = [...new Set(profileLogins.filter(Boolean))];
+  return [
+    {
+      url: siteUrl,
+      lastModified,
+      changeFrequency: 'daily',
+      priority: 1,
+    },
+    {
+      url: `${siteUrl}/agents`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/hacktoberfest`,
+      lastModified,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/countries`,
+      lastModified,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    ...logins.flatMap(login => [
+      {
+        url: `${siteUrl}/developer/${encodeURIComponent(login)}`,
+        changeFrequency: 'daily',
+        priority: 0.7,
+      },
+      {
+        url: `${siteUrl}/share/${encodeURIComponent(login)}`,
+        changeFrequency: 'monthly',
+        priority: 0.6,
+      },
+    ]),
+  ];
+}
+
 async function getProfileLogins() {
   const container = getCosmosContainer();
   if (!container) {
@@ -28,30 +70,5 @@ async function getProfileLogins() {
 
 export default async function sitemap() {
   const profileLogins = await getProfileLogins();
-
-  return [
-    {
-      url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${siteUrl}/agents`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/hacktoberfest`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    ...profileLogins.map(login => ({
-      url: `${siteUrl}/share/${encodeURIComponent(login)}`,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    })),
-  ];
+  return buildSitemapEntries(profileLogins);
 }

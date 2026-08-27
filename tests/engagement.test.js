@@ -182,3 +182,16 @@ test('suppresses each low-volume mission metric and counts recovered availabilit
   assert.equal(metrics.acceptanceRate, null);
   assert.equal(metrics.availabilityRate, 1);
 });
+
+test('requires a target profile for a completed claim', () => {
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'profile_claimed',
+    targetLogin: 'OctoCat',
+    properties: { source: 'linkedin' },
+  }), {
+    eventName: 'profile_claimed',
+    targetLogin: 'octocat',
+    properties: { source: 'linkedin' },
+  });
+  assert.throws(() => normalizeEngagementEvent({ eventName: 'profile_claimed' }), EngagementValidationError);
+});

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { track } from '../lib/analytics.js';
+import { developerInviteUrl } from '../lib/share-attribution.js';
 import ProfileCompletionChecklist from './ProfileCompletionChecklist.jsx';
 import ProfileInsights from './ProfileInsights.jsx';
 
@@ -78,14 +79,15 @@ export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onO
   }
 
   async function inviteDeveloper() {
-    const url = `${window.location.origin}/?ref=${encodeURIComponent(user.login)}`;
     const text = 'Find your open-source profile, developer rank, and OSS Worth on DevGlobe.';
     try {
       if (navigator.share) {
+        const url = developerInviteUrl(window.location.origin, user.login, 'native_share');
         await navigator.share({ title: 'Join me on DevGlobe', text, url });
         setInviteStatus('Invite shared');
         track('developer_invite_shared', { channel: 'native_share' });
       } else {
+        const url = developerInviteUrl(window.location.origin, user.login, 'copy_link');
         await navigator.clipboard.writeText(`${text}\n${url}`);
         setInviteStatus('Invite copied');
         track('developer_invite_shared', { channel: 'copy_link' });

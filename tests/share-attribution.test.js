@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { attributedGlobePath, identityCardShareUrl } from '../lib/share-attribution.js';
+import { attributedGlobePath, developerInviteUrl, identityCardShareUrl } from '../lib/share-attribution.js';
 
 test('builds channel-specific identity card referral URLs', () => {
   const linkedIn = new URL(identityCardShareUrl('https://www.devglobe.dev', 'octo cat', 'linkedin', '4'));
@@ -28,4 +28,14 @@ test('preserves only campaign attribution when entering the globe', () => {
   assert.equal(url.searchParams.get('utm_medium'), 'social');
   assert.equal(url.searchParams.get('utm_campaign'), 'identity_card');
   assert.equal(url.searchParams.has('token'), false);
+});
+
+test('attributes member invitations without exposing identity outside ref', () => {
+  const url = new URL(developerInviteUrl('https://www.devglobe.dev', 'octocat', 'native_share'));
+
+  assert.equal(url.pathname, '/');
+  assert.equal(url.searchParams.get('ref'), 'octocat');
+  assert.equal(url.searchParams.get('utm_source'), 'native_share');
+  assert.equal(url.searchParams.get('utm_medium'), 'referral');
+  assert.equal(url.searchParams.get('utm_campaign'), 'developer_invite');
 });
