@@ -14,9 +14,12 @@ export async function POST(request) {
     }
 
     const session = await getSession();
+    if (!session?.login || !LOGIN_PATTERN.test(session.login)) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
     const activity = createPlatformActivity({
       type: body.type,
-      login: session?.login || body.targetLogin,
+      login: session.login,
       avatarUrl: session?.avatarUrl,
       targetLogin: body.targetLogin,
     });
