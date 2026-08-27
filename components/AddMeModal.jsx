@@ -4,8 +4,8 @@ import styles from './AddMeModal.module.css';
 
 const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
 
-export default function AddMeModal({ onClose, user, onVerify, verificationUsername = '' }) {
-  const [username, setUsername] = useState(verificationUsername);
+export default function AddMeModal({ onClose, user, onVerify, verificationUsername = '', initialUsername = '' }) {
+  const [username, setUsername] = useState(verificationUsername || initialUsername);
   const [location, setLocation] = useState('');
   const [email, setEmail] = useState('');
   const [emailConsent, setEmailConsent] = useState(false);

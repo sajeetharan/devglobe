@@ -1780,6 +1780,101 @@ body {
   border: 1px solid var(--board-line);
 }
 
+.leaderboard-find {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(220px, 0.7fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  margin-bottom: 20px;
+  background: var(--board-ink);
+  color: var(--board-paper);
+}
+
+.leaderboard-find > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.leaderboard-find label {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 24px;
+}
+
+.leaderboard-find > div:first-child span {
+  color: #aeb8b0;
+  font-size: 11px;
+}
+
+.leaderboard-find__input {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 12px;
+  background: var(--board-paper);
+  color: var(--board-muted);
+}
+
+.leaderboard-find__input input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--board-ink);
+  font: inherit;
+  font-weight: 700;
+  outline: 0;
+}
+
+.leaderboard-find button,
+.leaderboard-find__status button,
+.leaderboard-find__status a {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid var(--board-paper);
+  background: var(--board-cyan);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.leaderboard-find .leaderboard-find__mine {
+  background: transparent;
+}
+
+.leaderboard-find__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 54px;
+  margin-bottom: 20px;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--board-cyan);
+  color: var(--board-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.leaderboard-find__status button,
+.leaderboard-find__status a {
+  min-height: 38px;
+}
+
+.leaderboard-board__located {
+  background: #d8eef0;
+  box-shadow: inset 4px 0 var(--board-coral), inset 0 0 0 2px var(--board-cyan);
+  outline: 0;
+}
+
 .leaderboard-board__controls label {
   display: flex;
   flex-direction: column;
@@ -2014,6 +2109,25 @@ body {
 
   .leaderboard-board__controls {
     grid-template-columns: 1fr;
+  }
+
+  .leaderboard-find {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .leaderboard-find > div:first-child,
+  .leaderboard-find__input {
+    grid-column: 1 / -1;
+  }
+
+  .leaderboard-find button {
+    width: 100%;
+  }
+
+  .leaderboard-find__status {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 14px;
   }
 
   .leaderboard-board__controls label,
