@@ -1741,6 +1741,96 @@ body {
   font-size: 12px;
 }
 
+.leaderboard-ribbon {
+  min-height: 48px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-top: 1px solid var(--board-ink);
+  border-bottom: 1px solid var(--board-ink);
+  background: var(--board-ink);
+  color: var(--board-paper);
+}
+
+.leaderboard-ribbon__label {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 0 max(24px, calc((100vw - 1240px) / 2));
+  padding-right: 20px;
+  background: var(--board-coral);
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.leaderboard-ribbon__label i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.leaderboard-ribbon__viewport {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.leaderboard-ribbon__track {
+  width: max-content;
+  display: flex;
+  animation: leaderboard-ribbon-scroll 70s linear infinite;
+}
+
+.leaderboard-ribbon__track > div {
+  display: contents;
+}
+
+.leaderboard-ribbon:hover .leaderboard-ribbon__track,
+.leaderboard-ribbon:focus-within .leaderboard-ribbon__track {
+  animation-play-state: paused;
+}
+
+.leaderboard-ribbon__track a {
+  min-height: 47px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 22px;
+  border-right: 1px solid #455047;
+  color: var(--board-paper);
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.leaderboard-ribbon__track a:hover,
+.leaderboard-ribbon__track a:focus-visible {
+  background: #263029;
+}
+
+.leaderboard-ribbon__track strong {
+  color: #9adce2;
+}
+
+.leaderboard-ribbon--message {
+  justify-content: center;
+  padding: 0 16px;
+  color: #b7c0b9;
+  font-size: 11px;
+}
+
+@keyframes leaderboard-ribbon-scroll {
+  to { transform: translateX(-50%); }
+}
+
 .leaderboard-board {
   padding-bottom: 100px;
 }
@@ -2174,6 +2264,15 @@ body {
     width: min(220px, 100%);
   }
 
+  .leaderboard-ribbon {
+    flex-direction: column;
+  }
+
+  .leaderboard-ribbon__label {
+    min-height: 34px;
+    padding: 0 16px;
+  }
+
   .leaderboard-board__heading {
     align-items: start;
     flex-direction: column;
@@ -2299,6 +2398,20 @@ body {
 
   .leaderboard-board__leader {
     padding-left: 10px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-ribbon__viewport {
+    overflow-x: auto;
+  }
+
+  .leaderboard-ribbon__track {
+    animation: none;
+  }
+
+  .leaderboard-ribbon__track > div {
+    display: none;
   }
 }
 

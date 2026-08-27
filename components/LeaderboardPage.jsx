@@ -16,6 +16,7 @@ import {
   LEADERBOARD_PERIODS,
 } from '../lib/leaderboard-movement.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
+import LeaderboardActivityRibbon from './LeaderboardActivityRibbon.jsx';
 
 const PAGE_SIZE = 500;
 const DISPLAY_STEP = 100;
@@ -232,6 +233,8 @@ export default function LeaderboardPage() {
           </div>
         </div>
       </section>
+
+      <LeaderboardActivityRibbon />
 
       <section className="leaderboard-board" aria-label="Developer leaderboard">
         <div className="leaderboard-board__heading">
