@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getSiteUrl, SOCIAL_PREVIEW_VERSION } from '../../../lib/site.js';
+import { attributedGlobePath } from '../../../lib/share-attribution.js';
 
 export const revalidate = 86400;
 
@@ -33,11 +34,14 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function DeveloperSharePage({ params }) {
+export default async function DeveloperSharePage({ params, searchParams }) {
   const { login } = await params;
+  const tracking = await searchParams;
   const encodedLogin = encodeURIComponent(login);
   const siteUrl = getSiteUrl();
   const pageUrl = `${siteUrl}/share/${encodedLogin}`;
+  const profilePath = attributedGlobePath(login, tracking);
+  const globePath = attributedGlobePath(null, tracking);
   const profileDescription = `Explore @${login}'s open-source developer identity, global rank, country rank, and public contribution impact on DevGlobe.`;
   const structuredData = {
     '@context': 'https://schema.org',
@@ -77,8 +81,8 @@ export default async function DeveloperSharePage({ params }) {
           alt={`Developer card for @${login}`}
         />
         <div className="share-page__actions">
-          <Link href={`/?dev=${encodedLogin}`}>Explore @{login} on DevGlobe</Link>
-          <Link className="share-page__home" href="/">Open the globe</Link>
+          <Link href={profilePath}>Explore @{login} on DevGlobe</Link>
+          <Link className="share-page__home" href={globePath}>Open the globe</Link>
         </div>
       </div>
     </main>
