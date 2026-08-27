@@ -401,7 +401,6 @@ export default function Home() {
 
   const handleGenerateCard = useCallback((developer) => {
     const rankedDeveloper = developers.find(item => item.login === developer.login) || developer;
-    recordPlatformActivity('generated_card', rankedDeveloper.login);
     if (user?.login?.toLowerCase() === rankedDeveloper.login?.toLowerCase()) {
       fetch('/api/profile-completion', {
         method: 'POST',
@@ -418,7 +417,7 @@ export default function Home() {
     if (rankedDeveloper.lat != null && rankedDeveloper.lng != null) {
       setFlyTarget({ lat: rankedDeveloper.lat, lng: rankedDeveloper.lng });
     }
-  }, [developers, recordPlatformActivity, user]);
+  }, [developers, user]);
 
   const handleOpenOwnProfile = useCallback(async () => {
     if (!user?.login) return;

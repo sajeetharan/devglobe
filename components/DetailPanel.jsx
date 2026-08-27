@@ -24,14 +24,21 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const radarRef = useRef(null);
   const heatmapRef = useRef(null);
   const langRef = useRef(null);
+  const cardGenerationRecordedRef = useRef(false);
 
   useEffect(() => {
     track('profile_viewed', { login: dev.login });
   }, [dev.login]);
 
-  const handleGenerateCard = () => {
+  const recordCardGeneration = () => {
+    if (cardGenerationRecordedRef.current) return;
+    cardGenerationRecordedRef.current = true;
     track('card_generated', { login: dev.login });
     onCardGenerated?.(dev.login);
+  };
+
+  const handleGenerateCard = () => {
+    recordCardGeneration();
     setShowCard(true);
   };
 
@@ -48,7 +55,10 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   };
 
   useEffect(() => {
-    if (openCardOnMount) setShowCard(true);
+    if (openCardOnMount) {
+      recordCardGeneration();
+      setShowCard(true);
+    }
   }, [openCardOnMount]);
 
   useEffect(() => {
