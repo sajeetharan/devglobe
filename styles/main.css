@@ -5519,27 +5519,40 @@ body {
   100% { opacity: 0; transform: translateY(-8px); }
 }
 
-/* Progress bar */
-.loading-progress {
-  width: 100%;
-  height: 3px;
-  background: var(--border);
-  border-radius: 3px;
-  overflow: hidden;
-  margin: 16px 0 0;
+.loading-indicator {
+  position: fixed;
+  top: 108px;
+  left: 50%;
+  z-index: 94;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100vw - 32px);
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel-92);
+  box-shadow: var(--shadow);
+  color: var(--text-secondary);
+  font-size: 12px;
+  pointer-events: none;
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
 }
 
-.loading-progress__bar {
-  height: 100%;
-  width: 40%;
-  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-  border-radius: 3px;
-  animation: progressSlide 1.5s ease-in-out infinite;
+.loading-indicator__spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border: 2px solid color-mix(in srgb, var(--accent-blue) 28%, transparent);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: loadingIndicatorSpin 0.8s linear infinite;
 }
 
-@keyframes progressSlide {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(350%); }
+@keyframes loadingIndicatorSpin {
+  to { transform: rotate(360deg); }
 }
 
 .loading-status {
@@ -5996,7 +6009,7 @@ body {
   .loading-globe__routes,
   .loading-globe__nodes circle,
   .loading-fact,
-  .loading-progress__bar {
+  .loading-indicator__spinner {
     animation: none;
   }
 }
