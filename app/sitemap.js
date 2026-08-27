@@ -34,6 +34,12 @@ export function buildSitemapEntries(profileLogins, lastModified = new Date()) {
       changeFrequency: 'daily',
       priority: 0.8,
     },
+    {
+      url: `${siteUrl}/leaderboard`,
+      lastModified,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
     ...logins.flatMap(login => [
       {
         url: `${siteUrl}/developer/${encodeURIComponent(login)}`,
