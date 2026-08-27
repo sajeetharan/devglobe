@@ -37,6 +37,7 @@ function nextPageUrl(page) {
 }
 
 export default function LeaderboardPage() {
+  const [theme, setTheme] = useState('dark');
   const [developers, setDevelopers] = useState([]);
   const [totalCount, setTotalCount] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +52,24 @@ export default function LeaderboardPage() {
   const [pendingLookup, setPendingLookup] = useState('');
   const [locatedLogin, setLocatedLogin] = useState('');
   const [lookupStatus, setLookupStatus] = useState('');
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('devglobe-theme');
+      const initialTheme = stored === 'light' || stored === 'dark'
+        ? stored
+        : window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      setTheme(initialTheme);
+    } catch { /* The default dark theme remains available without storage. */ }
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    try { localStorage.setItem('devglobe-theme', next); } catch { /* Persistence is optional. */ }
+    if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
   const [period, setPeriod] = useState(30);
   const [movementResult, setMovementResult] = useState(null);
   const [movementStatus, setMovementStatus] = useState('loading');
@@ -214,6 +233,19 @@ export default function LeaderboardPage() {
         <nav aria-label="Leaderboard navigation">
           <Link href="/countries">Country stats</Link>
           <Link href="/" className="leaderboard-page__back">Explore the globe</Link>
+          <button
+            type="button"
+            className="leaderboard-page__theme"
+            onClick={toggleTheme}
+            aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+          >
+            {theme === 'light' ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z" /></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            )}
+          </button>
         </nav>
       </header>
 
