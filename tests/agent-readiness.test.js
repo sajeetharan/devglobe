@@ -51,8 +51,14 @@ test('serves a valid API catalog and OpenAPI description', async () => {
 test('describes the MCP server tools and authentication boundary', async () => {
   const card = await getMcpCard().json();
   assert.equal(card.transport.type, 'streamable-http');
-  assert.equal(card.capabilities.tools.names.length, 4);
-  assert.deepEqual(card.authentication.publicTools, ['search_developers', 'get_developer_profile']);
+  assert.equal(card.capabilities.tools.names.length, 7);
+  assert.deepEqual(card.authentication.publicTools, [
+    'search_developers',
+    'get_developer_profile',
+    'find_similar_developers',
+    'get_trending_developers',
+    'preview_contribution_mission',
+  ]);
   assert.equal(card.authentication.scheme, 'bearer');
   assert.equal(card.authentication.scopes.introductionsWrite, 'introductions:write');
 

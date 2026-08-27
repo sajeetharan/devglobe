@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MissionPreviewError, buildMissionPreview, normalizePreviewLogin, previewPreferences } from '../lib/mission-preview.js';
+import { createMcpPreviewIdentity } from '../lib/mcp-preview-identity.js';
 import { createMissionPreviewHandler } from '../app/api/mission-preview/route.js';
 
 const NOW = new Date('2026-08-26T10:00:00.000Z');
@@ -113,4 +114,32 @@ test('stops before GitHub matching when preview quota is exhausted', async () =>
   assert.equal(response.status, 429);
   assert.equal(response.headers.get('retry-after'), '42');
   assert.equal(fetches, 0);
+});
+
+test('uses a verified opaque MCP identity for preview quota', async () => {
+  let reservedHash;
+  const identity = createMcpPreviewIdentity(new Request('http://localhost/mcp', {
+    headers: { 'X-Forwarded-For': '203.0.113.10' },
+  }));
+  const handler = createMissionPreviewHandler({
+    getDeveloperContainer: () => developerContainer(),
+    getStateContainer: () => stateContainer(),
+    reservePreview: async (_container, hash) => { reservedHash = hash; return 0; },
+    reserveRefresh: async () => 0,
+    fetchCandidates: async () => [candidate()],
+    now: () => NOW,
+  });
+
+  const response = await handler(new Request('http://localhost/api/mission-preview', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-DevGlobe-Mcp-Preview-Identity': identity,
+    },
+    body: JSON.stringify({ login: 'octocat' }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.match(reservedHash, /^[A-Za-z0-9_-]{43}$/);
+  assert.doesNotMatch(reservedHash, /203\.0\.113\.10/);
 });

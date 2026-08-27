@@ -43,12 +43,71 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
   assert.deepEqual(listing.result.tools.map(tool => tool.name), [
     'search_developers',
     'get_developer_profile',
+    'find_similar_developers',
+    'get_trending_developers',
+    'preview_contribution_mission',
     'request_introduction',
     'get_introduction_status',
   ]);
   assert.equal(listing.result.tools[0].annotations.readOnlyHint, true);
   assert.ok(listing.result.tools[0].outputSchema);
-  assert.equal(listing.result.tools[2].annotations.idempotentHint, false);
+  assert.equal(listing.result.tools[4].annotations.idempotentHint, false);
+  assert.equal(listing.result.tools[5].annotations.idempotentHint, false);
+});
+
+test('remote MCP exposes similar and trending discovery with usage counts', async () => {
+  const metrics = [];
+  const fetchImpl = async url => {
+    const parsed = new URL(url);
+    if (parsed.pathname === '/api/similar-developers') {
+      return Response.json({
+        source: 'octocat',
+        count: 1,
+        results: [{
+          login: 'similar-dev',
+          name: 'Similar Dev',
+          location: null,
+          topLanguage: 'JavaScript',
+          score: 80,
+          similarity: 'Very similar',
+          reasons: ['Both work primarily in JavaScript'],
+        }],
+      });
+    }
+    return Response.json({
+      windowDays: 30,
+      generatedAt: '2026-08-27T12:00:00.000Z',
+      gainers: [{
+        login: 'rising-dev',
+        name: 'Rising Dev',
+        topLanguage: 'TypeScript',
+        score: 90,
+        globalRank: 12,
+        scoreDelta: 5,
+        rankDelta: 3,
+        isNew: false,
+        indicator: '↑3',
+      }],
+      newEntries: [],
+      hasHistory: true,
+    });
+  };
+
+  const similar = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 10, method: 'tools/call',
+    params: { name: 'find_similar_developers', arguments: { login: 'octocat', limit: 5 } },
+  }), { fetchImpl, metricRecorder: metric => metrics.push(metric) }));
+  const trending = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 11, method: 'tools/call',
+    params: { name: 'get_trending_developers', arguments: { days: 30, limit: 5 } },
+  }), { fetchImpl, metricRecorder: metric => metrics.push(metric) }));
+
+  assert.equal(similar.result.structuredContent.resultCount, 1);
+  assert.equal(trending.result.structuredContent.resultCount, 1);
+  assert.deepEqual(metrics.map(metric => [metric.tool, metric.resultCount]), [
+    ['find_similar_developers', 1],
+    ['get_trending_developers', 1],
+  ]);
 });
 
 test('remote MCP advertises discovery metadata and records privacy-safe usage', async () => {
@@ -70,9 +129,23 @@ test('remote MCP advertises discovery metadata and records privacy-safe usage', 
   assert.match(response.headers.get('link'), /agent-skills/);
   assert.deepEqual(metrics[0].method, 'tools/call');
   assert.deepEqual(metrics[0].tool, 'search_developers');
+  assert.equal(metrics[0].client, 'other');
   assert.equal(metrics[0].outcome, 'success');
   assert.equal(metrics[0].resultCount, 0);
   assert.doesNotMatch(JSON.stringify(metrics[0]), /private search wording/);
+});
+
+test('remote MCP attributes known clients without retaining raw user agents', async () => {
+  const metrics = [];
+  const response = await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 12, method: 'tools/list', params: {},
+  }, { 'User-Agent': 'SmitheryBot/1.0 (+https://smithery.ai)' }), {
+    metricRecorder: metric => metrics.push(metric),
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(metrics[0].client, 'smithery');
+  assert.doesNotMatch(JSON.stringify(metrics[0]), /SmitheryBot|smithery\.ai/);
 });
 
 test('remote MCP performs anonymous public developer discovery', async () => {
@@ -183,4 +256,46 @@ test('stateless remote MCP rejects standalone GET and DELETE sessions', async ()
     }));
     assert.equal(response.status, 405);
   }
+});
+
+test('remote MCP previews a mission with per-caller quota identity', async () => {
+  const metrics = [];
+  let previewRequest;
+  const fetchImpl = async (url, options) => {
+    previewRequest = { url: new URL(url), options };
+    return Response.json({
+      profile: { login: 'octocat', name: 'The Octocat', avatarUrl: null },
+      mission: {
+        type: 'Improve documentation',
+        durationMinutes: 15,
+        opportunity: {
+          id: '123',
+          title: 'Improve setup instructions',
+          url: 'https://github.com/org/repo/issues/123',
+          repository: 'org/repo',
+          language: 'JavaScript',
+          labels: ['documentation', 'good first issue'],
+          updatedAt: '2026-08-26T12:00:00.000Z',
+          estimatedMinutes: 15,
+          reasons: ['Uses JavaScript', 'beginner friendly'],
+        },
+      },
+    });
+  };
+
+  const response = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 13, method: 'tools/call',
+    params: { name: 'preview_contribution_mission', arguments: { login: 'octocat' } },
+  }, { 'X-Azure-ClientIP': '203.0.113.10' }), {
+    fetchImpl,
+    metricRecorder: metric => metrics.push(metric),
+  }));
+
+  assert.equal(previewRequest.url.pathname, '/api/mission-preview');
+  assert.match(previewRequest.options.headers['X-DevGlobe-Mcp-Preview-Identity'], /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+  assert.doesNotMatch(JSON.stringify(previewRequest.options), /203\.0\.113\.10/);
+  assert.equal(response.result.structuredContent.resultCount, 1);
+  assert.match(response.result.structuredContent.reservationDisclaimer, /does not reserve/);
+  assert.equal(metrics[0].tool, 'preview_contribution_mission');
+  assert.equal(metrics[0].resultCount, 1);
 });

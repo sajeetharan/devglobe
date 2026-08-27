@@ -12,6 +12,7 @@ import {
   fetchGitHubContributionCandidates,
 } from '../../../lib/github-contribution-opportunities.js';
 import { MissionPreviewError, buildMissionPreview, normalizePreviewLogin, previewPreferences } from '../../../lib/mission-preview.js';
+import { verifyMcpPreviewIdentity } from '../../../lib/mcp-preview-identity.js';
 import { isAllowedMutationOrigin } from '../../../lib/request-origin.js';
 
 const CACHE_MS = 15 * 60 * 1000;
@@ -24,7 +25,8 @@ function retryResponse(retryAfterSeconds) {
 }
 
 function clientHash(request) {
-  const identifier = request.headers.get('x-azure-clientip')
+  const identifier = verifyMcpPreviewIdentity(request.headers.get('x-devglobe-mcp-preview-identity'))
+    || request.headers.get('x-azure-clientip')
     || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     || 'unknown';
   const secret = process.env.ENGAGEMENT_HASH_SECRET || process.env.SESSION_SECRET || 'development-preview-secret';
