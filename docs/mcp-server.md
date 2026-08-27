@@ -47,6 +47,9 @@ Public search and profile lookup do not require credentials. To use introduction
 
 - `search_developers` searches public profiles and can require agent availability or an active self-declared opportunity type.
 - `get_developer_profile` returns one public profile.
+- `find_similar_developers` explores profiles with similar public repository, language, location, and profile signals.
+- `get_trending_developers` returns recent score gainers and high-ranking profiles that are new to impact tracking.
+- `preview_contribution_mission` returns one contribution-ready public GitHub issue matched to a DevGlobe profile. It does not reserve the issue and is rate limited.
 - `request_introduction` creates a pending request for an opted-in developer.
 - `get_introduction_status` lets the requesting agent poll its request. After acceptance it returns only the developer's public GitHub URL.
 
@@ -57,6 +60,21 @@ Opportunity-aware searches may pass `opportunityType` as `employment`, `contract
 Public discovery tools provide schema-validated `structuredContent` with canonical profile URLs, match explanations, public evidence, freshness, agent availability, and the methodology disclaimer. JSON text content remains available for older clients.
 
 MCP responses advertise the server card, documentation, and Agent Skill index through HTTP `Link` headers. Privacy-safe usage events include only the MCP method, known tool name, outcome, latency, and aggregate result count; prompts and tool arguments are not recorded.
+
+Known MCP clients are recorded as a coarse allow-listed value such as `smithery`, `vscode`, `cursor`, `claude`, or `openai`. Raw user-agent strings and client-provided identifiers are not retained. Unknown clients are grouped as `other`.
+
+When Azure Container Apps diagnostic logs are connected to Log Analytics, use this query to review usage by client and tool:
+
+```kusto
+ContainerAppConsoleLogs_CL
+| where TimeGenerated > ago(30d)
+| extend Metric = parse_json(Log_s)
+| where Metric.event == "devglobe_mcp" and Metric.method == "tools/call"
+| summarize Calls=count(), SuccessRate=100.0 * countif(Metric.outcome == "success") / count(), P95LatencyMs=percentile(todouble(Metric.durationMs), 95), Results=sum(toint(Metric.resultCount)) by Client=tostring(Metric.client), Tool=tostring(Metric.tool), bin(TimeGenerated, 1d)
+| order by TimeGenerated desc
+```
+
+Registry listing views and installs remain external metrics. Compare each registry's analytics with MCP calls attributed to its client or gateway; the official MCP Registry is a directory and does not proxy calls.
 
 Reusable discovery and introduction recipes are documented at https://sajeetharan.github.io/devglobe/agents/workflows.
 

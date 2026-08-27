@@ -106,6 +106,51 @@ test('MCP client filters and explains active opportunity matches', async () => {
   assert.ok(results[0].whyMatched.includes('Developer is actively open to employment opportunities'));
 });
 
+test('MCP client returns bounded trending developers with profile URLs', async () => {
+  let requestedUrl;
+  const client = createDevGlobeMcpClient({
+    baseUrl: 'https://www.devglobe.dev',
+    fetchImpl: async url => {
+      requestedUrl = new URL(url);
+      return Response.json({
+        windowDays: 30,
+        gainers: [{ login: 'rising-dev', score: 88, scoreDelta: 4.2 }],
+        newEntries: [],
+        hasHistory: true,
+      });
+    },
+  });
+
+  const result = await client.getTrendingDevelopers({ days: 30, limit: 5 });
+
+  assert.equal(requestedUrl.pathname, '/api/trending');
+  assert.equal(requestedUrl.searchParams.get('days'), '30');
+  assert.equal(result.gainers[0].profileUrl, 'https://www.devglobe.dev/developer/rising-dev');
+});
+
+test('MCP client returns similar developers without exposing embeddings', async () => {
+  let requestedUrl;
+  const client = createDevGlobeMcpClient({
+    baseUrl: 'https://www.devglobe.dev',
+    fetchImpl: async url => {
+      requestedUrl = new URL(url);
+      return Response.json({
+        source: 'octocat',
+        count: 1,
+        results: [{ login: 'similar-dev', similarity: 'Very similar', reasons: ['Both work primarily in JavaScript'] }],
+      });
+    },
+  });
+
+  const result = await client.findSimilarDevelopers({ login: 'octocat', limit: 5 });
+
+  assert.equal(requestedUrl.pathname, '/api/similar-developers');
+  assert.equal(requestedUrl.searchParams.get('login'), 'octocat');
+  assert.equal(requestedUrl.searchParams.get('top'), '5');
+  assert.equal(result.results[0].profileUrl, 'https://www.devglobe.dev/developer/similar-dev');
+  assert.equal('embedding' in result.results[0], false);
+});
+
 test('MCP client requires an issued token for introductions', async () => {
   const client = createDevGlobeMcpClient({ baseUrl: 'https://devglobe.dev', fetchImpl: () => {} });
   await assert.rejects(() => client.requestIntroduction({}), /DEVGLOBE_AGENT_TOKEN/);
