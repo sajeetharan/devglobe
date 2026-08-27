@@ -11,6 +11,10 @@ import {
   getLeaderboardFilters,
   normalizeGitHubLogin,
 } from '../lib/leaderboard.js';
+import {
+  buildRankMovement,
+  LEADERBOARD_PERIODS,
+} from '../lib/leaderboard-movement.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
 
 const PAGE_SIZE = 500;
@@ -45,6 +49,9 @@ export default function LeaderboardPage() {
   const [pendingLookup, setPendingLookup] = useState('');
   const [locatedLogin, setLocatedLogin] = useState('');
   const [lookupStatus, setLookupStatus] = useState('');
+  const [period, setPeriod] = useState(30);
+  const [movementResult, setMovementResult] = useState(null);
+  const [movementStatus, setMovementStatus] = useState('loading');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -111,6 +118,29 @@ export default function LeaderboardPage() {
   const visible = locatedIndex >= 0
     ? ranked.slice(Math.max(0, locatedIndex - 2), Math.min(ranked.length, locatedIndex + 3))
     : ranked.slice(0, displayLimit);
+  const movementLogins = visible.map(developer => developer.login.toLowerCase()).join(',');
+  const movement = useMemo(
+    () => buildRankMovement(developers, movementResult?.snapshots || []),
+    [developers, movementResult]
+  );
+
+  useEffect(() => {
+    if (!movementLogins) return undefined;
+    const controller = new AbortController();
+    setMovementStatus('loading');
+    const params = new URLSearchParams({ days: String(period), logins: movementLogins });
+    fetch(`/api/leaderboard/movement?${params}`, { signal: controller.signal })
+      .then(async response => {
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || 'Unable to load rank movement');
+        setMovementResult(body);
+        setMovementStatus('ready');
+      })
+      .catch(error => {
+        if (error.name !== 'AbortError') setMovementStatus('error');
+      });
+    return () => controller.abort();
+  }, [movementLogins, period]);
 
   useEffect(() => setDisplayLimit(DISPLAY_STEP), [country, language, sortBy]);
 
@@ -212,6 +242,29 @@ export default function LeaderboardPage() {
           <p title={SCORE_METHODOLOGY.short}>Scores are relative to developers currently indexed by DevGlobe.</p>
         </div>
 
+        <div className="leaderboard-period">
+          <div className="leaderboard-period__tabs" role="group" aria-label="Rank comparison period">
+            {LEADERBOARD_PERIODS.map(days => (
+              <button
+                key={days}
+                type="button"
+                aria-pressed={period === days}
+                className={period === days ? 'active' : ''}
+                onClick={() => setPeriod(days)}
+              >
+                {days} days
+              </button>
+            ))}
+          </div>
+          <p>
+            {movementStatus === 'loading' && 'Loading rank movement...'}
+            {movementStatus === 'error' && 'Rank movement is temporarily unavailable.'}
+            {movementStatus === 'ready' && !movementResult?.hasHistory && 'No historical snapshot is available for this period yet.'}
+            {movementStatus === 'ready' && movementResult?.hasHistory && `Movement compares current rank with the latest snapshot on or before ${movementResult.baselineDay}.`}
+            {' '}The impact score formula does not change.
+          </p>
+        </div>
+
         <form className="leaderboard-find" onSubmit={handleLookup}>
           <div>
             <label htmlFor="leaderboard-login">Where do you rank?</label>
@@ -299,6 +352,7 @@ export default function LeaderboardPage() {
                   <th scope="col">Developer</th>
                   <th scope="col">Location</th>
                   <th scope="col">Impact</th>
+                  <th scope="col">Movement</th>
                   <th scope="col">Stars</th>
                   <th scope="col">Commits</th>
                   <th scope="col">OSS worth</th>
@@ -306,6 +360,19 @@ export default function LeaderboardPage() {
               </thead>
               <tbody>
                 {visible.map(developer => (
+                  (() => {
+                    const rankMovement = movement.get(developer.login.toLowerCase());
+                    const movementUnavailable = movementStatus !== 'ready' || !movementResult?.hasHistory;
+                    const movementLabel = movementUnavailable || rankMovement?.status === 'unavailable'
+                      ? 'Not available'
+                      : rankMovement?.status === 'new'
+                        ? 'New'
+                        : rankMovement?.status === 'unchanged'
+                          ? 'No change'
+                          : rankMovement?.status === 'up'
+                            ? `Up ${rankMovement.delta}`
+                            : `Down ${Math.abs(rankMovement?.delta || 0)}`;
+                    return (
                   <tr
                     key={developer.login}
                     id={`leaderboard-${developer.login.toLowerCase()}`}
@@ -331,10 +398,20 @@ export default function LeaderboardPage() {
                     <td className="leaderboard-board__score" data-label="Impact score">
                       <strong>{developer.score}</strong><span>/100</span>
                     </td>
+                    <td data-label={`${period}-day movement`}>
+                      <span className={`leaderboard-movement leaderboard-movement--${movementUnavailable ? 'unavailable' : rankMovement?.status || 'unavailable'}`}>
+                        <i aria-hidden="true">
+                          {!movementUnavailable && rankMovement?.status === 'up' ? '↑' : !movementUnavailable && rankMovement?.status === 'down' ? '↓' : '·'}
+                        </i>
+                        {movementLabel}
+                      </span>
+                    </td>
                     <td data-label="GitHub stars">{formatNum(developer.totalStars)}</td>
                     <td data-label="Commit activity">{formatNum(developer.totalCommits)}</td>
                     <td data-label="Estimated OSS worth">{formatUsd(developer.ossWorth?.totalDollarValue, true)}</td>
                   </tr>
+                    );
+                  })()
                 ))}
               </tbody>
             </table>

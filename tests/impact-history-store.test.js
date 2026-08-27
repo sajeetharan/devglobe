@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   saveImpactSnapshot,
+  getLatestImpactDayOnOrBefore,
+  listImpactSnapshotsForDay,
   listLatestSnapshotsOnOrBeforeDay,
   __resetMemoryImpactHistoryForTests,
 } from '../lib/impact-history-store.js';
@@ -51,4 +53,20 @@ test('listLatestSnapshotsOnOrBeforeDay excludes capture-progress documents', asy
   const results = await listLatestSnapshotsOnOrBeforeDay('2026-07-24');
   assert.equal(results.length, 1);
   assert.equal(results[0].login, 'alice');
+});
+
+test('loads one bounded baseline day for leaderboard movement', async (t) => {
+  __resetMemoryImpactHistoryForTests();
+  t.after(__resetMemoryImpactHistoryForTests);
+
+  await saveImpactSnapshot(snapshot('alice', '2026-07-20', 60, 5));
+  await saveImpactSnapshot(snapshot('alice', '2026-07-24', 70, 3));
+  await saveImpactSnapshot(snapshot('bob', '2026-07-24', 40, 8));
+  await saveImpactSnapshot(snapshot('bob', '2026-07-26', 50, 7));
+
+  const day = await getLatestImpactDayOnOrBefore('2026-07-25');
+  const results = await listImpactSnapshotsForDay(day);
+
+  assert.equal(day, '2026-07-24');
+  assert.deepEqual(results.map(result => result.login).sort(), ['alice', 'bob']);
 });
