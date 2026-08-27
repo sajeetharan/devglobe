@@ -17,6 +17,7 @@ import {
 } from '../lib/leaderboard-movement.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
 import LeaderboardActivityRibbon from './LeaderboardActivityRibbon.jsx';
+import LeaderboardTrust from './LeaderboardTrust.jsx';
 
 const PAGE_SIZE = 500;
 const DISPLAY_STEP = 100;
@@ -242,7 +243,10 @@ export default function LeaderboardPage() {
             <p className="leaderboard-page__eyebrow">THE RANKINGS</p>
             <h2>Global impact</h2>
           </div>
-          <p title={SCORE_METHODOLOGY.short}>Scores are relative to developers currently indexed by DevGlobe.</p>
+          <p title={SCORE_METHODOLOGY.short}>
+            Scores are relative to developers currently indexed by DevGlobe.{' '}
+            <a href="#score-methodology">View methodology</a>
+          </p>
         </div>
 
         <div className="leaderboard-period">
@@ -430,6 +434,7 @@ export default function LeaderboardPage() {
           </>
         )}
       </section>
+      <LeaderboardTrust />
     </main>
   );
 }
