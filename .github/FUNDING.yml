@@ -1,5 +1,2 @@
-# Replace YOUR_USERNAME with your GitHub username
-github: [YOUR_USERNAME]
-# open_collective: devglobe
-# ko_fi: YOUR_USERNAME
-# custom: ["https://your-link.com"]
+github:
+	- sajeetharan

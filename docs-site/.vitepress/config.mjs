@@ -23,6 +23,7 @@ export default defineConfig({
       { text: 'Product', link: '/guide/overview' },
       { text: 'Agents', link: '/agents/overview' },
       { text: 'API', link: '/reference/api' },
+      { text: 'Support', link: '/guide/funding' },
       { text: 'Live app', link: 'https://www.devglobe.dev' },
     ],
     sidebar: [
@@ -32,6 +33,7 @@ export default defineConfig({
           { text: 'Overview', link: '/guide/overview' },
           { text: 'Feature guide', link: '/guide/features' },
           { text: 'Scoring and OSS Worth', link: '/guide/methodology' },
+          { text: 'Funding and transparency', link: '/guide/funding' },
         ],
       },
       {

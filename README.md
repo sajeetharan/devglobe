@@ -8,6 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://sajeetharan.github.io/devglobe/)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Install-007ACC?style=for-the-badge&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery)
 [![GitHub Stars](https://img.shields.io/github/stars/sajeetharan/devglobe?style=for-the-badge&logo=github)](https://github.com/sajeetharan/devglobe/stargazers)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/sajeetharan?style=for-the-badge&logo=githubsponsors&label=Sponsor)](https://github.com/sponsors/sajeetharan)
 [![License](https://img.shields.io/github/license/sajeetharan/devglobe?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
 
@@ -289,6 +290,12 @@ CRON_SECRET=the-same-secret-configured-on-the-container-app
 ```
 
 Deploy the complete `functions` directory so each timer and its `function.json` are included.
+
+## Support DevGlobe
+
+DevGlobe is independently maintained and free to use. [GitHub sponsorship](https://github.com/sponsors/sajeetharan) helps fund Azure hosting and observability, public-data refreshes, GitHub API-backed processing, security updates, testing, and open-source maintenance.
+
+Sponsorship never influences developer rankings, search placement, moderation, or access to private developer information. See the [funding and transparency policy](docs-site/guide/funding.md) for tiers, benefits, costs, and current milestones.
 
 ## 🤝 Contributing
 
