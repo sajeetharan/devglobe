@@ -196,6 +196,9 @@ export default function Leaderboard({
       <div className="sidebar__header">
         <div className="sidebar__header-row">
           <h2>Leaderboard</h2>
+          <Link href="/leaderboard" className="sidebar__full-board-link" title="Open full leaderboard">
+            Full board <span aria-hidden="true">↗</span>
+          </Link>
           {hasActiveFilter && (
             <button className="sidebar__clear-btn" onClick={clearFilters} title="Clear all filters">
               ✕ Clear filters

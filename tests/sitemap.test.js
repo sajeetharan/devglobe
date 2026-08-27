@@ -7,6 +7,7 @@ test('includes every existing indexable acquisition route', () => {
   const paths = entries.map(entry => new URL(entry.url).pathname);
 
   assert.ok(paths.includes('/countries'));
+  assert.ok(paths.includes('/leaderboard'));
   assert.ok(paths.includes('/developer/octocat'));
   assert.ok(paths.includes('/share/octocat'));
   assert.ok(paths.includes('/developer/octo%20cat'));
