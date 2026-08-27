@@ -13,19 +13,28 @@ const requestedLimit = Number.parseInt(limitArg?.split('=')[1] || '100', 10);
 const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : 100;
 const container = getCosmosContainer(process.env.COSMOS_CONTAINER || 'developers');
 
-if (!container) {
-  console.error('Cosmos DB is not configured.');
-  process.exit(1);
+async function loadDevelopers() {
+  if (container) {
+    const { resources } = await container.items.query({
+      query: `SELECT TOP 500 c.login, c.name, c.location, c.topLanguage, c.score,
+          c.totalStars, c.totalCommits, c.followers, c.soReputation, c.claimed
+        FROM c
+        WHERE (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved')
+          AND (NOT IS_DEFINED(c.claimed) OR c.claimed != true)
+        ORDER BY c.score DESC`,
+    }).fetchAll();
+    return resources;
+  }
+
+  const sourceUrl = process.env.DEVELOPER_SNAPSHOT_URL?.trim();
+  if (!sourceUrl) throw new Error('Cosmos DB or DEVELOPER_SNAPSHOT_URL is required.');
+  const response = await fetch(sourceUrl);
+  if (!response.ok) throw new Error(`Developer snapshot returned ${response.status}.`);
+  const payload = await response.json();
+  return Array.isArray(payload) ? payload : payload.developers || [];
 }
 
-const { resources } = await container.items.query({
-  query: `SELECT TOP 500 c.login, c.name, c.location, c.topLanguage, c.score,
-      c.totalStars, c.totalCommits, c.followers, c.soReputation, c.claimed
-    FROM c
-    WHERE (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved')
-      AND (NOT IS_DEFINED(c.claimed) OR c.claimed != true)
-    ORDER BY c.score DESC`,
-}).fetchAll();
+const resources = await loadDevelopers();
 
 const candidates = selectActivationCandidates(resources, limit);
 const output = {

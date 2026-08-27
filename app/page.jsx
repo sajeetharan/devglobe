@@ -201,7 +201,8 @@ export default function Home() {
           return { ok: false, ...result };
         }
         setClaimStatus('claimed');
-        track('claim_completed', { profile_status: 'public' });
+        const source = new URLSearchParams(window.location.search).get('utm_source') || 'direct';
+        track('claim_completed', { login: user.login, source });
         setClaimedLogins(prev => new Set(prev).add(user.login));
         let claimedDeveloper = developers.find(developer => developer.login === user.login);
         // If a new profile was created, reload developers to include it

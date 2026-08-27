@@ -21,6 +21,7 @@ test('builds personalized outreach with a measurable profile link and claim bene
   assert.match(message, /Hi Higher/);
   assert.match(message, /500 public commits/);
   assert.match(message, /utm_source=manual_outreach/);
+  assert.match(message, /utm_campaign=developer_activation/);
   assert.match(message, /verified identity card/);
 });
 
@@ -29,4 +30,5 @@ test('builds a weekly spotlight from public contribution signals', () => {
   assert.match(spotlight, /Higher \(@higher\)/);
   assert.doesNotMatch(spotlight, /Claimed/);
   assert.match(spotlight, /utm_source=weekly_spotlight/);
+  assert.match(spotlight, /utm_campaign=developer_spotlight/);
 });

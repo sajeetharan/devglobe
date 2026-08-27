@@ -7204,26 +7204,50 @@ body {
 
 .share-page__actions {
   display: flex;
+  position: relative;
   justify-content: center;
+  align-items: center;
   gap: 10px;
   margin-top: 22px;
+  padding-bottom: 24px;
 }
 
-.share-page__actions a {
+.share-page__actions a,
+.share-page__actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
   padding: 10px 16px;
   border: 1px solid rgba(8, 145, 178, 0.5);
   border-radius: 6px;
   background: rgba(8, 145, 178, 0.16);
   color: #67e8f9;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.share-page__actions .share-page__home {
+.share-page__actions .share-page__create {
+  border-color: #22d3ee;
+  background: #22d3ee;
+  color: #071018;
+}
+
+.share-page__actions button {
   border-color: rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.06);
   color: #cbd5e1;
+}
+
+.share-page__share-status {
+  position: absolute;
+  bottom: 0;
+  color: #94a3b8;
+  font-size: 12px;
 }
 .badge-card {
   margin: 40px auto 0;
@@ -7401,7 +7425,8 @@ body {
     flex-direction: column;
   }
 
-  .share-page__actions a {
+  .share-page__actions a,
+  .share-page__actions button {
     text-align: center;
   }
 }
@@ -7780,7 +7805,8 @@ body {
     padding: 24px 12px max(24px, env(safe-area-inset-bottom));
   }
 
-  .share-page__actions a {
+  .share-page__actions a,
+  .share-page__actions button {
     display: inline-flex;
     min-height: 44px;
     align-items: center;
