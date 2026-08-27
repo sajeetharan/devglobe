@@ -55,6 +55,7 @@ export default function Home() {
   const [readmeRequest, setReadmeRequest] = useState(0);
   const [cardContext, setCardContext] = useState(null);
   const [showAddMe, setShowAddMe] = useState(false);
+  const [addMeUsername, setAddMeUsername] = useState('');
   const [verificationUsername, setVerificationUsername] = useState('');
   const [showClaimPending, setShowClaimPending] = useState(false);
   const [showAiProfile, setShowAiProfile] = useState(false);
@@ -109,6 +110,13 @@ export default function Home() {
     syncSimilarLogin();
     window.addEventListener('popstate', syncSimilarLogin);
     return () => window.removeEventListener('popstate', syncSimilarLogin);
+  }, []);
+
+  useEffect(() => {
+    const username = new URLSearchParams(window.location.search).get('add')?.trim().replace(/^@/, '');
+    if (!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(username || '')) return;
+    setAddMeUsername(username);
+    setShowAddMe(true);
   }, []);
 
   // Fetch session on mount
@@ -886,6 +894,7 @@ export default function Home() {
             user={user}
             onVerify={handleClaim}
             verificationUsername={verificationUsername}
+            initialUsername={addMeUsername}
           />
         )}
         {showClaimPending && <ClaimStatusModal onClose={() => setShowClaimPending(false)} />}

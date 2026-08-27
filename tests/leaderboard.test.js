@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { filterAndSortLeaderboard, getLeaderboardFilters } from '../lib/leaderboard.js';
+import {
+  filterAndSortLeaderboard,
+  findLeaderboardDeveloper,
+  getLeaderboardFilters,
+  normalizeGitHubLogin,
+} from '../lib/leaderboard.js';
 
 const developers = [
   {
@@ -33,4 +38,15 @@ test('builds unique alphabetical filter options', () => {
     countries: ['France', 'Germany'],
     languages: ['Go', 'TypeScript'],
   });
+});
+
+test('normalizes valid GitHub logins and rejects invalid lookup input', () => {
+  assert.equal(normalizeGitHubLogin(' @Alice-Dev '), 'Alice-Dev');
+  assert.equal(normalizeGitHubLogin('-invalid'), '');
+  assert.equal(normalizeGitHubLogin('invalid login'), '');
+});
+
+test('finds a developer by case-insensitive login', () => {
+  assert.equal(findLeaderboardDeveloper(developers, '@ALICE')?.globalRank, 1);
+  assert.equal(findLeaderboardDeveloper(developers, 'missing'), null);
 });
