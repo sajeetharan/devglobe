@@ -11,6 +11,7 @@ import { classifyAgent } from '../lib/agent-class.js';
 import { AI_TOOLS } from '../lib/ai-profile.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { resolveReadmeAccess } from '../lib/profile-readme.js';
+import { identityCardShareUrl } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
 
@@ -27,7 +28,8 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const cardGenerationRecordedRef = useRef(false);
 
   useEffect(() => {
-    track('profile_viewed', { login: dev.login });
+    const source = new URLSearchParams(window.location.search).get('utm_source') || 'direct';
+    track('profile_viewed', { login: dev.login, source });
   }, [dev.login]);
 
   const recordCardGeneration = () => {
@@ -786,8 +788,8 @@ function CardModal({ dev, claimSuccess, onClose }) {
   const { login } = dev;
   const name = dev.name || login;
   const cardUrl = `/api/card?login=${encodeURIComponent(login)}&v=${IDENTITY_CARD_VERSION}`;
-  const sharePath = `/share/${encodeURIComponent(login)}?v=${SOCIAL_PREVIEW_VERSION}`;
-  const shareUrl = `${getSiteUrl()}${sharePath}`;
+  const shareUrls = Object.fromEntries(['copy_link', 'twitter', 'facebook', 'linkedin', 'reddit']
+    .map(channel => [channel, identityCardShareUrl(getSiteUrl(), login, channel, SOCIAL_PREVIEW_VERSION)]));
 
   const rankText = dev.globalRank ? `Global #${dev.globalRank} of ${dev.globalTotal}` : 'Ranked on DevGlobe';
   const agent = classifyAgent(dev);
@@ -798,10 +800,10 @@ function CardModal({ dev, claimSuccess, onClose }) {
   const facebookCaption = `Open-source work tells a richer story than a job title.\n\nDevGlobe mapped my public contributions into a developer identity that helps teams, communities, and AI agents discover what I build and where I can contribute.\n\n${agent.name} · ${rankText}\n\nExplore my profile and create yours.\n\n${hashtagText}`;
 
   const shareLinks = {
-    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterCaption)}&url=${encodeURIComponent(shareUrl)}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-    reddit: `https://reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(`${name}'s open-source developer identity on DevGlobe - ${agent.name}, ${rankText}`)}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterCaption)}&url=${encodeURIComponent(shareUrls.twitter)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrls.facebook)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrls.linkedin)}`,
+    reddit: `https://reddit.com/submit?url=${encodeURIComponent(shareUrls.reddit)}&title=${encodeURIComponent(`${name}'s open-source developer identity on DevGlobe - ${agent.name}, ${rankText}`)}`,
   };
 
   const handleDownload = async () => {
@@ -826,7 +828,7 @@ function CardModal({ dev, claimSuccess, onClose }) {
   };
 
   const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(shareUrl);
+    await navigator.clipboard.writeText(shareUrls.copy_link);
     track('identity_card_shared', { login, channel: 'copy_link' });
   };
 
