@@ -8621,6 +8621,18 @@ body {
   .share-page__actions button {
     text-align: center;
   }
+
+  .search-bar__profile-result,
+  .search-bar__card-action {
+    min-height: 44px;
+  }
+}
+
+.search-bar__suggestions {
+  max-height: min(240px, 38vh);
+  margin-top: 8px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
 }
 
 .search-bar__card-suggestion {
@@ -8628,14 +8640,16 @@ body {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  margin-top: 8px;
   padding: 9px;
+}
+
+.search-bar__card-suggestion + .search-bar__card-suggestion {
   border-top: 1px solid var(--border);
 }
 
 .search-bar__profile-result {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -8650,6 +8664,13 @@ body {
 
 .search-bar__profile-result:hover .search-bar__card-identity strong {
   color: #22d3ee;
+}
+
+.search-bar__view-profile {
+  color: #22d3ee;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .search-bar__profile-result:focus-visible {
