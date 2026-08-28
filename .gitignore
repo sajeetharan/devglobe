@@ -16,7 +16,9 @@ app/promo/
 public/promo/
 *.log
 dist/
-dashboards/
+dashboards/*
+!dashboards/devglobe-product-adoption-dashboard.json
+!dashboards/devglobe-product-adoption-workbook.json
 docs/adx-growth-dashboard.md
 scripts/build-devglobe-growth-dashboard.cjs
 .env*.local

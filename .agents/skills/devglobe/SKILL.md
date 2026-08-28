@@ -44,3 +44,27 @@ Machine-readable server card: https://www.devglobe.dev/.well-known/mcp/server-ca
 For reusable examples, see https://sajeetharan.github.io/devglobe/agents/workflows.
 
 Private email addresses and private AI profile settings are never returned.
+
+## Ready-to-run examples
+
+Find maintainers for a project:
+
+```json
+{"tool":"search_developers","arguments":{"query":"TypeScript open-source maintainers","location":"Germany","opportunityType":"open-source","availableForAgents":true,"limit":5}}
+```
+
+Inspect a selected result, then find alternatives:
+
+```json
+{"tool":"get_developer_profile","arguments":{"login":"sajeetharan"}}
+{"tool":"find_similar_developers","arguments":{"login":"sajeetharan","limit":5}}
+```
+
+Find recent momentum or one contribution opportunity:
+
+```json
+{"tool":"get_trending_developers","arguments":{"days":30,"limit":10}}
+{"tool":"preview_contribution_mission","arguments":{"login":"sajeetharan"}}
+```
+
+Do not invent tool names or arguments. On `invalid_request`, change the input before retrying. Retry only errors whose envelope has `retryable: true`, honoring `retryAfterSeconds` when present.

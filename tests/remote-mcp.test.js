@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleMcpOptions, handleRemoteMcpRequest } from '../lib/remote-mcp.js';
+import { createMcpCallerHash, recordMcpMetric } from '../lib/mcp-observability.js';
 
 const MCP_HEADERS = {
   Accept: 'application/json, text/event-stream',
@@ -148,6 +149,29 @@ test('remote MCP attributes known clients without retaining raw user agents', as
   assert.doesNotMatch(JSON.stringify(metrics[0]), /SmitheryBot|smithery\.ai/);
 });
 
+test('MCP caller correlation rotates daily without retaining source identifiers', () => {
+  const request = mcpRequest({ jsonrpc: '2.0', id: 14, method: 'tools/list', params: {} }, {
+    'User-Agent': 'PrivateClient/1.0',
+    'X-Forwarded-For': '192.0.2.10',
+  });
+  const first = createMcpCallerHash(request, 'test-secret', new Date('2026-08-28T12:00:00Z'));
+  const sameDay = createMcpCallerHash(request, 'test-secret', new Date('2026-08-28T23:00:00Z'));
+  const nextDay = createMcpCallerHash(request, 'test-secret', new Date('2026-08-29T00:00:00Z'));
+
+  assert.equal(first, sameDay);
+  assert.notEqual(first, nextDay);
+  assert.doesNotMatch(first, /PrivateClient|192\.0\.2\.10/);
+});
+
+test('MCP logs retain only allow-listed error codes', () => {
+  const logs = [];
+  recordMcpMetric({ method: 'tools/call', client: 'other', outcome: 'error', durationMs: 5, errorCode: 'not_found' }, message => logs.push(JSON.parse(message)));
+  recordMcpMetric({ method: 'tools/call', client: 'other', outcome: 'error', durationMs: 5, errorCode: 'private_detail' }, message => logs.push(JSON.parse(message)));
+
+  assert.equal(logs[0].errorCode, 'not_found');
+  assert.equal('errorCode' in logs[1], false);
+});
+
 test('remote MCP performs anonymous public developer discovery', async () => {
   const fetchImpl = async url => {
     const parsed = new URL(url);
@@ -202,6 +226,24 @@ test('remote MCP uses the configured public API instead of fetching its own orig
     'https://devglobe-public-api.azurewebsites.net',
     'https://devglobe-public-api.azurewebsites.net',
   ]);
+});
+
+test('remote MCP uses the internal app origin for same-app discovery tools', async () => {
+  let requestedUrl;
+  const response = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 13, method: 'tools/call',
+    params: { name: 'get_trending_developers', arguments: { days: 30, limit: 5 } },
+  }), {
+    appApiBaseUrl: 'http://localhost:3000',
+    fetchImpl: async url => {
+      requestedUrl = new URL(url);
+      return Response.json({ windowDays: 30, gainers: [], newEntries: [], hasHistory: true });
+    },
+  }));
+
+  assert.equal(response.result.isError, undefined);
+  assert.equal(requestedUrl.origin, 'http://localhost:3000');
+  assert.equal(requestedUrl.pathname, '/api/trending');
 });
 
 test('remote MCP forwards bearer credentials for introduction tools', async () => {

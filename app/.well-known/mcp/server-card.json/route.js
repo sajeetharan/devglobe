@@ -3,7 +3,7 @@ import { getSiteUrl } from '../../../../lib/site.js';
 export function GET() {
   const siteUrl = getSiteUrl();
   return Response.json({
-    serverInfo: { name: 'devglobe', version: '1.1.0' },
+    serverInfo: { name: 'devglobe', version: '1.2.0' },
     description: 'Search public developer profiles and request consent-gated introductions.',
     homepage: `${siteUrl}/agents`,
     transport: {

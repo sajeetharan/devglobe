@@ -1,3 +1,4 @@
+Privacy-safe usage events include only the MCP method, known tool name, outcome, bounded error code, latency, aggregate result count, and a daily rotating caller hash; prompts and tool arguments are not recorded. The caller hash is derived with HMAC from request metadata and cannot be reversed; rotation prevents longitudinal tracking.
 # DevGlobe MCP Server
 
 DevGlobe provides a hosted Model Context Protocol server for developer discovery and consent-gated introductions. It uses stateless Streamable HTTP so agents can connect without cloning or running DevGlobe locally.
