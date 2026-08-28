@@ -249,31 +249,11 @@ export default function LeaderboardPage() {
         </nav>
       </header>
 
-      <section className="leaderboard-page__hero" aria-labelledby="leaderboard-title">
-        <p className="leaderboard-page__eyebrow">OPEN-SOURCE IMPACT / GLOBAL BOARD</p>
-        <div className="leaderboard-page__hero-grid">
-          <div>
-            <h1 id="leaderboard-title">See who is shaping the open web.</h1>
-            <p className="leaderboard-page__intro">
-              Explore developers by a transparent, dataset-relative signal combining public GitHub
-              and Stack Overflow activity. It measures indexed impact, not developer ability.
-            </p>
-          </div>
-          <div className="leaderboard-page__count" aria-live="polite">
-            <strong>{formatNum(totalCount ?? developers.length)}</strong>
-            <span>developers ranked</span>
-            {loadingMore && <small>Loading {formatNum(developers.length)} indexed profiles...</small>}
-          </div>
-        </div>
-      </section>
-
-      <LeaderboardActivityRibbon />
-
-      <section className="leaderboard-board" aria-label="Developer leaderboard">
+      <section className="leaderboard-board" aria-labelledby="leaderboard-title">
         <div className="leaderboard-board__heading">
           <div>
             <p className="leaderboard-page__eyebrow">THE RANKINGS</p>
-            <h2>Global impact</h2>
+            <h1 id="leaderboard-title">Global impact</h1>
           </div>
           <p title={SCORE_METHODOLOGY.short}>
             Scores are relative to developers currently indexed by DevGlobe.{' '}
@@ -466,6 +446,26 @@ export default function LeaderboardPage() {
           </>
         )}
       </section>
+
+      <section className="leaderboard-page__hero" aria-labelledby="leaderboard-context-title">
+        <p className="leaderboard-page__eyebrow">OPEN-SOURCE IMPACT / GLOBAL BOARD</p>
+        <div className="leaderboard-page__hero-grid">
+          <div>
+            <h2 id="leaderboard-context-title">See who is shaping the open web.</h2>
+            <p className="leaderboard-page__intro">
+              Explore developers by a transparent, dataset-relative signal combining public GitHub
+              and Stack Overflow activity. It measures indexed impact, not developer ability.
+            </p>
+          </div>
+          <div className="leaderboard-page__count" aria-live="polite">
+            <strong>{formatNum(totalCount ?? developers.length)}</strong>
+            <span>developers ranked</span>
+            {loadingMore && <small>Loading {formatNum(developers.length)} indexed profiles...</small>}
+          </div>
+        </div>
+      </section>
+
+      <LeaderboardActivityRibbon />
       <LeaderboardTrust />
     </main>
   );
