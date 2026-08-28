@@ -17,6 +17,8 @@
     "docs:build": "vitepress build docs-site && node scripts/verify-docs-build.js",
     "docs:check-live": "node scripts/verify-docs-endpoints.js",
     "docs:preview": "vitepress preview docs-site",
+    "dashboard:adoption": "node scripts/build-product-adoption-dashboard.js",
+    "workbook:adoption": "node scripts/build-product-adoption-workbook.js",
     "lint": "next lint",
     "build-data": "node scripts/build-dataset.js",
     "fetch-github": "node scripts/fetch-github.js",

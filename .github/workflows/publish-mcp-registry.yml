@@ -1,0 +1,40 @@
+name: Publish MCP Registry metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server.json'
+      - '.github/workflows/publish-mcp-registry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate MCP contracts
+        run: node --test tests/remote-mcp.test.js tests/mcp-agent.test.js tests/mcp-retry-contract.test.js tests/agent-readiness.test.js
+
+      - name: Install MCP publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish remote server metadata
+        run: ./mcp-publisher publish

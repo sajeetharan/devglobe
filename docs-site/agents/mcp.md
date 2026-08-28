@@ -50,8 +50,23 @@ For consent-gated introduction tools, keep the issued token in the client's secu
 |---|---|---|
 | `search_developers` | Anonymous | Searches public profiles by expertise, name, location, language, and agent availability |
 | `get_developer_profile` | Anonymous | Returns one public profile by GitHub login |
+| `find_similar_developers` | Anonymous | Finds alternatives similar to a known public profile |
+| `get_trending_developers` | Anonymous | Lists recent score gainers and new impact-tracking entries |
+| `preview_contribution_mission` | Anonymous | Previews one contribution-ready issue without reserving it |
 | `request_introduction` | Bearer token | Creates a pending request for an opted-in developer |
 | `get_introduction_status` | Same bearer token | Polls a request created by that agent |
+
+## Agent workflows
+
+Start broad discovery with `search_developers`, inspect selected results with `get_developer_profile`, and use `find_similar_developers` only when alternatives to a known profile are useful. Use `get_trending_developers` when recency matters and `preview_contribution_mission` when the user asks for a concrete open-source action.
+
+Example inputs:
+
+```json
+{"tool":"search_developers","arguments":{"query":"TypeScript maintainers","location":"Germany","availableForAgents":true,"limit":5}}
+{"tool":"get_developer_profile","arguments":{"login":"sajeetharan"}}
+{"tool":"get_trending_developers","arguments":{"days":30,"limit":10}}
+```
 
 Search limits must remain between 1 and 20. Clients should surface structured tool errors and back off when rate-limited rather than retrying aggressively.
 
@@ -82,6 +97,7 @@ Only retryable errors ever include `retryAfterSeconds`, and only when DevGlobe c
 ## Privacy-safe telemetry
 
 DevGlobe records the MCP method, known tool name, success or error outcome, latency, and aggregate result count. Raw prompts, search arguments, profile content, credentials, and private contact details are not included in usage events.
+DevGlobe records the MCP method, known tool name, success or error outcome, bounded error code, latency, aggregate result count, and a daily rotating HMAC caller hash for conversion measurement. Raw prompts, search arguments, profile content, credentials, IP addresses, raw user agents, and private contact details are not included in usage events.
 
 ## Consent lifecycle
 

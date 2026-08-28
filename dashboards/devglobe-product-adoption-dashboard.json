@@ -1,0 +1,955 @@
+{
+  "$schema": "https://dataexplorer.azure.com/static/d/schema/75/dashboard.json",
+  "id": "80fefe87-c06a-452a-b2fb-2bc274df46dc",
+  "eTag": "8d11eb60-64ff-44e0-aa80-b6c647b28c19",
+  "title": "DevGlobe Product Adoption",
+  "schema_version": 75,
+  "tiles": [
+    {
+      "id": "1f02964a-301f-4ead-9ac0-111ec7df615d",
+      "title": "Product Adoption Overview",
+      "visualType": "markdownCard",
+      "pageId": "681c892f-d0ac-44ee-9fca-4800ab9c4550",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 18,
+        "height": 2
+      },
+      "markdownText": "## Product adoption\nA product-owner view of reach, meaningful use, and repeat adoption. All metrics use privacy-safe browser session hashes and intentional product events.",
+      "visualOptions": {}
+    },
+    {
+      "id": "4a2f6e37-2edf-4da0-b588-14dda7b32386",
+      "title": "Last 30 Days",
+      "visualType": "multistat",
+      "pageId": "681c892f-d0ac-44ee-9fca-4800ab9c4550",
+      "layout": {
+        "x": 0,
+        "y": 2,
+        "width": 18,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "c3828a64-f31f-49af-b5ed-b864cd0dd2bd"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "multiStat__displayOrientation": "horizontal",
+        "multiStat__labelColumn": null,
+        "multiStat__slot": {
+          "width": 18,
+          "height": 4
+        },
+        "colorRules": []
+      }
+    },
+    {
+      "id": "494431b0-b75e-49a2-ac9f-889c54b3937c",
+      "title": "Daily Active and Engaged Sessions",
+      "visualType": "line",
+      "pageId": "681c892f-d0ac-44ee-9fca-4800ab9c4550",
+      "layout": {
+        "x": 0,
+        "y": 6,
+        "width": 12,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "781206d1-eeea-479c-9dce-9b6ee6785e11"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": false,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Day",
+        "yColumns": [
+          "ActiveSessions",
+          "EngagedSessions"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "00505c1e-d4f3-4c07-9d6d-da982f7cad9e",
+      "title": "Adoption Health",
+      "visualType": "multistat",
+      "pageId": "681c892f-d0ac-44ee-9fca-4800ab9c4550",
+      "layout": {
+        "x": 12,
+        "y": 6,
+        "width": 6,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "d8804887-97f4-481c-ac01-2c976056de3a"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "multiStat__displayOrientation": "horizontal",
+        "multiStat__labelColumn": null,
+        "multiStat__slot": {
+          "width": 6,
+          "height": 6
+        },
+        "colorRules": []
+      }
+    },
+    {
+      "id": "44005080-1ce4-49b8-996a-f166cd3fbe6f",
+      "title": "Completed Weekly Adoption",
+      "visualType": "column",
+      "pageId": "681c892f-d0ac-44ee-9fca-4800ab9c4550",
+      "layout": {
+        "x": 0,
+        "y": 12,
+        "width": 12,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "c104926e-7389-407e-9712-8ba235013ddc"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": false,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Week",
+        "yColumns": [
+          "ActiveSessions",
+          "ValueSessions"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "0f89bc58-908a-43c7-927c-7d48b6a078c4",
+      "title": "Value Actions",
+      "visualType": "table",
+      "pageId": "681c892f-d0ac-44ee-9fca-4800ab9c4550",
+      "layout": {
+        "x": 12,
+        "y": 12,
+        "width": 6,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "77cdd4bb-6029-4fb3-a3f8-9b7b4f47e6fc"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": false,
+        "colorRulesDisabled": true,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": []
+      }
+    },
+    {
+      "id": "cafd752d-62e4-4e8d-b8c2-56c30103cdac",
+      "title": "Usage and Acquisition",
+      "visualType": "markdownCard",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 18,
+        "height": 2
+      },
+      "markdownText": "## Usage and acquisition\nUnderstand which experiences users adopt and which attributed sources, journeys, and channels produce meaningful sessions.",
+      "visualOptions": {}
+    },
+    {
+      "id": "78b34ef1-cf47-49b4-9c6c-5aabe9a437ad",
+      "title": "Usage KPIs - Last 30 Days",
+      "visualType": "multistat",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 0,
+        "y": 2,
+        "width": 18,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "50351041-70e4-4eb7-a69f-ef0186c39436"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "multiStat__displayOrientation": "horizontal",
+        "multiStat__labelColumn": null,
+        "multiStat__slot": {
+          "width": 18,
+          "height": 4
+        },
+        "colorRules": []
+      }
+    },
+    {
+      "id": "204bcd8b-1f81-488d-9a63-75a0ab6fe54b",
+      "title": "Daily Usage by Product Area",
+      "visualType": "column",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 0,
+        "y": 6,
+        "width": 12,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "42da2618-10fb-42dd-8aec-4da6c38099f3"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": false,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Day",
+        "yColumns": [
+          "Actions"
+        ],
+        "seriesColumns": [
+          "EventGroup"
+        ],
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "9c17acb8-33a2-4e24-8618-4e1a321baf50",
+      "title": "Acquisition Sources",
+      "visualType": "pie",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 12,
+        "y": 6,
+        "width": 6,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "1f5b9b0f-1654-4152-90b7-bdb1a3a5b5bb"
+      },
+      "visualOptions": {
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "labelDisabled": false,
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "tooltipDisabled": false,
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
+        "pie__orderBy": "size",
+        "pie__kind": "donut",
+        "pie__topNSlices": null,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "35ffbe6d-c159-4cd4-a88d-443ddfe402f3",
+      "title": "Feature Adoption",
+      "visualType": "bar",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 0,
+        "y": 12,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "666638ec-ecc3-4117-a6c1-66a7d33bb9c9"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": true,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Feature",
+        "yColumns": [
+          "Sessions"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "60508728-6973-4921-b27f-9a404ce827c8",
+      "title": "Journey Performance",
+      "visualType": "table",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 12,
+        "y": 12,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "1aab62eb-db45-4949-b84e-ca6e2c95b152"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": false,
+        "colorRulesDisabled": true,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": []
+      }
+    },
+    {
+      "id": "6996d41e-a1b7-47ce-9e5b-5a8bc90904d3",
+      "title": "Sharing Channels",
+      "visualType": "table",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 0,
+        "y": 19,
+        "width": 9,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "70e862c3-22da-490e-a5c4-5e75ff0a9123"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": false,
+        "colorRulesDisabled": true,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": []
+      }
+    },
+    {
+      "id": "f44e23f1-3a68-4ec9-a7b7-794f5bbd6511",
+      "title": "Most Viewed Profiles",
+      "visualType": "table",
+      "pageId": "ffa5c4f3-2760-4230-8a43-1842b3885f95",
+      "layout": {
+        "x": 9,
+        "y": 19,
+        "width": 9,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "20866c12-9951-4da0-891b-8805385be1b7"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": false,
+        "colorRulesDisabled": true,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": []
+      }
+    },
+    {
+      "id": "ba763cd7-5c9b-45c7-a646-079e1f75f7af",
+      "title": "Funnels and Retention",
+      "visualType": "markdownCard",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 18,
+        "height": 2
+      },
+      "markdownText": "## Funnels and retention\nConversion steps are ordered within the same privacy-safe session. Returning browsers are session hashes first seen before the reporting day; they are directional, not authenticated-user retention.",
+      "visualOptions": {}
+    },
+    {
+      "id": "2f7fde2c-5138-48f4-b661-5699f85d68d6",
+      "title": "Discovery Conversion - Last 30 Days",
+      "visualType": "multistat",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 0,
+        "y": 2,
+        "width": 18,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "885f12be-031a-4c6c-970b-2e1773ec7847"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "multiStat__displayOrientation": "horizontal",
+        "multiStat__labelColumn": null,
+        "multiStat__slot": {
+          "width": 18,
+          "height": 4
+        },
+        "colorRules": []
+      }
+    },
+    {
+      "id": "9d0e2aad-5e91-45bf-9e42-6e7f2a9b4c68",
+      "title": "Discovery to Sharing Funnel",
+      "visualType": "bar",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 0,
+        "y": 6,
+        "width": 9,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "b3383a24-4e32-42f9-8897-3b5d1a85dcbc"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": true,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Step",
+        "yColumns": [
+          "Sessions"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "937d0930-414f-4499-b6e1-d3f42f40a67c",
+      "title": "Exploration Funnel",
+      "visualType": "bar",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 9,
+        "y": 6,
+        "width": 9,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "37aa074e-ea6e-4b81-ae31-44088df50909"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": true,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Step",
+        "yColumns": [
+          "Sessions"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "523e02e7-d8d2-4f12-bb04-141d8fcb7393",
+      "title": "Daily Mission Funnel",
+      "visualType": "bar",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 0,
+        "y": 12,
+        "width": 9,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "8eb6e0ec-da6b-4194-b976-81db8bfce92f"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": true,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Step",
+        "yColumns": [
+          "Sessions"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "71ce4845-149d-4412-8bc5-555955628071",
+      "title": "New vs Returning Browsers",
+      "visualType": "line",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 9,
+        "y": 12,
+        "width": 9,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "2f47d8ba-c374-4066-a880-f51560c2a46f"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": false,
+        "legendLocation": "right",
+        "xColumnTitle": "",
+        "xColumn": "Day",
+        "yColumns": [
+          "NewBrowsers",
+          "ReturningBrowsers"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "c65da334-81a7-4ee8-869b-5f623c6e2e66",
+      "title": "Session Engagement Depth",
+      "visualType": "pie",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 0,
+        "y": 18,
+        "width": 6,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "33b1ae43-22ca-4554-9d55-b5480cf4f85b"
+      },
+      "visualOptions": {
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "labelDisabled": false,
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "tooltipDisabled": false,
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
+        "pie__orderBy": "size",
+        "pie__kind": "donut",
+        "pie__topNSlices": null,
+        "seriesColors": {},
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "73317797-4e7b-416e-820b-34eda84f652b",
+      "title": "Journey Conversion",
+      "visualType": "table",
+      "pageId": "200f2597-ebae-43d1-9118-f36801d3b40b",
+      "layout": {
+        "x": 6,
+        "y": 18,
+        "width": 12,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "fc9ea4f3-46db-4f72-b858-bcfc304305b0"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": false,
+        "colorRulesDisabled": true,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": []
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "Adoption Overview",
+      "id": "681c892f-d0ac-44ee-9fca-4800ab9c4550"
+    },
+    {
+      "name": "Usage & Acquisition",
+      "id": "ffa5c4f3-2760-4230-8a43-1842b3885f95"
+    },
+    {
+      "name": "Funnels & Retention",
+      "id": "200f2597-ebae-43d1-9118-f36801d3b40b"
+    }
+  ],
+  "dataSources": [
+    {
+      "id": "81da50c0-1748-4322-bacc-29b64472b427",
+      "kind": "manual-kusto",
+      "name": "DevGlobe Product Analytics",
+      "clusterUri": "https://devlglobe.eastus2.kusto.windows.net",
+      "database": "devglobe-analytics"
+    }
+  ],
+  "queries": [
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet S=E | summarize EventTypes=dcount(EventName), HasValue=countif(EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")) > 0 by SessionHash;\nunion\n  (S | summarize Value=count() | extend Metric=\"Active sessions\"),\n  (S | where EventTypes >= 2 | summarize Value=count() | extend Metric=\"Engaged sessions\"),\n  (S | where HasValue | summarize Value=count() | extend Metric=\"Value sessions\"),\n  (E | where EventName == \"profile_viewed\" | summarize Value=count() | extend Metric=\"Profile views\"),\n  (E | summarize Value=dcount(TargetLogin) | extend Metric=\"Profiles reached\")\n| project Metric, Value",
+      "id": "c3828a64-f31f-49af-b5ed-b864cd0dd2bd",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(90d) .. now())\n| summarize Events=count(), EventTypes=dcount(EventName) by Day=startofday(EventTime), SessionHash\n| summarize ActiveSessions=count(), EngagedSessions=countif(EventTypes >= 2), Events=sum(Events) by Day\n| order by Day asc",
+      "id": "781206d1-eeea-479c-9dce-9b6ee6785e11",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet S=E | summarize EventTypes=dcount(EventName), Events=count(), HasValue=countif(EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")) > 0 by SessionHash;\nlet Totals=S | summarize Active=count(), Engaged=countif(EventTypes >= 2), ValueSessions=countif(HasValue), AvgEvents=round(avg(Events), 2);\nTotals\n| extend EngagementRate=iff(Active == 0, 0.0, round(100.0 * Engaged / Active, 1)), ValueRate=iff(Active == 0, 0.0, round(100.0 * ValueSessions / Active, 1))\n| project Metric=pack_array(\"Engagement rate\", \"Value-session rate\", \"Events per session\"), Value=pack_array(EngagementRate, ValueRate, AvgEvents)\n| mv-expand Metric to typeof(string), Value to typeof(real)",
+      "id": "d8804887-97f4-481c-ac01-2c976056de3a",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(180d) .. now())\n| summarize ActiveSessions=dcount(SessionHash), ValueSessions=dcountif(SessionHash, EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")) by Week=startofweek(EventTime)\n| where Week < startofweek(now())\n| order by Week asc",
+      "id": "c104926e-7389-407e-9712-8ba235013ddc",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| where EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")\n| summarize Events=count(), Sessions=dcount(SessionHash) by EventName\n| extend Event=strcat_array(split(EventName, \"_\"), \" \")\n| project Event, Events, Sessions\n| order by Sessions desc",
+      "id": "77cdd4bb-6029-4fb3-a3f8-9b7b4f47e6fc",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nunion\n  (E | summarize Value=count() | extend Metric=\"Tracked actions\"),\n  (E | summarize Value=dcount(SessionHash) | extend Metric=\"Active sessions\"),\n  (E | where EventName == \"profile_viewed\" | summarize Value=dcount(TargetLogin) | extend Metric=\"Profiles viewed\"),\n  (E | where isnotempty(Source) | summarize Value=dcount(SessionHash) | extend Metric=\"Attributed sessions\")\n| project Metric, Value",
+      "id": "50351041-70e4-4eb7-a69f-ef0186c39436",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(60d) .. now())\n| extend EventGroup=case(\n    EventName in (\"search_appearance\", \"profile_viewed\"), \"Discovery\",\n    EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\"), \"Identity & sharing\",\n    EventName startswith \"mission_\", \"Missions\",\n    EventName in (\"recommendation_opened\", \"next_action_selected\", \"comparison_started\"), \"Exploration\",\n    \"Other\")\n| summarize Actions=count() by Day=startofday(EventTime), EventGroup\n| order by Day asc",
+      "id": "42da2618-10fb-42dd-8aec-4da6c38099f3",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| extend AcquisitionSource=iff(isempty(Source), \"Unattributed\", Source)\n| summarize Value=dcount(SessionHash) by AcquisitionSource\n| top 10 by Value desc",
+      "id": "1f5b9b0f-1654-4152-90b7-bdb1a3a5b5bb",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| summarize Sessions=dcount(SessionHash), Actions=count() by EventName\n| extend Feature=strcat_array(split(EventName, \"_\"), \" \")\n| project Feature, Sessions, Actions\n| top 15 by Sessions desc",
+      "id": "666638ec-ecc3-4117-a6c1-66a7d33bb9c9",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| where isnotempty(Journey)\n| summarize Sessions=dcount(SessionHash), Actions=count(), ValueSessions=dcountif(SessionHash, EventName in (\"mission_completed\", \"next_action_selected\", \"profile_shared\")) by Journey\n| extend ValueRate=round(100.0 * ValueSessions / Sessions, 1)\n| project Journey, Sessions, Actions, ValueSessions, ValueRate\n| order by Sessions desc",
+      "id": "1aab62eb-db45-4949-b84e-ca6e2c95b152",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now()) and EventName == \"profile_shared\"\n| extend ShareChannel=iff(isempty(Channel), \"Unspecified\", Channel)\n| summarize Shares=count(), Sharers=dcount(SessionHash) by ShareChannel\n| order by Shares desc",
+      "id": "70e862c3-22da-490e-a5c4-5e75ff0a9123",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now()) and isnotempty(TargetLogin)\n| summarize Views=countif(EventName == \"profile_viewed\"), Cards=countif(EventName == \"card_generated\"), Shares=countif(EventName == \"profile_shared\") by TargetLogin\n| where Views + Cards + Shares > 0\n| top 20 by Views desc",
+      "id": "20866c12-9951-4da0-891b-8805385be1b7",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet Discovery=E | summarize Impression=minif(EventTime, EventName == \"search_appearance\"), View=minif(EventTime, EventName == \"profile_viewed\"), Card=minif(EventTime, EventName == \"card_generated\"), Share=minif(EventTime, EventName == \"profile_shared\") by SessionHash, TargetLogin;\nlet D=Discovery | summarize Impressions=countif(isnotnull(Impression)), Views=countif(isnotnull(Impression) and View >= Impression), Cards=countif(isnotnull(Impression) and View >= Impression and Card >= View), Shares=countif(isnotnull(Impression) and View >= Impression and Card >= View and Share >= Card);\nD\n| extend ViewRate=iff(Impressions == 0, 0.0, round(100.0 * Views / Impressions, 1)), CardRate=iff(Impressions == 0, 0.0, round(100.0 * Cards / Impressions, 1)), ShareRate=iff(Impressions == 0, 0.0, round(100.0 * Shares / Impressions, 1))\n| project Metric=pack_array(\"Search-to-view %\", \"Search-to-card %\", \"Search-to-share %\"), Value=pack_array(ViewRate, CardRate, ShareRate)\n| mv-expand Metric to typeof(string), Value to typeof(real)",
+      "id": "885f12be-031a-4c6c-970b-2e1773ec7847",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet T=E | summarize Impression=minif(EventTime, EventName == \"search_appearance\"), View=minif(EventTime, EventName == \"profile_viewed\"), Card=minif(EventTime, EventName == \"card_generated\"), Share=minif(EventTime, EventName == \"profile_shared\") by SessionHash, TargetLogin;\nunion\n  (T | summarize Sessions=countif(isnotnull(Impression)) | extend StepOrder=1, Step=\"Search appearance\"),\n  (T | summarize Sessions=countif(isnotnull(Impression) and View >= Impression) | extend StepOrder=2, Step=\"Profile viewed\"),\n  (T | summarize Sessions=countif(isnotnull(Impression) and View >= Impression and Card >= View) | extend StepOrder=3, Step=\"Card generated\"),\n  (T | summarize Sessions=countif(isnotnull(Impression) and View >= Impression and Card >= View and Share >= Card) | extend StepOrder=4, Step=\"Profile shared\")\n| order by StepOrder asc\n| project Step, Sessions",
+      "id": "b3383a24-4e32-42f9-8897-3b5d1a85dcbc",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet T=E | summarize Profile=minif(EventTime, EventName == \"profile_viewed\"), Recommendation=minif(EventTime, EventName == \"recommendation_opened\"), Action=minif(EventTime, EventName == \"next_action_selected\") by SessionHash;\nunion\n  (T | summarize Sessions=countif(isnotnull(Profile)) | extend StepOrder=1, Step=\"Profile viewed\"),\n  (T | summarize Sessions=countif(isnotnull(Profile) and Recommendation >= Profile) | extend StepOrder=2, Step=\"Recommendation opened\"),\n  (T | summarize Sessions=countif(isnotnull(Profile) and Recommendation >= Profile and Action >= Recommendation) | extend StepOrder=3, Step=\"Next action selected\")\n| order by StepOrder asc\n| project Step, Sessions",
+      "id": "37aa074e-ea6e-4b81-ae31-44088df50909",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet T=E | summarize Viewed=minif(EventTime, EventName == \"mission_viewed\"), Accepted=minif(EventTime, EventName == \"mission_accepted\"), Completed=minif(EventTime, EventName == \"mission_completed\") by SessionHash;\nunion\n  (T | summarize Sessions=countif(isnotnull(Viewed)) | extend StepOrder=1, Step=\"Mission viewed\"),\n  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed) | extend StepOrder=2, Step=\"Mission accepted\"),\n  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Completed >= Accepted) | extend StepOrder=3, Step=\"Mission completed\")\n| order by StepOrder asc\n| project Step, Sessions",
+      "id": "8eb6e0ec-da6b-4194-b976-81db8bfce92f",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nlet E=Events | where EventTime between (ago(180d) .. now());\nlet FirstSeen=E | summarize FirstSeen=min(EventTime) by SessionHash;\nE\n| where EventTime between (ago(60d) .. now())\n| extend Day=startofday(EventTime)\n| join kind=leftouter FirstSeen on SessionHash\n| summarize ActiveBrowsers=dcount(SessionHash), NewBrowsers=dcountif(SessionHash, FirstSeen >= Day and FirstSeen < Day + 1d), ReturningBrowsers=dcountif(SessionHash, FirstSeen < Day) by Day\n| order by Day asc",
+      "id": "2f47d8ba-c374-4066-a880-f51560c2a46f",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| summarize EventTypes=dcount(EventName) by SessionHash\n| extend Depth=case(EventTypes == 1, \"1 event type\", EventTypes between (2 .. 3), \"2-3 event types\", \"4+ event types\")\n| summarize Value=count() by Depth",
+      "id": "33b1ae43-22ca-4554-9d55-b5480cf4f85b",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "81da50c0-1748-4322-bacc-29b64472b427"
+      },
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel)\n  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);\n};\nEvents\n| where EventTime between (ago(30d) .. now()) and isnotempty(Journey)\n| summarize Sessions=dcount(SessionHash), Completed=dcountif(SessionHash, EventName in (\"mission_completed\", \"next_action_selected\", \"profile_shared\")) by Journey\n| extend ConversionRate=round(100.0 * Completed / Sessions, 1)\n| project Journey, Sessions, Completed, ConversionRate\n| order by Sessions desc",
+      "id": "fc9ea4f3-46db-4f72-b858-bcfc304305b0",
+      "usedVariables": []
+    }
+  ],
+  "parameters": []
+}
