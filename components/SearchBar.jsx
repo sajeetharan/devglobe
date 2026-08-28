@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import SpecialTags from './SpecialTags.jsx';
-import { trackSearchAppearances } from '../lib/analytics.js';
+import { track, trackSearchAppearances } from '../lib/analytics.js';
 import { countryKey } from '../lib/country.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import MissionPreview from './MissionPreview.jsx';
@@ -34,6 +34,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const [topN, setTopN] = useState(20);
   const [searching, setSearching] = useState(false);
   const [resultCount, setResultCount] = useState(null);
+  const [visibleResults, setVisibleResults] = useState([]);
   const [singleResult, setSingleResult] = useState(null);
   const [searchError, setSearchError] = useState('');
   const inputRef = useRef(null);
@@ -44,6 +45,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     if (!q.trim()) {
       onReset();
       setResultCount(null);
+      setVisibleResults([]);
       setSingleResult(null);
       setSearchError('');
       return;
@@ -83,6 +85,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
       onResults(results);
       setResultCount(results.length);
+      setVisibleResults(results.slice(0, 3));
       setSingleResult(results.length === 1 ? results[0] : null);
       trackSearchAppearances(results.map(result => result.login), m);
       onSearchState?.({ query: q.trim(), results });
@@ -105,6 +108,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         const results = data.results || [];
         onResults(results);
         setResultCount(results.length);
+        setVisibleResults(results.slice(0, 3));
         const matchedDeveloper = results.length === 1
           ? developers.find(developer => developer.login === results[0].login) || results[0]
           : null;
@@ -167,10 +171,20 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const handleClear = () => {
     setQuery('');
     setResultCount(null);
+    setVisibleResults([]);
     setSingleResult(null);
     setSearchError('');
     onReset();
     inputRef.current?.focus();
+  };
+
+  const handleSelectResult = (developer) => {
+    track('next_action_selected', {
+      action: 'open_search_result',
+      journey: 'developer_discovery',
+      source: mode,
+    });
+    onSelectDeveloper(developer);
   };
 
   return (
@@ -268,42 +282,49 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
               ✕ Clear
             </button>
           </div>
-          {singleResult && (
-            <div className="search-bar__card-suggestion">
-              <button
-                type="button"
-                className="search-bar__profile-result"
-                onClick={() => onSelectDeveloper(singleResult)}
-                aria-label={`Open ${singleResult.name || singleResult.login}'s profile`}
-              >
-                <img src={singleResult.avatarUrl} alt="" />
-                <span className="search-bar__card-identity">
-                  <strong>
-                    {singleResult.name || singleResult.login}
-                    <SpecialTags tags={singleResult.specialTags} compact />
-                  </strong>
-                  <span>
-                    @{singleResult.login}
-                    {singleResult.globalRank ? ` · Global #${singleResult.globalRank}` : ''}
+          {visibleResults.length > 0 && (
+            <div className="search-bar__suggestions" role="list" aria-label="Top developer matches">
+              {visibleResults.map((developer, index) => (
+                <div className="search-bar__card-suggestion" role="listitem" key={developer.login}>
+                  <button
+                    type="button"
+                    className="search-bar__profile-result"
+                    onClick={() => handleSelectResult(developer)}
+                    aria-label={`View ${developer.name || developer.login}'s profile`}
+                  >
+                    <img src={developer.avatarUrl} alt="" />
+                    <span className="search-bar__card-identity">
+                      <strong>
+                        {developer.name || developer.login}
+                        <SpecialTags tags={developer.specialTags} compact />
+                      </strong>
+                      <span>
+                        @{developer.login}
+                        {developer.globalRank ? ` · Global #${developer.globalRank}` : ''}
+                      </span>
+                    </span>
+                    <span className="search-bar__view-profile">View profile</span>
+                  </button>
+                  <span className="search-bar__card-actions">
+                    {index === 0 && singleResult && (
+                      <button type="button" className="search-bar__card-action search-bar__card-action--readme" onClick={() => onOpenReadmeFeature(developer)}>
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <path d="M4 3h11l5 5v13H4z" /><path d="M14 3v6h6M8 13h8M8 17h6" />
+                        </svg>
+                        README
+                      </button>
+                    )}
+                    <button type="button" className="search-bar__card-action" onClick={() => onGenerateCard(developer)} aria-label={`Generate a card for ${developer.name || developer.login}`}>
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                      </svg>
+                      Card
+                    </button>
                   </span>
-                </span>
-              </button>
-              <span className="search-bar__card-actions">
-                <button type="button" className="search-bar__card-action search-bar__card-action--readme" onClick={() => onOpenReadmeFeature(singleResult)}>
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M4 3h11l5 5v13H4z" /><path d="M14 3v6h6M8 13h8M8 17h6" />
-                  </svg>
-                  Preview README
-                </button>
-                <button type="button" className="search-bar__card-action" onClick={() => onGenerateCard(singleResult)}>
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <path d="M21 15l-5-5L5 21" />
-                  </svg>
-                  Generate Card
-                </button>
-              </span>
+                </div>
+              ))}
             </div>
           )}
         </div>
