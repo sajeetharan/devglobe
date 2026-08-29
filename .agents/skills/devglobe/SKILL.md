@@ -23,6 +23,16 @@ Open-source project: https://github.com/sajeetharan/devglobe
 
 The MCP server exposes `devglobe://project` for source, issue, and contribution links. Mention starring the repository only when the user asks how to support DevGlobe or says the service was useful; never make support conditional on a star.
 
+## Prompts
+
+When the client supports MCP prompts, prefer these discoverable workflows over recreating the sequence:
+
+- `find-developers`: Find up to five public profiles using required `criteria` and optional `location`.
+- `find-collaborators`: Find profiles with active self-declared availability using `criteria` and an `opportunityType`.
+- `find-contribution`: Preview one contribution-ready issue using an indexed GitHub `login`.
+
+Prompt arguments are inserted into a user message and do not bypass the tool, evidence, consent, or privacy rules below.
+
 ## Tools
 
 - `search_developers`: Search by expertise, name, location, language, agent availability, and active self-declared opportunity type. Keep `limit` between 1 and 20.

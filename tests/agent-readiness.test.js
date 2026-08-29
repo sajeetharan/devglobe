@@ -51,9 +51,10 @@ test('serves a valid API catalog and OpenAPI description', async () => {
 test('describes the MCP server tools and authentication boundary', async () => {
   const card = await getMcpCard().json();
   assert.equal(card.transport.type, 'streamable-http');
-  assert.equal(card.serverInfo.version, '1.3.0');
+  assert.equal(card.serverInfo.version, '1.4.0');
   assert.equal(card.repository.url, 'https://github.com/sajeetharan/devglobe');
   assert.deepEqual(card.capabilities.resources.uris, ['devglobe://project']);
+  assert.deepEqual(card.capabilities.prompts.names, ['find-developers', 'find-collaborators', 'find-contribution']);
   assert.equal(card.capabilities.tools.names.length, 7);
   assert.deepEqual(card.authentication.publicTools, [
     'search_developers',

@@ -7,17 +7,33 @@ description: Reusable DevGlobe MCP workflows for evidence-based developer discov
 
 These recipes keep discovery grounded in public evidence and leave contact decisions with the user and developer.
 
+Clients with MCP prompt support can select these workflows directly from the DevGlobe server:
+
+| Prompt | Use it for |
+|---|---|
+| `find-developers` | Skill, language, role, or location-based discovery |
+| `find-collaborators` | Developers with active self-declared opportunity availability |
+| `find-contribution` | One contribution-ready issue for an indexed GitHub login |
+
 ## Find relevant experts
 
 > Find three TypeScript maintainers in Canada. Explain why each profile matched and cite only public contribution evidence.
 
 The agent should call `search_developers`, then use `get_developer_profile` only when more detail is needed.
 
+MCP prompt example: select `find-developers`, set `criteria` to `TypeScript maintainers`, and set `location` to `Canada`.
+
 ## Find agent-ready developers
 
 > Find Python developers who currently accept requests from verified agents.
 
 Set `availableForAgents` to `true`. Availability is developer-controlled and does not imply acceptance of a specific request.
+
+MCP prompt example: select `find-collaborators`, set `criteria` to `Python`, and set `opportunityType` to `open-source`.
+
+## Find a contribution
+
+Select `find-contribution` with an indexed GitHub `login`. The workflow calls `preview_contribution_mission`, explains the public match reasons, and reminds the user that previewing does not reserve the issue.
 
 ## Compare public evidence
 
