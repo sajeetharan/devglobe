@@ -51,6 +51,9 @@ test('serves a valid API catalog and OpenAPI description', async () => {
 test('describes the MCP server tools and authentication boundary', async () => {
   const card = await getMcpCard().json();
   assert.equal(card.transport.type, 'streamable-http');
+  assert.equal(card.serverInfo.version, '1.3.0');
+  assert.equal(card.repository.url, 'https://github.com/sajeetharan/devglobe');
+  assert.deepEqual(card.capabilities.resources.uris, ['devglobe://project']);
   assert.equal(card.capabilities.tools.names.length, 7);
   assert.deepEqual(card.authentication.publicTools, [
     'search_developers',
@@ -70,9 +73,12 @@ test('describes the MCP server tools and authentication boundary', async () => {
 
 test('publishes MCP Registry metadata within schema limits', async () => {
   const registry = JSON.parse(await fs.readFile('server.json', 'utf8'));
+  const card = await getMcpCard().json();
 
   assert.ok(registry.description.length > 0);
   assert.ok(registry.description.length <= 100);
+  assert.equal(registry.version, card.serverInfo.version);
+  assert.equal(registry.repository.url, card.repository.url);
   assert.deepEqual(registry.remotes, [{
     type: 'streamable-http',
     url: 'https://www.devglobe.dev/mcp',
