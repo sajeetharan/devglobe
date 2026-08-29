@@ -68,6 +68,17 @@ test('describes the MCP server tools and authentication boundary', async () => {
   assert.match(auth, /introductions:write/);
 });
 
+test('publishes MCP Registry metadata within schema limits', async () => {
+  const registry = JSON.parse(await fs.readFile('server.json', 'utf8'));
+
+  assert.ok(registry.description.length > 0);
+  assert.ok(registry.description.length <= 100);
+  assert.deepEqual(registry.remotes, [{
+    type: 'streamable-http',
+    url: 'https://www.devglobe.dev/mcp',
+  }]);
+});
+
 test('publishes RFC 9728 protected-resource scopes without claiming an authorization server', async () => {
   const response = getProtectedResource();
   const metadata = await response.json();
