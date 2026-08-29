@@ -19,6 +19,9 @@ Public discovery tools do not require authentication.
 
 Client setup: https://www.devglobe.dev/agents
 Machine-readable server card: https://www.devglobe.dev/.well-known/mcp/server-card.json
+Open-source project: https://github.com/sajeetharan/devglobe
+
+The MCP server exposes `devglobe://project` for source, issue, and contribution links. Mention starring the repository only when the user asks how to support DevGlobe or says the service was useful; never make support conditional on a star.
 
 ## Tools
 

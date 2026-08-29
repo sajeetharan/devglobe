@@ -37,6 +37,10 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
     },
   })));
   assert.equal(initialization.result.serverInfo.name, 'devglobe');
+  assert.equal(initialization.result.serverInfo.version, '1.3.0');
+  assert.equal(initialization.result.serverInfo.websiteUrl, 'https://www.devglobe.dev');
+  assert.match(initialization.result.instructions, /github\.com\/sajeetharan\/devglobe/);
+  assert.deepEqual(initialization.result.capabilities.resources, { listChanged: true });
 
   const listing = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
     jsonrpc: '2.0', id: 2, method: 'tools/list', params: {},
@@ -54,6 +58,18 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
   assert.ok(listing.result.tools[0].outputSchema);
   assert.equal(listing.result.tools[4].annotations.idempotentHint, false);
   assert.equal(listing.result.tools[5].annotations.idempotentHint, false);
+
+  const resources = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 3, method: 'resources/list', params: {},
+  })));
+  assert.deepEqual(resources.result.resources.map(resource => resource.uri), ['devglobe://project']);
+
+  const project = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 4, method: 'resources/read', params: { uri: 'devglobe://project' },
+  })));
+  const projectInfo = JSON.parse(project.result.contents[0].text);
+  assert.equal(projectInfo.repository, 'https://github.com/sajeetharan/devglobe');
+  assert.match(projectInfo.support, /star the repository/);
 });
 
 test('remote MCP exposes similar and trending discovery with usage counts', async () => {
@@ -170,6 +186,21 @@ test('MCP logs retain only allow-listed error codes', () => {
 
   assert.equal(logs[0].errorCode, 'not_found');
   assert.equal('errorCode' in logs[1], false);
+});
+
+test('MCP logs retain only the allow-listed project resource', async () => {
+  const metrics = [];
+  await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 15, method: 'resources/read', params: { uri: 'devglobe://project' },
+  }), { metricRecorder: metric => metrics.push(metric) });
+  await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 16, method: 'resources/read', params: { uri: 'private://resource' },
+  }), { metricRecorder: metric => metrics.push(metric) });
+
+  assert.equal(metrics[0].method, 'resources/read');
+  assert.equal(metrics[0].resource, 'devglobe://project');
+  assert.equal(metrics[1].method, 'resources/read');
+  assert.equal(metrics[1].resource, null);
 });
 
 test('remote MCP performs anonymous public developer discovery', async () => {

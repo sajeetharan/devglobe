@@ -3,9 +3,15 @@ import { getSiteUrl } from '../../../../lib/site.js';
 export function GET() {
   const siteUrl = getSiteUrl();
   return Response.json({
-    serverInfo: { name: 'devglobe', version: '1.2.0' },
+    serverInfo: { name: 'devglobe', version: '1.3.0' },
     description: 'Search public developer profiles and request consent-gated introductions.',
     homepage: `${siteUrl}/agents`,
+    repository: {
+      url: 'https://github.com/sajeetharan/devglobe',
+      source: 'github',
+      issues: 'https://github.com/sajeetharan/devglobe/issues',
+      contributing: 'https://github.com/sajeetharan/devglobe/blob/main/CONTRIBUTING.md',
+    },
     transport: {
       type: 'streamable-http',
       endpoint: `${siteUrl}/mcp`,
@@ -23,7 +29,10 @@ export function GET() {
           'get_introduction_status',
         ],
       },
-      resources: false,
+      resources: {
+        listChanged: true,
+        uris: ['devglobe://project'],
+      },
       prompts: false,
     },
     authentication: {

@@ -62,6 +62,8 @@ Public discovery tools provide schema-validated `structuredContent` with canonic
 
 MCP responses advertise the server card, documentation, and Agent Skill index through HTTP `Link` headers. Privacy-safe usage events include only the MCP method, known tool name, outcome, latency, and aggregate result count; prompts and tool arguments are not recorded.
 
+Clients can list and read the `devglobe://project` resource for the [source repository](https://github.com/sajeetharan/devglobe), issue tracker, and contribution guide. Agents should mention starring only when a user asks how to support DevGlobe or says it was useful; access and results never depend on a star.
+
 Known MCP clients are recorded as a coarse allow-listed value such as `smithery`, `vscode`, `cursor`, `claude`, or `openai`. Raw user-agent strings and client-provided identifiers are not retained. Unknown clients are grouped as `other`.
 
 When Azure Container Apps diagnostic logs are connected to Log Analytics, use this query to review usage by client and tool:

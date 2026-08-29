@@ -88,7 +88,7 @@ export default function AgentSetupPage() {
         </Link>
         <div className={styles.navLinks}>
           <a href="https://sajeetharan.github.io/devglobe/agents/mcp" target="_blank" rel="noreferrer">Documentation</a>
-          <a href="https://github.com/sajeetharan/devglobe" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://github.com/sajeetharan/devglobe" target="_blank" rel="noreferrer" onClick={() => track('github_repository_opened', { source: 'agent_setup' })}>GitHub</a>
         </div>
       </nav>
 
