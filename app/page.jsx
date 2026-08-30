@@ -89,12 +89,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    try {
-      if (!localStorage.getItem('devglobe-tour-complete')) setTourStep('search');
-    } catch { /* localStorage unavailable; leave the tour closed */ }
-  }, []);
-
-  useEffect(() => {
     const referrer = new URLSearchParams(window.location.search).get('ref')?.trim();
     if (!referrer || !/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(referrer)) return;
     const key = `devglobe-referral-${referrer.toLowerCase()}`;
@@ -809,8 +803,10 @@ export default function Home() {
         onOpenCompareFeature={handleOpenCompareFeature}
         compareCount={compareDevs.length}
         signedIn={Boolean(user)}
+        currentUsername={user?.login || ''}
+        onOpenOwnProfile={handleOpenOwnProfile}
         onOpenActivity={handleOpenActivity}
-        showMissionPreview={!tourStep}
+        showMissionPreview={false}
       />
       <QuickTour
         step={tourStep}

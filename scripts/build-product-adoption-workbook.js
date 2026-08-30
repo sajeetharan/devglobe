@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
 const outputPath = path.join(directory, '..', 'dashboards', 'devglobe-product-adoption-workbook.json');
+const applicationInsightsResourceId = '/subscriptions/0caf9c40-8ea2-43b1-a54f-38c656a8e1f0/resourceGroups/devglobe-rg/providers/microsoft.insights/components/devglobe-public-api';
 const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 const items = [];
 
@@ -69,7 +70,7 @@ query('mcp-reliability', 'Reliability by method and operation', `${mcpEvents} M 
 query('mcp-conversion', 'MCP caller-day conversion', `${mcpEvents} let C=M | where isnotempty(CallerHash) | summarize Initialized=countif(Method == 'initialize') > 0, Listed=countif(Method == 'tools/list') > 0, ListedPrompts=countif(Method == 'prompts/list') > 0, OpenedPrompt=countif(Method == 'prompts/get') > 0, Called=countif(Method == 'tools/call') > 0, Succeeded=countif(Method == 'tools/call' and Outcome == 'success') > 0 by CallerHash; union (C | summarize CallerDays=countif(Initialized) | extend StepOrder=1, Stage='Initialized'), (C | summarize CallerDays=countif(Initialized and Listed) | extend StepOrder=2, Stage='Listed tools'), (C | summarize CallerDays=countif(Initialized and ListedPrompts) | extend StepOrder=3, Stage='Listed prompts'), (C | summarize CallerDays=countif(Initialized and OpenedPrompt) | extend StepOrder=4, Stage='Opened a prompt'), (C | summarize CallerDays=countif(Initialized and Listed and Called) | extend StepOrder=5, Stage='Called a tool'), (C | summarize CallerDays=countif(Initialized and Listed and Called and Succeeded) | extend StepOrder=6, Stage='Successful tool result') | order by StepOrder asc | project Stage, CallerDays`, 'barchart', '60');
 query('mcp-errors', 'MCP errors by code', `${mcpEvents} M | where Outcome == 'error' | extend ErrorCode=iff(isempty(ErrorCode), 'unclassified', ErrorCode) | summarize Errors=count(), CallerDays=dcountif(CallerHash, isnotempty(CallerHash)), LastSeen=max(Timestamp) by ErrorCode, Tool | order by Errors desc`, 'table', '40');
 
-const workbook = { version: 'Notebook/1.0', items, fallbackResourceIds: [], fromTemplateId: null, $schema: 'https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json' };
+const workbook = { version: 'Notebook/1.0', items, fallbackResourceIds: [applicationInsightsResourceId], fromTemplateId: null, $schema: 'https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json' };
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, `${JSON.stringify(workbook, null, 2)}\n`);
 console.log(`Generated ${path.relative(process.cwd(), outputPath)} with ${items.length} items.`);
