@@ -27,7 +27,7 @@ test('allows only documented engagement properties and never stores search text'
 });
 
 test('accepts privacy-safe daily mission funnel events without a target profile', () => {
-  for (const eventName of ['mission_viewed', 'mission_accepted', 'mission_passed', 'mission_completed', 'mission_unavailable', 'mission_exhausted', 'mission_preview_requested', 'mission_preview_shown', 'mission_preview_signin_selected', 'mission_onboarding_completed']) {
+  for (const eventName of ['activation_started', 'activation_action_selected', 'mission_viewed', 'mission_accepted', 'mission_passed', 'mission_completed', 'mission_unavailable', 'mission_exhausted', 'mission_preview_requested', 'mission_preview_shown', 'mission_preview_signin_selected', 'mission_onboarding_completed']) {
     assert.deepEqual(normalizeEngagementEvent({
       eventName,
       properties: { journey: 'daily_mission', issueTitle: 'private issue text' },
@@ -183,7 +183,7 @@ test('suppresses each low-volume mission metric and counts recovered availabilit
   assert.equal(metrics.availabilityRate, 1);
 });
 
-test('requires a target profile for a completed claim', () => {
+test('requires a target profile for completed profile activation events', () => {
   assert.deepEqual(normalizeEngagementEvent({
     eventName: 'profile_claimed',
     targetLogin: 'OctoCat',
@@ -194,4 +194,7 @@ test('requires a target profile for a completed claim', () => {
     properties: { source: 'linkedin' },
   });
   assert.throws(() => normalizeEngagementEvent({ eventName: 'profile_claimed' }), EngagementValidationError);
+  assert.throws(() => normalizeEngagementEvent({ eventName: 'personalized_profile_viewed' }), EngagementValidationError);
+  assert.throws(() => normalizeEngagementEvent({ eventName: 'activation_completed' }), EngagementValidationError);
+  assert.equal(normalizeEngagementEvent({ eventName: 'activation_completed', targetLogin: 'OctoCat' }).targetLogin, 'octocat');
 });

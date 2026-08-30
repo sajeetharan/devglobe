@@ -14,6 +14,7 @@ import { resolveReadmeAccess } from '../lib/profile-readme.js';
 import { identityCardShareUrl } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
+import RepositoryAgentSignals from './RepositoryAgentSignals.jsx';
 
 export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGenerated, onOpenSimilar, onAddToShortlist, claimedLogins, user, onClaim, readmeRequest = 0, openCardOnMount = false, claimSuccess = false }) {
   const [fullData, setFullData] = useState(null);
@@ -298,6 +299,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
       </div>
 
       {merged.aiProfile && <AiCollaborationProfile dev={merged} profile={merged.aiProfile} />}
+      <RepositoryAgentSignals login={dev.login} />
 
       {/* Stats */}
       <div className="detail-panel__stats">

@@ -28,7 +28,7 @@ const SAMPLES_BY_MODE = {
   ],
 };
 
-export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, onOpenActivity, showMissionPreview = true }) {
+export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, currentUsername = '', onOpenOwnProfile, onOpenActivity, showMissionPreview = true }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('text');
   const [topN, setTopN] = useState(20);
@@ -137,6 +137,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       clearTimeout(timerRef.current);
+      if (query.trim()) track('activation_started', { journey: 'username_profile', source: 'search_enter' });
       doSearch(query, mode);
     }
     if (e.key === 'Escape') {
@@ -179,6 +180,22 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   };
 
   const handleSelectResult = (developer) => {
+    track('personalized_profile_viewed', {
+      login: developer.login,
+      journey: 'username_profile',
+      source: mode,
+    });
+    track('activation_action_selected', {
+      action: 'open_profile',
+      journey: 'username_profile',
+      source: mode,
+    });
+    track('activation_completed', {
+      login: developer.login,
+      journey: 'username_profile',
+      outcome: 'profile_opened',
+      source: mode,
+    });
     track('next_action_selected', {
       action: 'open_search_result',
       journey: 'developer_discovery',
@@ -189,6 +206,31 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
   return (
     <div className="search-bar" id="search-bar">
+      {!query && resultCount === null && (
+        <div className="search-bar__activation">
+          <span className="search-bar__eyebrow">Your open-source snapshot</span>
+          <h2>{signedIn ? `Welcome back, @${currentUsername}` : 'See your open-source impact'}</h2>
+          <p>Discover your ranking, recent activity, and one useful next step.</p>
+          {signedIn && (
+            <button
+              type="button"
+              className="search-bar__own-profile"
+              onClick={() => {
+                track('activation_started', { journey: 'username_profile', source: 'signed_in_cta' });
+                track('activation_action_selected', { action: 'open_own_profile', journey: 'username_profile', source: 'signed_in_cta' });
+                track('personalized_profile_viewed', { login: currentUsername, journey: 'username_profile', source: 'signed_in_cta' });
+                track('activation_completed', { login: currentUsername, journey: 'username_profile', outcome: 'profile_opened', source: 'signed_in_cta' });
+                onOpenOwnProfile?.();
+              }}
+            >
+              Open my profile
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M4 10h12M11 5l5 5-5 5" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
       <div className="search-bar__inner">
         {searching ? (
           <div className="search-bar__spinner" />
@@ -200,7 +242,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         <input
           ref={inputRef}
           type="text"
-          placeholder={mode === 'text' ? 'Find a developer by name, username, or location...' : mode === 'vector' ? 'Describe your ideal developer or agent collaborator...' : 'Combine skills, interests, and location...'}
+          placeholder={mode === 'text' ? 'Enter your GitHub username' : mode === 'vector' ? 'Describe your ideal developer or agent collaborator...' : 'Combine skills, interests, and location...'}
           autoComplete="off"
           value={query}
           onChange={handleInput}
@@ -213,6 +255,18 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
             </svg>
           </button>
         )}
+        <button
+          type="button"
+          className="search-bar__submit"
+          disabled={!query.trim() || searching}
+          onClick={() => {
+            clearTimeout(timerRef.current);
+            track('activation_started', { journey: 'username_profile', source: 'search_button' });
+            doSearch(query, mode);
+          }}
+        >
+          {mode === 'text' ? 'Find profile' : 'Search'}
+        </button>
         <select value={mode} onChange={handleModeChange} title="Search mode">
           <option value="text">Text</option>
           <option value="vector">Vector (AI)</option>

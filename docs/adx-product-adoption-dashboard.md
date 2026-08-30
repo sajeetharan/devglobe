@@ -91,10 +91,10 @@ Source, channel, journey, and action values are optional. The dashboard groups m
 
 ## Azure Monitor Workbook and MCP metrics
 
-The deployed **DevGlobe Product Adoption** Azure Monitor Workbook uses the live `devglobe-public-api` Application Insights component. Rebuild its serialized definition with:
+The deployed **DevGlobe Product Adoption** Azure Monitor Workbook is pinned to the live `devglobe-public-api` Application Insights component in subscription `0caf9c40-8ea2-43b1-a54f-38c656a8e1f0` and resource group `devglobe-rg`. Its browser telemetry is stored in the component's linked `DefaultWorkspace-0caf9c40-8ea2-43b1-a54f-38c656a8e1f0-EUS` workspace. Rebuild its serialized definition with:
 
 ```powershell
 npm run workbook:adoption
 ```
 
-MCP requests emit a structured `devglobe_mcp` console record from Azure Container Apps. The Workbook queries `ContainerAppConsoleLogs_CL` in `workspace-devgloberg7P5B` and reports request and tool-call volume, known client-family count, success rate, p50/p95 latency, result volume, tool adoption, and client mix. Telemetry stores only bounded method, tool, client-family, and outcome dimensions plus numeric duration and result count. It does not store prompts, tool arguments, tokens, authorization data, client IP addresses, or raw user-agent strings.
+MCP requests emit a structured `devglobe_mcp` console record from Azure Container Apps. The Workbook uses a cross-workspace query against `ContainerAppConsoleLogs_CL` in `workspace-devgloberg7P5B` and reports request and tool-call volume, known client-family count, success rate, p50/p95 latency, result volume, tool adoption, and client mix. Telemetry stores only bounded method, tool, client-family, and outcome dimensions plus numeric duration and result count. It does not store prompts, tool arguments, tokens, authorization data, client IP addresses, or raw user-agent strings.

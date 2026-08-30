@@ -310,7 +310,9 @@
       "name": "mcp-errors"
     }
   ],
-  "fallbackResourceIds": [],
+  "fallbackResourceIds": [
+    "/subscriptions/0caf9c40-8ea2-43b1-a54f-38c656a8e1f0/resourceGroups/devglobe-rg/providers/microsoft.insights/components/devglobe-public-api"
+  ],
   "fromTemplateId": null,
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
