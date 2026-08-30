@@ -804,6 +804,7 @@ export default function Home() {
         compareCount={compareDevs.length}
         signedIn={Boolean(user)}
         currentUsername={user?.login || ''}
+        profileOpen={Boolean(selectedDev)}
         onOpenOwnProfile={handleOpenOwnProfile}
         onOpenActivity={handleOpenActivity}
         showMissionPreview={false}

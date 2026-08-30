@@ -28,7 +28,7 @@ const SAMPLES_BY_MODE = {
   ],
 };
 
-export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, currentUsername = '', onOpenOwnProfile, onOpenActivity, showMissionPreview = true }) {
+export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, currentUsername = '', profileOpen = false, onOpenOwnProfile, onOpenActivity, showMissionPreview = true }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('text');
   const [topN, setTopN] = useState(20);
@@ -206,7 +206,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
   return (
     <div className="search-bar" id="search-bar">
-      {!query && resultCount === null && (
+      {!profileOpen && !query && resultCount === null && (
         <div className="search-bar__activation">
           <span className="search-bar__eyebrow">Your open-source snapshot</span>
           <h2>{signedIn ? `Welcome back, @${currentUsername}` : 'See your open-source impact'}</h2>
