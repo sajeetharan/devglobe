@@ -208,9 +208,9 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     <div className="search-bar" id="search-bar">
       {!profileOpen && !query && resultCount === null && (
         <div className="search-bar__activation">
-          <span className="search-bar__eyebrow">Your open-source snapshot</span>
-          <h2>{signedIn ? `Welcome back, @${currentUsername}` : 'See your open-source impact'}</h2>
-          <p>Discover your ranking, recent activity, and one useful next step.</p>
+          <span className="search-bar__eyebrow">{signedIn ? 'Your open-source snapshot' : 'Developer discovery'}</span>
+          <h2>{signedIn ? `Welcome back, @${currentUsername}` : 'Find an open-source developer'}</h2>
+          <p>{signedIn ? 'Review your ranking, recent activity, and next step.' : 'Search by GitHub username, name, or location. No sign-in required.'}</p>
           {signedIn && (
             <button
               type="button"
@@ -242,7 +242,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         <input
           ref={inputRef}
           type="text"
-          placeholder={mode === 'text' ? 'Enter your GitHub username' : mode === 'vector' ? 'Describe your ideal developer or agent collaborator...' : 'Combine skills, interests, and location...'}
+          placeholder={mode === 'text' ? (signedIn ? 'Search GitHub usernames, names, or locations' : 'GitHub username, name, or location') : mode === 'vector' ? 'Describe your ideal developer or agent collaborator...' : 'Combine skills, interests, and location...'}
           autoComplete="off"
           value={query}
           onChange={handleInput}
