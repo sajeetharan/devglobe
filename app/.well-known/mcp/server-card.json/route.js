@@ -3,7 +3,7 @@ import { getSiteUrl } from '../../../../lib/site.js';
 export function GET() {
   const siteUrl = getSiteUrl();
   return Response.json({
-    serverInfo: { name: 'devglobe', version: '1.3.0' },
+    serverInfo: { name: 'devglobe', version: '1.4.0' },
     description: 'Search public developer profiles and request consent-gated introductions.',
     homepage: `${siteUrl}/agents`,
     repository: {
@@ -33,7 +33,10 @@ export function GET() {
         listChanged: true,
         uris: ['devglobe://project'],
       },
-      prompts: false,
+      prompts: {
+        listChanged: true,
+        names: ['find-developers', 'find-collaborators', 'find-contribution'],
+      },
     },
     authentication: {
       publicTools: ['search_developers', 'get_developer_profile', 'find_similar_developers', 'get_trending_developers', 'preview_contribution_mission'],

@@ -28,6 +28,22 @@ Public discovery requires no credentials:
 }
 ```
 
+## Cursor and Claude configuration
+
+For Cursor, add this to `.cursor/mcp.json` in a project or to the global MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "devglobe": {
+      "url": "https://www.devglobe.dev/mcp"
+    }
+  }
+}
+```
+
+For Claude, open [Customize > Connectors](https://claude.ai/customize/connectors), choose **Add custom connector**, and paste `https://www.devglobe.dev/mcp` as the remote MCP server URL. The [client setup page](https://www.devglobe.dev/agents) provides copyable setup for both clients.
+
 For consent-gated introduction tools, keep the issued token in the client's secure environment support:
 
 ```json
@@ -55,6 +71,18 @@ For consent-gated introduction tools, keep the issued token in the client's secu
 | `preview_contribution_mission` | Anonymous | Previews one contribution-ready issue without reserving it |
 | `request_introduction` | Bearer token | Creates a pending request for an opted-in developer |
 | `get_introduction_status` | Same bearer token | Polls a request created by that agent |
+
+## Prompts
+
+Clients with MCP prompt support can list and run these guided workflows:
+
+| Prompt | Arguments | Workflow |
+|---|---|---|
+| `find-developers` | `criteria`, optional `location` | Searches for up to five matching public profiles and explains returned evidence |
+| `find-collaborators` | `criteria`, optional `opportunityType` | Searches active, self-declared availability and preserves explicit introduction approval |
+| `find-contribution` | `login` | Previews one contribution-ready issue and explains that previewing does not reserve it |
+
+Prompt arguments are bounded and are not retained in telemetry.
 
 ## Agent workflows
 
@@ -100,8 +128,7 @@ Only retryable errors ever include `retryAfterSeconds`, and only when DevGlobe c
 
 ## Privacy-safe telemetry
 
-DevGlobe records the MCP method, known tool name, success or error outcome, latency, and aggregate result count. Raw prompts, search arguments, profile content, credentials, and private contact details are not included in usage events.
-DevGlobe records the MCP method, known tool name, success or error outcome, bounded error code, latency, aggregate result count, and a daily rotating HMAC caller hash for conversion measurement. Raw prompts, search arguments, profile content, credentials, IP addresses, raw user agents, and private contact details are not included in usage events.
+DevGlobe records the MCP method, allow-listed tool, resource, or prompt name, success or error outcome, bounded error code, latency, aggregate result count, and a daily rotating HMAC caller hash for conversion measurement. Raw prompt arguments, search arguments, profile content, credentials, IP addresses, raw user agents, and private contact details are not included in usage events.
 
 ## Consent lifecycle
 

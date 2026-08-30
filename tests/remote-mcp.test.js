@@ -37,7 +37,7 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
     },
   })));
   assert.equal(initialization.result.serverInfo.name, 'devglobe');
-  assert.equal(initialization.result.serverInfo.version, '1.3.0');
+  assert.equal(initialization.result.serverInfo.version, '1.4.0');
   assert.equal(initialization.result.serverInfo.websiteUrl, 'https://www.devglobe.dev');
   assert.match(initialization.result.instructions, /github\.com\/sajeetharan\/devglobe/);
   assert.deepEqual(initialization.result.capabilities.resources, { listChanged: true });
@@ -70,6 +70,22 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
   const projectInfo = JSON.parse(project.result.contents[0].text);
   assert.equal(projectInfo.repository, 'https://github.com/sajeetharan/devglobe');
   assert.match(projectInfo.support, /star the repository/);
+
+  const prompts = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 5, method: 'prompts/list', params: {},
+  })));
+  assert.deepEqual(prompts.result.prompts.map(prompt => prompt.name), [
+    'find-developers',
+    'find-collaborators',
+    'find-contribution',
+  ]);
+
+  const prompt = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 6, method: 'prompts/get',
+    params: { name: 'find-developers', arguments: { criteria: 'TypeScript maintainers', location: 'Canada' } },
+  })));
+  assert.match(prompt.result.messages[0].content.text, /search_developers/);
+  assert.match(prompt.result.messages[0].content.text, /TypeScript maintainers in Canada/);
 });
 
 test('remote MCP exposes similar and trending discovery with usage counts', async () => {
@@ -201,6 +217,33 @@ test('MCP logs retain only the allow-listed project resource', async () => {
   assert.equal(metrics[0].resource, 'devglobe://project');
   assert.equal(metrics[1].method, 'resources/read');
   assert.equal(metrics[1].resource, null);
+});
+
+test('MCP classifies malformed and unknown requests with bounded error codes', async () => {
+  const metrics = [];
+  await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 17, method: 'tools/call', params: {},
+  }), { metricRecorder: metric => metrics.push(metric) });
+  await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 18, method: 'unknown/method', params: {},
+  }), { metricRecorder: metric => metrics.push(metric) });
+
+  assert.equal(metrics[0].errorCode, 'invalid_request');
+  assert.equal(metrics[1].errorCode, 'not_found');
+});
+
+test('MCP logs only allow-listed prompt names', async () => {
+  const metrics = [];
+  await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 19, method: 'prompts/get',
+    params: { name: 'find-contribution', arguments: { login: 'sajeetharan' } },
+  }), { metricRecorder: metric => metrics.push(metric) });
+  await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 20, method: 'prompts/get', params: { name: 'private-prompt' },
+  }), { metricRecorder: metric => metrics.push(metric) });
+
+  assert.equal(metrics[0].prompt, 'find-contribution');
+  assert.equal(metrics[1].prompt, null);
 });
 
 test('remote MCP performs anonymous public developer discovery', async () => {

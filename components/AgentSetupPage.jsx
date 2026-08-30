@@ -12,6 +12,8 @@ const clients = [
     id: 'vscode',
     name: 'VS Code',
     file: '.vscode/mcp.json',
+    setupUrl: marketplaceUrl,
+    setupLabel: 'Install VS Code extension',
     config: `{
   "servers": {
     "devglobe": {
@@ -24,21 +26,20 @@ const clients = [
   {
     id: 'claude',
     name: 'Claude',
-    file: 'MCP connector',
-    config: `{
-  "name": "devglobe",
-  "type": "http",
-  "url": "${endpoint}"
-}`,
+    file: 'Remote MCP server URL',
+    setupUrl: 'https://claude.ai/customize/connectors',
+    setupLabel: 'Copy URL and open Claude',
+    config: endpoint,
   },
   {
     id: 'cursor',
     name: 'Cursor',
     file: '.cursor/mcp.json',
+    setupUrl: 'https://cursor.com/docs/context/mcp',
+    setupLabel: 'Copy config and open guide',
     config: `{
   "mcpServers": {
     "devglobe": {
-      "type": "http",
       "url": "${endpoint}"
     }
   }
@@ -145,6 +146,26 @@ export default function AgentSetupPage() {
           </div>
           <pre><code>{selected.config}</code></pre>
         </div>
+        {selected.setupUrl && (
+          <div className={styles.setupAction}>
+            <a
+              href={selected.setupUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => {
+                if (selected.id !== 'vscode') copy(selected.config, selected.id);
+                track('agent_client_setup_clicked', { client: selected.id });
+              }}
+            >
+              {copied === selected.id && selected.id !== 'vscode' ? 'Copied. Continue setup' : selected.setupLabel}
+            </a>
+            <span>
+              {selected.id === 'claude' && 'Paste the URL into Add custom connector.'}
+              {selected.id === 'cursor' && 'Save the copied JSON in your project or global MCP configuration.'}
+              {selected.id === 'vscode' && 'The extension adds DevGlobe from the Command Palette.'}
+            </span>
+          </div>
+        )}
         {copied === 'error' && <p className={styles.copyError} role="status">Clipboard access was unavailable.</p>}
       </section>
 

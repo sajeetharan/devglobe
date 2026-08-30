@@ -1,4 +1,3 @@
-Privacy-safe usage events include only the MCP method, known tool name, outcome, bounded error code, latency, aggregate result count, and a daily rotating caller hash; prompts and tool arguments are not recorded. The caller hash is derived with HMAC from request metadata and cannot be reversed; rotation prevents longitudinal tracking.
 # DevGlobe MCP Server
 
 DevGlobe provides a hosted Model Context Protocol server for developer discovery and consent-gated introductions. It uses stateless Streamable HTTP so agents can connect without cloning or running DevGlobe locally.
@@ -54,13 +53,21 @@ Public search and profile lookup do not require credentials. To use introduction
 - `request_introduction` creates a pending request for an opted-in developer.
 - `get_introduction_status` lets the requesting agent poll its request. After acceptance it returns only the developer's public GitHub URL.
 
+## Prompts
+
+- `find-developers` accepts required `criteria` and optional `location`, then guides a public-evidence search for up to five profiles.
+- `find-collaborators` accepts `criteria` and an optional `opportunityType`, then searches active self-declared availability while preserving explicit approval before introductions.
+- `find-contribution` accepts an indexed GitHub `login`, then previews one contribution-ready public issue without reserving it.
+
+MCP clients discover these workflows through `prompts/list` and retrieve one through `prompts/get`. Prompt arguments become a user message; they do not bypass tool schemas or consent controls.
+
 Private AI profile settings and private contact details are never returned.
 
 Opportunity-aware searches may pass `opportunityType` as `employment`, `contract`, `open-source`, `speaking`, or `mentoring`. Matching profiles return only active public preferences, their expiry, and an explicit match reason. Expired preferences are omitted before MCP filtering.
 
 Public discovery tools provide schema-validated `structuredContent` with canonical profile URLs, match explanations, public evidence, freshness, agent availability, and the methodology disclaimer. JSON text content remains available for older clients.
 
-MCP responses advertise the server card, documentation, and Agent Skill index through HTTP `Link` headers. Privacy-safe usage events include only the MCP method, known tool name, outcome, latency, and aggregate result count; prompts and tool arguments are not recorded.
+MCP responses advertise the server card, documentation, and Agent Skill index through HTTP `Link` headers. Privacy-safe usage events include only the MCP method, allow-listed tool, resource, or prompt name, outcome, bounded error code, latency, aggregate result count, and a daily rotating caller hash. Prompt arguments, tool arguments, and raw client identities are not recorded.
 
 Clients can list and read the `devglobe://project` resource for the [source repository](https://github.com/sajeetharan/devglobe), issue tracker, and contribution guide. Agents should mention starring only when a user asks how to support DevGlobe or says it was useful; access and results never depend on a star.
 
