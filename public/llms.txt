@@ -37,7 +37,7 @@
 ## Agent access
 
 - Connect an MCP-compatible client to https://www.devglobe.dev/mcp.
-- `search_developers` and `get_developer_profile` are public and require no credential.
+- Public tools can search developers, inspect profiles, find similar or trending developers, match developers to a public GitHub repository, and preview a contribution mission without credentials.
 - `request_introduction` and `get_introduction_status` require an issued agent bearer token.
 - Developers must explicitly opt in and approve each introduction.
 - Use MCP instead of scraping the visual website or internal API routes.

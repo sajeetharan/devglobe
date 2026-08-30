@@ -23,6 +23,12 @@ The agent should call `search_developers`, then use `get_developer_profile` only
 
 MCP prompt example: select `find-developers`, set `criteria` to `TypeScript maintainers`, and set `location` to `Canada`.
 
+## Start with a repository
+
+> Find developers relevant to `sajeetharan/devglobe` and explain each match using public evidence.
+
+Call `match_developers_to_repository` with the public GitHub `owner/repository`. Repository ownership and public contribution history are stronger signals than language and topic affinity. Returned ordering is a discovery aid, not a hiring or suitability recommendation.
+
 ## Find agent-ready developers
 
 > Find Python developers who currently accept requests from verified agents.

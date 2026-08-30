@@ -6,7 +6,7 @@ export function GET() {
 
 ## Public access
 
-The \`search_developers\` and \`get_developer_profile\` MCP tools are public and require no credentials.
+The discovery tools, including \`search_developers\`, \`get_developer_profile\`, and \`match_developers_to_repository\`, are public and require no credentials.
 
 Machine-readable permission metadata is published at ${siteUrl}/.well-known/oauth-protected-resource. Public discovery maps to \`developers:read\`.
 

@@ -38,7 +38,7 @@ test('serves a valid API catalog and OpenAPI description', async () => {
   const openApi = await openApiResponse.json();
   assert.equal(openApiResponse.headers.get('content-type'), 'application/openapi+json');
   assert.equal(openApi.openapi, '3.1.0');
-  assert.deepEqual(Object.keys(openApi.paths), ['/api/search', '/api/developer', '/mcp']);
+  assert.deepEqual(Object.keys(openApi.paths), ['/api/search', '/api/developer', '/api/repository-matches', '/mcp']);
   assert.equal(openApi.components.securitySchemes.agentBearer.scheme, 'bearer');
   assert.deepEqual(openApi['x-scopes-supported'], [
     'developers:read',
@@ -51,15 +51,16 @@ test('serves a valid API catalog and OpenAPI description', async () => {
 test('describes the MCP server tools and authentication boundary', async () => {
   const card = await getMcpCard().json();
   assert.equal(card.transport.type, 'streamable-http');
-  assert.equal(card.serverInfo.version, '1.4.0');
+  assert.equal(card.serverInfo.version, '1.5.0');
   assert.equal(card.repository.url, 'https://github.com/sajeetharan/devglobe');
   assert.deepEqual(card.capabilities.resources.uris, ['devglobe://project']);
   assert.deepEqual(card.capabilities.prompts.names, ['find-developers', 'find-collaborators', 'find-contribution']);
-  assert.equal(card.capabilities.tools.names.length, 7);
+  assert.equal(card.capabilities.tools.names.length, 8);
   assert.deepEqual(card.authentication.publicTools, [
     'search_developers',
     'get_developer_profile',
     'find_similar_developers',
+    'match_developers_to_repository',
     'get_trending_developers',
     'preview_contribution_mission',
   ]);

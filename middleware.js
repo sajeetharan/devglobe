@@ -12,7 +12,7 @@ DevGlobe is a global developer discovery network for humans and AI agents.
 - OpenAPI description: https://www.devglobe.dev/openapi.json
 - Full agent guide: https://www.devglobe.dev/llms.txt
 
-Use the MCP tools to search public developer profiles, inspect a profile, and request consent-gated introductions. Private contact details are never returned.
+Use the MCP tools to search public developer profiles, match developers to a public GitHub repository, inspect a profile, and request consent-gated introductions. Private contact details are never returned.
 `;
 
 export function middleware(request) {
