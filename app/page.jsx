@@ -12,6 +12,7 @@ import AddMeModal from '../components/AddMeModal.jsx';
 import ClaimStatusModal from '../components/ClaimStatusModal.jsx';
 import AiProfileModal from '../components/AiProfileModal.jsx';
 import IntroductionInboxModal from '../components/IntroductionInboxModal.jsx';
+import ShortlistManagerModal from '../components/ShortlistManagerModal.jsx';
 import ContributionOpportunitiesModal from '../components/ContributionOpportunitiesModal.jsx';
 import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
@@ -60,6 +61,8 @@ export default function Home() {
   const [showClaimPending, setShowClaimPending] = useState(false);
   const [showAiProfile, setShowAiProfile] = useState(false);
   const [showIntroductions, setShowIntroductions] = useState(false);
+  const [shortlistLogin, setShortlistLogin] = useState('');
+  const [showShortlists, setShowShortlists] = useState(false);
   const [showContributions, setShowContributions] = useState(false);
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
@@ -778,6 +781,7 @@ export default function Home() {
         onClaim={handleClaim}
         onEditAiProfile={() => setShowAiProfile(true)}
         onOpenIntroductions={() => setShowIntroductions(true)}
+        onOpenShortlists={() => { setShortlistLogin(''); setShowShortlists(true); }}
         onOpenContributions={() => setShowContributions(true)}
         onOpenSimilar={handleOpenSimilar}
         onOpenProfile={handleOpenOwnProfile}
@@ -877,6 +881,7 @@ export default function Home() {
             onCardGenerated={targetLogin => recordPlatformActivity('generated_card', targetLogin)}
             onReadmeGenerated={targetLogin => recordPlatformActivity('generated_readme', targetLogin)}
             onOpenSimilar={handleOpenSimilar}
+            onAddToShortlist={login => { setShortlistLogin(login); setShowShortlists(true); }}
             claimedLogins={claimedLogins}
             user={user}
             onClaim={handleClaim}
@@ -910,6 +915,17 @@ export default function Home() {
             onEditPreferences={() => {
               setShowIntroductions(false);
               setShowAiProfile(true);
+            }}
+          />
+        )}
+        {showShortlists && (
+          <ShortlistManagerModal
+            ownerLogin={user.login}
+            initialLogin={shortlistLogin}
+            onClose={() => setShowShortlists(false)}
+            onCompare={profiles => {
+              setShowShortlists(false);
+              setCompareDevs(profiles);
             }}
           />
         )}
