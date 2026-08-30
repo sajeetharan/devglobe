@@ -904,7 +904,15 @@ export default function Home() {
             onSaved={handleAiProfileSaved}
           />
         )}
-        {showIntroductions && <IntroductionInboxModal onClose={() => setShowIntroductions(false)} />}
+        {showIntroductions && (
+          <IntroductionInboxModal
+            onClose={() => setShowIntroductions(false)}
+            onEditPreferences={() => {
+              setShowIntroductions(false);
+              setShowAiProfile(true);
+            }}
+          />
+        )}
         {showContributions && <ContributionOpportunitiesModal onClose={() => setShowContributions(false)} />}
         {similarLogin && (
           <SimilarDevelopersModal
