@@ -6,7 +6,7 @@ import { developerInviteUrl } from '../lib/share-attribution.js';
 import ProfileCompletionChecklist from './ProfileCompletionChecklist.jsx';
 import ProfileInsights from './ProfileInsights.jsx';
 
-export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, claimStatus }) {
+export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, claimStatus }) {
   const [open, setOpen] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState('idle');
   const [digestPreference, setDigestPreference] = useState(null);
@@ -194,6 +194,12 @@ export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onO
                   <path d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z" />
                 </svg>
                 Agent requests
+              </button>
+              <button className="user-menu__item" onClick={() => { onOpenShortlists(); setOpen(false); }}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 6h16M4 12h10M4 18h8M18 15v6M15 18h6" />
+                </svg>
+                Developer shortlists
               </button>
               <button className="user-menu__item" onClick={inviteDeveloper}>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

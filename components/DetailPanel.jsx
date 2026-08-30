@@ -15,7 +15,7 @@ import { identityCardShareUrl } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
 
-export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGenerated, onOpenSimilar, claimedLogins, user, onClaim, readmeRequest = 0, openCardOnMount = false, claimSuccess = false }) {
+export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGenerated, onOpenSimilar, onAddToShortlist, claimedLogins, user, onClaim, readmeRequest = 0, openCardOnMount = false, claimSuccess = false }) {
   const [fullData, setFullData] = useState(null);
   const [showCard, setShowCard] = useState(false);
   const [showReadmeGenerator, setShowReadmeGenerator] = useState(false);
@@ -228,18 +228,24 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                 Similar developers
               </button>
               {user?.login.toLowerCase() !== dev.login.toLowerCase() && (
-                <button
-                  type="button"
-                  className={`profile-action${followState === 'following' ? ' profile-action--active' : ''}`}
-                  onClick={handleFollow}
-                  disabled={followState === 'loading' || followState === 'saving'}
-                  aria-pressed={followState === 'following'}
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    {followState === 'following' ? <path d="m5 12 4 4L19 6" /> : <><path d="M15 19a6 6 0 00-12 0" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></>}
-                  </svg>
-                  {followState === 'following' ? 'Following' : followState === 'saving' ? 'Saving...' : 'Follow'}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className={`profile-action${followState === 'following' ? ' profile-action--active' : ''}`}
+                    onClick={handleFollow}
+                    disabled={followState === 'loading' || followState === 'saving'}
+                    aria-pressed={followState === 'following'}
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      {followState === 'following' ? <path d="m5 12 4 4L19 6" /> : <><path d="M15 19a6 6 0 00-12 0" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></>}
+                    </svg>
+                    {followState === 'following' ? 'Following' : followState === 'saving' ? 'Saving...' : 'Follow'}
+                  </button>
+                  <button type="button" className="profile-action" onClick={() => onAddToShortlist(dev.login)}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h8M18 15v6M15 18h6" /></svg>
+                    Add to shortlist
+                  </button>
+                </>
               )}
               <a className="profile-action" href={merged.githubUrl || `https://github.com/${dev.login}`} target="_blank" rel="noopener noreferrer">GitHub <ExternalLinkIcon /></a>
               {merged.soUserId && (
