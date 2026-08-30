@@ -76,6 +76,23 @@ export function GET() {
           },
         },
       },
+      '/api/repository-matches': {
+        get: {
+          operationId: 'matchDevelopersToRepository',
+          summary: 'Match indexed public developers to a public GitHub repository',
+          parameters: [
+            { name: 'repository', in: 'query', required: true, schema: { type: 'string', pattern: '^[^/]+/[^/]+$' } },
+            { name: 'top', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 20, default: 10 } },
+          ],
+          security: [],
+          'x-required-scope': 'developers:read',
+          responses: {
+            200: { description: 'Evidence-backed public developer matches' },
+            400: { $ref: '#/components/responses/BadRequest' },
+            404: { $ref: '#/components/responses/NotFound' },
+          },
+        },
+      },
       '/mcp': {
         post: {
           operationId: 'callMcp',

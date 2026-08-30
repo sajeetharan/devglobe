@@ -151,6 +151,24 @@ test('MCP client returns similar developers without exposing embeddings', async 
   assert.equal('embedding' in result.results[0], false);
 });
 
+test('MCP client returns repository matches with profile URLs', async () => {
+  let requestedUrl;
+  const client = createDevGlobeMcpClient({
+    baseUrl: 'https://www.devglobe.dev',
+    fetchImpl: async url => {
+      requestedUrl = new URL(url);
+      return Response.json({ repository: { fullName: 'acme/widgets' }, count: 1, results: [{ login: 'repo-dev' }] });
+    },
+  });
+
+  const result = await client.matchDevelopersToRepository({ repository: 'acme/widgets', limit: 5 });
+
+  assert.equal(requestedUrl.pathname, '/api/repository-matches');
+  assert.equal(requestedUrl.searchParams.get('repository'), 'acme/widgets');
+  assert.equal(requestedUrl.searchParams.get('top'), '5');
+  assert.equal(result.results[0].profileUrl, 'https://www.devglobe.dev/developer/repo-dev');
+});
+
 test('MCP client requires an issued token for introductions', async () => {
   const client = createDevGlobeMcpClient({ baseUrl: 'https://devglobe.dev', fetchImpl: () => {} });
   await assert.rejects(() => client.requestIntroduction({}), /DEVGLOBE_AGENT_TOKEN/);

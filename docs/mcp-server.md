@@ -48,6 +48,7 @@ Public search and profile lookup do not require credentials. To use introduction
 - `search_developers` searches public profiles and can require agent availability or an active self-declared opportunity type.
 - `get_developer_profile` returns one public profile.
 - `find_similar_developers` explores profiles with similar public repository, language, location, and profile signals.
+- `match_developers_to_repository` matches indexed public profiles to a public GitHub repository using transparent owner, contribution, language, topic, repository, and self-declared opportunity signals.
 - `get_trending_developers` returns recent score gainers and high-ranking profiles that are new to impact tracking.
 - `preview_contribution_mission` returns one contribution-ready public GitHub issue matched to a DevGlobe profile. It does not reserve the issue and is rate limited.
 - `request_introduction` creates a pending request for an opted-in developer.

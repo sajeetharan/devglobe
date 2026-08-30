@@ -67,6 +67,7 @@ For consent-gated introduction tools, keep the issued token in the client's secu
 | `search_developers` | Anonymous | Searches public profiles by expertise, name, location, language, and agent availability |
 | `get_developer_profile` | Anonymous | Returns one public profile by GitHub login |
 | `find_similar_developers` | Anonymous | Finds alternatives similar to a known public profile |
+| `match_developers_to_repository` | Anonymous | Matches indexed public profiles to a public GitHub repository using contribution, language, topic, and ownership evidence |
 | `get_trending_developers` | Anonymous | Lists recent score gainers and new impact-tracking entries |
 | `preview_contribution_mission` | Anonymous | Previews one contribution-ready issue without reserving it |
 | `request_introduction` | Bearer token | Creates a pending request for an opted-in developer |
@@ -86,12 +87,13 @@ Prompt arguments are bounded and are not retained in telemetry.
 
 ## Agent workflows
 
-Start broad discovery with `search_developers`, inspect selected results with `get_developer_profile`, and use `find_similar_developers` only when alternatives to a known profile are useful. Use `get_trending_developers` when recency matters and `preview_contribution_mission` when the user asks for a concrete open-source action.
+Start broad discovery with `search_developers`, or use `match_developers_to_repository` when the user starts with a public GitHub repository. Inspect selected results with `get_developer_profile`, and use `find_similar_developers` only when alternatives to a known profile are useful. Use `get_trending_developers` when recency matters and `preview_contribution_mission` when the user asks for a concrete open-source action.
 
 Example inputs:
 
 ```json
 {"tool":"search_developers","arguments":{"query":"TypeScript maintainers","location":"Germany","availableForAgents":true,"limit":5}}
+{"tool":"match_developers_to_repository","arguments":{"repository":"sajeetharan/devglobe","limit":5}}
 {"tool":"get_developer_profile","arguments":{"login":"sajeetharan"}}
 {"tool":"get_trending_developers","arguments":{"days":30,"limit":10}}
 ```

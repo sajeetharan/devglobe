@@ -37,7 +37,7 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
     },
   })));
   assert.equal(initialization.result.serverInfo.name, 'devglobe');
-  assert.equal(initialization.result.serverInfo.version, '1.4.0');
+  assert.equal(initialization.result.serverInfo.version, '1.5.0');
   assert.equal(initialization.result.serverInfo.websiteUrl, 'https://www.devglobe.dev');
   assert.match(initialization.result.instructions, /github\.com\/sajeetharan\/devglobe/);
   assert.deepEqual(initialization.result.capabilities.resources, { listChanged: true });
@@ -49,6 +49,7 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
     'search_developers',
     'get_developer_profile',
     'find_similar_developers',
+    'match_developers_to_repository',
     'get_trending_developers',
     'preview_contribution_mission',
     'request_introduction',
@@ -56,8 +57,8 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
   ]);
   assert.equal(listing.result.tools[0].annotations.readOnlyHint, true);
   assert.ok(listing.result.tools[0].outputSchema);
-  assert.equal(listing.result.tools[4].annotations.idempotentHint, false);
   assert.equal(listing.result.tools[5].annotations.idempotentHint, false);
+  assert.equal(listing.result.tools[6].annotations.idempotentHint, false);
 
   const resources = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
     jsonrpc: '2.0', id: 3, method: 'resources/list', params: {},
@@ -414,4 +415,27 @@ test('remote MCP previews a mission with per-caller quota identity', async () =>
   assert.match(response.result.structuredContent.reservationDisclaimer, /does not reserve/);
   assert.equal(metrics[0].tool, 'preview_contribution_mission');
   assert.equal(metrics[0].resultCount, 1);
+});
+
+test('remote MCP matches developers to a public repository with bounded telemetry', async () => {
+  const metrics = [];
+  const response = await readMcpResponse(await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 21, method: 'tools/call',
+    params: { name: 'match_developers_to_repository', arguments: { repository: 'acme/widgets', limit: 5 } },
+  }), {
+    fetchImpl: async url => {
+      assert.equal(new URL(url).pathname, '/api/repository-matches');
+      return Response.json({
+        repository: { owner: 'acme', name: 'widgets', fullName: 'acme/widgets', url: 'https://github.com/acme/widgets', description: null, language: 'TypeScript', topics: [], stars: 42, contributorCount: 1 },
+        count: 1,
+        results: [{ login: 'octocat', name: 'Octocat', whyMatched: ['Public language profile includes TypeScript'], publicEvidence: [], dataFreshness: { updatedAt: null, status: 'unknown' }, availableForAgents: false }],
+      });
+    },
+    metricRecorder: metric => metrics.push(metric),
+  }));
+
+  assert.equal(response.result.structuredContent.resultCount, 1);
+  assert.equal(response.result.structuredContent.results[0].profileUrl, 'http://localhost:3000/developer/octocat');
+  assert.equal(metrics[0].tool, 'match_developers_to_repository');
+  assert.doesNotMatch(JSON.stringify(metrics[0]), /acme|widgets/);
 });
