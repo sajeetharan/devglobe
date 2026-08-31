@@ -18,6 +18,7 @@ import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
+import { socialAttributionProperties } from '../lib/share-attribution.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
 import dynamic from 'next/dynamic';
@@ -600,14 +601,16 @@ export default function Home() {
   const deepLinkHandledRef = useRef(false);
   useEffect(() => {
     if (deepLinkHandledRef.current) return;
-    const login = new URLSearchParams(window.location.search).get('dev')?.trim();
+    const params = new URLSearchParams(window.location.search);
+    const login = params.get('dev')?.trim();
     if (!login || !/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(login)) return;
+    const attribution = socialAttributionProperties(params);
 
     const existing = developers.find(candidate => candidate.login?.toLowerCase() === login.toLowerCase());
     if (existing) {
       deepLinkHandledRef.current = true;
       handleSelectDev(existing);
-      track('shared_profile_link_opened', { login: existing.login });
+      track('shared_profile_link_opened', { login: existing.login, ...attribution });
       return;
     }
 
@@ -619,7 +622,7 @@ export default function Home() {
         const developer = await response.json();
         if (developer?.login) {
           handleSelectDev(developer);
-          track('shared_profile_link_opened', { login: developer.login });
+          track('shared_profile_link_opened', { login: developer.login, ...attribution });
         }
       })
       .catch(() => {});

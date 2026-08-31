@@ -16,6 +16,7 @@ import {
   LEADERBOARD_PERIODS,
 } from '../lib/leaderboard-movement.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
+import { buildDeveloperStory, DEVELOPER_STORY_TYPES } from '../lib/share-attribution.js';
 import LeaderboardActivityRibbon from './LeaderboardActivityRibbon.jsx';
 import LeaderboardTrust from './LeaderboardTrust.jsx';
 
@@ -52,6 +53,7 @@ export default function LeaderboardPage() {
   const [pendingLookup, setPendingLookup] = useState('');
   const [locatedLogin, setLocatedLogin] = useState('');
   const [lookupStatus, setLookupStatus] = useState('');
+  const [shareStatus, setShareStatus] = useState('');
 
   useEffect(() => {
     try {
@@ -149,6 +151,7 @@ export default function LeaderboardPage() {
     if (!movementLogins) return undefined;
     const controller = new AbortController();
     setMovementStatus('loading');
+    setMovementResult(null);
     const params = new URLSearchParams({ days: String(period), logins: movementLogins });
     fetch(`/api/leaderboard/movement?${params}`, { signal: controller.signal })
       .then(async response => {
@@ -221,6 +224,32 @@ export default function LeaderboardPage() {
   function handleLookup(event) {
     event.preventDefault();
     locateDeveloper(lookup);
+  }
+
+  async function shareDeveloperStory(developer, rankMovement) {
+    const type = rankMovement?.status === 'up'
+      ? DEVELOPER_STORY_TYPES.RANK_MOVEMENT
+      : country && Number.isInteger(developer.countryRank)
+        ? DEVELOPER_STORY_TYPES.COUNTRY_LEADER
+        : DEVELOPER_STORY_TYPES.SPOTLIGHT;
+    const channel = navigator.share ? 'native_share' : 'copy_link';
+    const story = buildDeveloperStory({
+      siteUrl: window.location.origin,
+      developer,
+      type,
+      channel,
+      period,
+      movement: rankMovement?.delta,
+    });
+
+    try {
+      if (navigator.share) await navigator.share({ title: story.title, text: story.text, url: story.url });
+      else await navigator.clipboard.writeText(`${story.text}\n${story.url}`);
+      setShareStatus(`${developer.name || `@${developer.login}`} story ${navigator.share ? 'shared' : 'copied'}.`);
+      track('leaderboard_story_shared', { login: developer.login, channel, action: type });
+    } catch (error) {
+      if (error.name !== 'AbortError') setShareStatus('Unable to share this story.');
+    }
   }
 
   return (
@@ -409,6 +438,18 @@ export default function LeaderboardPage() {
                         </Link>
                         <span>@{developer.login}{developer.claimed ? ' / claimed' : ''}</span>
                       </div>
+                      <button
+                        type="button"
+                        className="leaderboard-board__share"
+                        onClick={() => shareDeveloperStory(developer, movementUnavailable ? null : rankMovement)}
+                        aria-label={`Share ${developer.name || developer.login}'s leaderboard story`}
+                        title="Share leaderboard story"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                          <path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" />
+                        </svg>
+                      </button>
                     </td>
                     <td data-label="Location">
                       <strong>{developer.location || 'Location unknown'}</strong>
@@ -434,6 +475,7 @@ export default function LeaderboardPage() {
                 ))}
               </tbody>
             </table>
+            <span className="visually-hidden" role="status" aria-live="polite">{shareStatus}</span>
             {locatedIndex < 0 && visible.length < ranked.length && (
               <button
                 type="button"
