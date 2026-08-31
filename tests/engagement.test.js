@@ -197,4 +197,14 @@ test('requires a target profile for completed profile activation events', () => 
   assert.throws(() => normalizeEngagementEvent({ eventName: 'personalized_profile_viewed' }), EngagementValidationError);
   assert.throws(() => normalizeEngagementEvent({ eventName: 'activation_completed' }), EngagementValidationError);
   assert.equal(normalizeEngagementEvent({ eventName: 'activation_completed', targetLogin: 'OctoCat' }).targetLogin, 'octocat');
+  assert.throws(() => normalizeEngagementEvent({ eventName: 'profile_primary_action_viewed' }), EngagementValidationError);
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'profile_primary_action_viewed',
+    targetLogin: 'OctoCat',
+    properties: { action: 'follow_impact', journey: 'profile_primary_action' },
+  }), {
+    eventName: 'profile_primary_action_viewed',
+    targetLogin: 'octocat',
+    properties: { action: 'follow_impact', journey: 'profile_primary_action' },
+  });
 });

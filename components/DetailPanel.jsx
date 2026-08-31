@@ -11,12 +11,13 @@ import { classifyAgent } from '../lib/agent-class.js';
 import { AI_TOOLS } from '../lib/ai-profile.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { resolveReadmeAccess } from '../lib/profile-readme.js';
+import { PROFILE_PRIMARY_ACTIONS, resolveProfilePrimaryAction } from '../lib/profile-primary-action.js';
 import { identityCardShareUrl } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
 import RepositoryAgentSignals from './RepositoryAgentSignals.jsx';
 
-export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGenerated, onOpenSimilar, onAddToShortlist, claimedLogins, user, onClaim, readmeRequest = 0, openCardOnMount = false, claimSuccess = false }) {
+export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGenerated, onOpenSimilar, onOpenContributions, onAddToShortlist, claimedLogins, user, onClaim, readmeRequest = 0, openCardOnMount = false, claimSuccess = false }) {
   const [fullData, setFullData] = useState(null);
   const [showCard, setShowCard] = useState(false);
   const [showReadmeGenerator, setShowReadmeGenerator] = useState(false);
@@ -27,6 +28,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const heatmapRef = useRef(null);
   const langRef = useRef(null);
   const cardGenerationRecordedRef = useRef(false);
+  const primaryActionRecordedRef = useRef('');
 
   useEffect(() => {
     const source = new URLSearchParams(window.location.search).get('utm_source') || 'direct';
@@ -130,6 +132,37 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const merged = { ...dev, ...fullData };
   const readmeClaimed = Boolean(dev.claimed || claimedLogins?.has(dev.login) || claimedLogins?.has(dev.login.toLowerCase()));
   const readmeAccess = resolveReadmeAccess(dev, user, readmeClaimed);
+  const isOwner = Boolean(user?.login && user.login.toLowerCase() === dev.login.toLowerCase());
+  const primaryAction = resolveProfilePrimaryAction({
+    viewerLogin: user?.login,
+    profileLogin: dev.login,
+    isFollowing: followState === 'following',
+  });
+
+  useEffect(() => {
+    if (user && !isOwner && ['idle', 'loading'].includes(followState)) return;
+    const impressionKey = `${dev.login}:${primaryAction}`;
+    if (primaryActionRecordedRef.current === impressionKey) return;
+    primaryActionRecordedRef.current = impressionKey;
+    track('profile_primary_action_viewed', {
+      login: dev.login,
+      action: primaryAction,
+      journey: 'profile_primary_action',
+    });
+  }, [dev.login, followState, isOwner, primaryAction, user]);
+
+  const selectPrimaryAction = action => {
+    track('next_action_selected', {
+      login: dev.login,
+      action,
+      journey: 'profile_primary_action',
+    });
+  };
+
+  const handleOpenContributions = () => {
+    selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.OPPORTUNITIES);
+    onOpenContributions?.();
+  };
 
   const handleReadmeAccess = () => {
     setShowReadmeGenerator(true);
@@ -222,25 +255,42 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
               {SCORE_METHODOLOGY.short}
             </p>
             <div className="detail-header__links">
+              {primaryAction === PROFILE_PRIMARY_ACTIONS.OPPORTUNITIES && (
+                <button type="button" className="profile-action profile-action--primary" onClick={handleOpenContributions}>
+                  Find contribution opportunities
+                </button>
+              )}
+              {primaryAction === PROFILE_PRIMARY_ACTIONS.IMPACT && (
+                <Link
+                  className="profile-action profile-action--primary"
+                  href={`/developer/${encodeURIComponent(dev.login)}`}
+                  onClick={() => selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.IMPACT)}
+                >
+                  View impact history
+                </Link>
+              )}
               <button type="button" className="profile-action" onClick={() => onOpenSimilar(dev.login)}>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2" /><path d="M2 19a6 6 0 0112 0M14 18a4 4 0 018 0" />
                 </svg>
                 Similar developers
               </button>
-              {user?.login.toLowerCase() !== dev.login.toLowerCase() && (
+              {!isOwner && (
                 <>
                   <button
                     type="button"
-                    className={`profile-action${followState === 'following' ? ' profile-action--active' : ''}`}
-                    onClick={handleFollow}
+                    className={`profile-action${primaryAction === PROFILE_PRIMARY_ACTIONS.FOLLOW ? ' profile-action--primary' : ''}${followState === 'following' ? ' profile-action--active' : ''}`}
+                    onClick={() => {
+                      if (primaryAction === PROFILE_PRIMARY_ACTIONS.FOLLOW) selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.FOLLOW);
+                      handleFollow();
+                    }}
                     disabled={followState === 'loading' || followState === 'saving'}
                     aria-pressed={followState === 'following'}
                   >
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       {followState === 'following' ? <path d="m5 12 4 4L19 6" /> : <><path d="M15 19a6 6 0 00-12 0" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></>}
                     </svg>
-                    {followState === 'following' ? 'Following' : followState === 'saving' ? 'Saving...' : 'Follow'}
+                    {followState === 'following' ? 'Following' : followState === 'saving' ? 'Saving...' : 'Follow impact'}
                   </button>
                   <button type="button" className="profile-action" onClick={() => onAddToShortlist(dev.login)}>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h8M18 15v6M15 18h6" /></svg>
@@ -252,7 +302,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
               {merged.soUserId && (
                 <a className="profile-action" href={`https://stackoverflow.com/users/${merged.soUserId}`} target="_blank" rel="noreferrer">Stack Overflow <ExternalLinkIcon /></a>
               )}
-                <Link className="profile-action" href={`/developer/${encodeURIComponent(dev.login)}`}>Impact history</Link>
+                {primaryAction !== PROFILE_PRIMARY_ACTIONS.IMPACT && <Link className="profile-action" href={`/developer/${encodeURIComponent(dev.login)}`}>Impact history</Link>}
                 <a className="profile-action" href={`/share/${encodeURIComponent(dev.login)}#get-your-badge`} target="_blank" rel="noopener noreferrer">Get badge <ExternalLinkIcon /></a>
                 <button
                   type="button"
@@ -282,7 +332,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                   {readmeAccess === 'generate' ? 'Generate README' : 'Preview README'}
                 </button>
                 <button
-                className="profile-action profile-action--primary"
+                className="profile-action"
                 onClick={handleGenerateCard}
               >
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
