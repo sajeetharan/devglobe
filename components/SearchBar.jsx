@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import SpecialTags from './SpecialTags.jsx';
 import { track, trackSearchAppearances } from '../lib/analytics.js';
 import { countryKey } from '../lib/country.js';
+import { findExactLoginResult, normalizeTextSearchQuery } from '../lib/developer-search.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import MissionPreview from './MissionPreview.jsx';
 
@@ -41,7 +42,37 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const abortRef = useRef(null);
   const timerRef = useRef(null);
 
-  const doSearch = useCallback(async (q, m) => {
+  const openSearchResult = useCallback((developer, source) => {
+    track('personalized_profile_viewed', {
+      login: developer.login,
+      journey: 'username_profile',
+      source,
+    });
+    track('activation_action_selected', {
+      action: 'open_profile',
+      journey: 'username_profile',
+      source,
+    });
+    track('activation_completed', {
+      login: developer.login,
+      journey: 'username_profile',
+      outcome: 'profile_opened',
+      source,
+    });
+    track('next_action_selected', {
+      action: 'open_search_result',
+      journey: 'developer_discovery',
+      source,
+    });
+    onSelectDeveloper(developer);
+  }, [onSelectDeveloper]);
+
+  const doSearch = useCallback(async (q, m, { openExact = false } = {}) => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+
     if (!q.trim()) {
       onReset();
       setResultCount(null);
@@ -54,8 +85,9 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     setSearchError('');
 
     if (m === 'text') {
-      const lower = q.trim().toLowerCase();
-      const locationKey = countryKey(q.trim());
+      const textQuery = normalizeTextSearchQuery(q);
+      const lower = textQuery.toLowerCase();
+      const locationKey = countryKey(textQuery);
       let results = developers.filter(d =>
         (d.login && d.login.toLowerCase().includes(lower)) ||
         (d.name && d.name.toLowerCase().includes(lower)) ||
@@ -63,13 +95,12 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       ).slice(0, topN);
 
       if (results.length === 0) {
-        if (abortRef.current) abortRef.current.abort();
         const controller = new AbortController();
         abortRef.current = controller;
         setSearching(true);
         try {
           const response = await fetch(
-            publicApiUrl(`/api/search?q=${encodeURIComponent(q)}&mode=text&top=${topN}`),
+            publicApiUrl(`/api/search?q=${encodeURIComponent(textQuery)}&mode=text&top=${topN}`),
             { signal: controller.signal }
           );
           const data = await response.json();
@@ -89,10 +120,11 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       setSingleResult(results.length === 1 ? results[0] : null);
       trackSearchAppearances(results.map(result => result.login), m);
       onSearchState?.({ query: q.trim(), results });
+      const exactResult = openExact ? findExactLoginResult(q, results) : null;
+      if (exactResult) openSearchResult(exactResult, `${m}_exact_submit`);
       return;
     }
 
-    if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     setSearching(true);
@@ -115,6 +147,8 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         setSingleResult(matchedDeveloper);
         trackSearchAppearances(results.map(result => result.login), m);
         onSearchState?.({ query: q.trim(), results });
+        const exactResult = openExact ? findExactLoginResult(q, results) : null;
+        if (exactResult) openSearchResult(exactResult, `${m}_exact_submit`);
       }
     } catch (e) {
       if (e.name !== 'AbortError') {
@@ -124,7 +158,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     } finally {
       if (!controller.signal.aborted) setSearching(false);
     }
-  }, [developers, onResults, onReset, onSearchState, topN]);
+  }, [developers, onResults, onReset, onSearchState, openSearchResult, topN]);
 
   const handleInput = (e) => {
     const val = e.target.value;
@@ -138,7 +172,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     if (e.key === 'Enter') {
       clearTimeout(timerRef.current);
       if (query.trim()) track('activation_started', { journey: 'username_profile', source: 'search_enter' });
-      doSearch(query, mode);
+      doSearch(query, mode, { openExact: true });
     }
     if (e.key === 'Escape') {
       handleClear();
@@ -165,11 +199,13 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
   const handleSample = (q) => {
     setQuery(q);
-    doSearch(q, mode);
+    doSearch(q, mode, { openExact: true });
     inputRef.current?.focus();
   };
 
   const handleClear = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
     setQuery('');
     setResultCount(null);
     setVisibleResults([]);
@@ -180,28 +216,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   };
 
   const handleSelectResult = (developer) => {
-    track('personalized_profile_viewed', {
-      login: developer.login,
-      journey: 'username_profile',
-      source: mode,
-    });
-    track('activation_action_selected', {
-      action: 'open_profile',
-      journey: 'username_profile',
-      source: mode,
-    });
-    track('activation_completed', {
-      login: developer.login,
-      journey: 'username_profile',
-      outcome: 'profile_opened',
-      source: mode,
-    });
-    track('next_action_selected', {
-      action: 'open_search_result',
-      journey: 'developer_discovery',
-      source: mode,
-    });
-    onSelectDeveloper(developer);
+    openSearchResult(developer, mode);
   };
 
   return (
@@ -262,7 +277,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           onClick={() => {
             clearTimeout(timerRef.current);
             track('activation_started', { journey: 'username_profile', source: 'search_button' });
-            doSearch(query, mode);
+            doSearch(query, mode, { openExact: true });
           }}
         >
           {mode === 'text' ? 'Find profile' : 'Search'}
