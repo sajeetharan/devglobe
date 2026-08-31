@@ -19,6 +19,7 @@ export async function GET() {
   return NextResponse.json({
     emailVerified: contact.emailVerified === true,
     productUpdatesEnabled: contact.productUpdatesEnabled === true,
+    weeklyDigestEligible: contact.emailVerified === true && contact.productUpdatesEnabled === true,
   });
 }
 
@@ -54,5 +55,6 @@ export async function PUT(request) {
   return NextResponse.json({
     emailVerified: result.contact.emailVerified === true,
     productUpdatesEnabled: result.contact.productUpdatesEnabled === true,
+    weeklyDigestEligible: result.contact.emailVerified === true && result.contact.productUpdatesEnabled === true,
   });
 }

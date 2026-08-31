@@ -15,6 +15,8 @@ module.exports = async function weeklyDigest(context) {
     sent: result.sent,
     skipped: result.skipped,
     failed: result.failed,
+    providerAccepted: result.providerAccepted,
+    providerFailed: result.providerFailed,
   });
   if (!response.ok) throw new Error(`Weekly digest returned ${response.status}`);
 };

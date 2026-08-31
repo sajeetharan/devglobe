@@ -11,10 +11,10 @@ export async function GET(request) {
 
   try {
     const summary = await sendWeeklyDigests();
-    console.info('Weekly digest completed', summary);
+    console.info(JSON.stringify({ event: 'devglobe_weekly_digest', outcome: 'completed', ...summary }));
     return NextResponse.json({ ok: true, ...summary });
   } catch (error) {
-    console.error('Weekly digest failed:', error.message);
+    console.error(JSON.stringify({ event: 'devglobe_weekly_digest', outcome: 'failed' }));
     return NextResponse.json({ error: 'Weekly digest failed' }, { status: 500 });
   }
 }

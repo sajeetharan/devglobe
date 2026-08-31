@@ -173,6 +173,43 @@
     {
       "type": 1,
       "content": {
+        "json": "## Weekly impact return loop\nOnly verified, explicitly opted-in contacts are eligible. A first run records the comparison baseline without sending email; messages require rank movement, a fresh contribution opportunity, or a pending introduction request. The return-rate target is at least 20% over seven days."
+      },
+      "name": "weekly-digest-heading"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let D=workspace('c97b958c-a52f-45b5-bcc1-d7eb355850ff').ContainerAppConsoleLogs_CL | where TimeGenerated >= ago(7d) and Log_s has '\"event\":\"devglobe_weekly_digest\"' | extend Metric=parse_json(Log_s) | where tostring(Metric.event) == 'devglobe_weekly_digest' and tostring(Metric.outcome) == 'completed'; let Totals=D | summarize Eligible=sum(toint(Metric.eligible)), Baselines=sum(toint(Metric.reasons.baselineCreated)), Suppressed=sum(toint(Metric.reasons.noMeaningfulUpdate)), ProviderAccepted=sum(toint(Metric.providerAccepted)), ProviderFailed=sum(toint(Metric.providerFailed)); let Returns=toscalar(customEvents | where timestamp >= ago(7d) and name == 'weekly_digest_returned' | summarize dcount(session_Id)); Totals | extend ReturnSessions=Returns, ReturnRate=iff(ProviderAccepted == 0, 0.0, round(100.0 * Returns / ProviderAccepted, 1)), Target=20.0 | extend TargetGap=round(ReturnRate - Target, 1) | project Metric=pack_array('Eligible contacts', 'Baselines created', 'No meaningful update', 'Provider accepted', 'Provider failed', 'Return sessions', 'Return rate %', 'Target gap (pp)'), Value=pack_array(todouble(Eligible), todouble(Baselines), todouble(Suppressed), todouble(ProviderAccepted), todouble(ProviderFailed), todouble(ReturnSessions), ReturnRate, TargetGap) | mv-expand Metric to typeof(string), Value to typeof(real)",
+        "size": 4,
+        "title": "Weekly impact email - last 7 days",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "tiles",
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "Metric",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "Value",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "auto"
+            }
+          },
+          "showBorder": true
+        }
+      },
+      "name": "weekly-digest-health"
+    },
+    {
+      "type": 1,
+      "content": {
         "json": "## MCP adoption and reliability\nPrivacy-safe usage of the public DevGlobe MCP endpoint. Client values are bounded families; prompts, tool arguments, tokens, and raw user agents are never collected."
       },
       "name": "mcp-heading"
