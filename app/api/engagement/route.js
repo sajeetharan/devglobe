@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
-import { createEngagementEvent, EngagementValidationError, isAutomatedUserAgent, resolveEngagementSession } from '../../../lib/engagement.js';
+import { createEngagementEvent, ENGAGEMENT_RETENTION_DAYS, EngagementValidationError, isAutomatedUserAgent, resolveEngagementSession } from '../../../lib/engagement.js';
 import { getEngagementContainer, saveEngagementEvent } from '../../../lib/engagement-store.js';
 
 const MAX_BATCH_SIZE = 50;
@@ -38,6 +38,7 @@ export async function POST(request) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
+        maxAge: ENGAGEMENT_RETENTION_DAYS * 24 * 60 * 60,
       });
     }
     return response;

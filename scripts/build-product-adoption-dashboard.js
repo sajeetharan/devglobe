@@ -68,8 +68,12 @@ const events = `let Events = () {
       Source=tostring(Document.properties.source),
       Journey=tostring(Document.properties.journey),
       Action=tostring(Document.properties.action),
-      Channel=tostring(Document.properties.channel)
-  | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash);
+        Channel=tostring(Document.properties.channel),
+        SchemaVersion=toint(Document.schemaVersion),
+        InstrumentationVersion=toint(Document.instrumentationVersion),
+        ActorType=tostring(Document.actorType)
+      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)
+      | where ActorType == "human" and Source !in ("local", "synthetic", "test");
 };`;
 
 let y = 0;
@@ -188,8 +192,67 @@ Events
 addTile(usagePageId, 'Most Viewed Profiles', 'table', topProfiles, { x: 9, y, width: 9, height: 5 }, table());
 
 y = 0;
-addMarkdown(funnelsPageId, 'Funnels and Retention', '## Funnels and retention\nConversion steps are ordered within the same privacy-safe session. Returning browsers are session hashes first seen before the reporting day; they are directional, not authenticated-user retention.', y);
-y += 2;
+addMarkdown(funnelsPageId, 'Funnels and Retention', '## Adoption and retention scorecard\nCurrent seven-day metrics compare with the immediately preceding seven days. Counts below three privacy cohorts are suppressed. Targets are weekly product goals, not historical guarantees. `site_visited` and `search_submitted` begin with instrumentation version 2; earlier periods are incomplete.', y, 3);
+y += 3;
+const productScorecard = addQuery(`${events}
+let MinimumCohort=3;
+let Boundary=ago(7d);
+let CurrentEnd=now();
+let PreviousStart=Boundary-7d;
+let Cohorts=(Start:datetime, End:datetime) {
+  let Period=Events | where EventTime >= Start and EventTime < End;
+  let Visits=Period | where EventName == "site_visited" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;
+  let Searches=Visits | join kind=leftouter (Period | where EventName == "search_submitted" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;
+  let Profiles=Searches | join kind=leftouter (Period | where EventName == "profile_viewed" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;
+  Profiles | join kind=leftouter (Period | where EventName == "next_action_selected" and Journey == "profile_primary_action" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash
+};
+let C=Cohorts(Boundary,CurrentEnd);
+let P=Cohorts(PreviousStart,Boundary);
+let CV=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit)))); let CVP=toscalar(C | where isnotnull(Visit) | summarize dcount(Privacy));
+let PV=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit)))); let PVP=toscalar(P | where isnotnull(Visit) | summarize dcount(Privacy));
+let CS=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit))); let CSP=toscalar(C | where isnotnull(Visit) and Search>=Visit | summarize dcount(Privacy));
+let PS=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit))); let PSP=toscalar(P | where isnotnull(Visit) and Search>=Visit | summarize dcount(Privacy));
+let CP=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search))); let CPP=toscalar(C | where isnotnull(Visit) and Search>=Visit and Profile>=Search | summarize dcount(Privacy));
+let PP=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search))); let PPP=toscalar(P | where isnotnull(Visit) and Search>=Visit and Profile>=Search | summarize dcount(Privacy));
+let CA=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile))); let CAP=toscalar(C | where isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile | summarize dcount(Privacy));
+let PA=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile))); let PAP=toscalar(P | where isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile | summarize dcount(Privacy));
+union
+  (print Metric="Visitors", Current7d=iff(CVP<MinimumCohort,real(null),CV), Previous7d=iff(PVP<MinimumCohort,real(null),PV), WeeklyTarget=100.0),
+  (print Metric="Search submissions", Current7d=iff(CSP<MinimumCohort,real(null),CS), Previous7d=iff(PSP<MinimumCohort,real(null),PS), WeeklyTarget=30.0),
+  (print Metric="Profile opens", Current7d=iff(CPP<MinimumCohort,real(null),CP), Previous7d=iff(PPP<MinimumCohort,real(null),PP), WeeklyTarget=20.0),
+  (print Metric="Primary actions", Current7d=iff(CAP<MinimumCohort,real(null),CA), Previous7d=iff(PAP<MinimumCohort,real(null),PA), WeeklyTarget=10.0),
+  (print Metric="Visitor to search %", Current7d=iff(CVP<MinimumCohort,real(null),round(100.0*CS/CV,1)), Previous7d=iff(PVP<MinimumCohort,real(null),round(100.0*PS/PV,1)), WeeklyTarget=25.0),
+  (print Metric="Search to profile %", Current7d=iff(CSP<MinimumCohort,real(null),round(100.0*CP/CS,1)), Previous7d=iff(PSP<MinimumCohort,real(null),round(100.0*PP/PS,1)), WeeklyTarget=50.0),
+  (print Metric="Profile to action %", Current7d=iff(CPP<MinimumCohort,real(null),round(100.0*CA/CP,1)), Previous7d=iff(PPP<MinimumCohort,real(null),round(100.0*PA/PP,1)), WeeklyTarget=15.0)
+| extend Change=round(Current7d-Previous7d,1), Status=case(isnull(Current7d),"Privacy suppressed",Current7d>=WeeklyTarget,"On target","Below target")`);
+addTile(funnelsPageId, 'Weekly Product Scorecard', 'table', productScorecard, { x: 0, y, width: 18, height: 7 }, table());
+y += 7;
+const adoptionFunnel = addQuery(`${events}
+let MinimumCohort=3;
+let E=Events | where EventTime >= ago(7d) and EventTime < now();
+let Visits=E | where EventName == "site_visited" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;
+let Searches=Visits | join kind=leftouter (E | where EventName == "search_submitted" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;
+let Profiles=Searches | join kind=leftouter (E | where EventName == "profile_viewed" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;
+let S=Profiles | join kind=leftouter (E | where EventName == "next_action_selected" and Journey == "profile_primary_action" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash;
+union
+  (S | summarize Browsers=countif(isnotnull(Visit)), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit)) | extend StepOrder=1, Stage="Visitors"),
+  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit) | extend StepOrder=2, Stage="Search submitted"),
+  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search) | extend StepOrder=3, Stage="Profile opened"),
+  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile) | extend StepOrder=4, Stage="Primary action completed")
+| extend Browsers=iff(PrivacyCohorts < MinimumCohort, long(null), Browsers)
+| order by StepOrder asc
+| project Stage, Browsers`);
+addTile(funnelsPageId, 'Visitor to Value Funnel - Last 7 Days', 'bar', adoptionFunnel, { x: 0, y, width: 12, height: 6 }, chart('Stage', ['Browsers'], { hideLegend: true }));
+const telemetryHealth = addQuery(`${events}
+let Required=datatable(EventName:string)["site_visited", "search_submitted", "profile_viewed", "next_action_selected"];
+let Recent=Events | where EventTime >= ago(7d) | where EventName != "next_action_selected" or Journey == "profile_primary_action";
+Required
+| join kind=leftouter (Recent | summarize Events=count(), LastSeen=max(EventTime), Versions=make_set(InstrumentationVersion) by EventName) on EventName
+| extend Events=toint(coalesce(Events, 0))
+| extend Status=case(isnull(LastSeen) or Events == 0, "ALERT: missing", LastSeen < ago(24h), "ALERT: stale", "Healthy")
+| project EventName, Events, LastSeen, Versions, Status`);
+addTile(funnelsPageId, 'Telemetry Health and Gaps', 'table', telemetryHealth, { x: 12, y, width: 6, height: 6 }, table());
+y += 6;
 const funnelKpis = addQuery(`${events}
 let E=Events | where EventTime between (ago(30d) .. now());
 let Discovery=E | summarize Impression=minif(EventTime, EventName == "search_appearance"), View=minif(EventTime, EventName == "profile_viewed"), Card=minif(EventTime, EventName == "card_generated"), Share=minif(EventTime, EventName == "profile_shared") by SessionHash, TargetLogin;
@@ -243,6 +306,24 @@ E
 | order by Day asc`);
 addTile(funnelsPageId, 'New vs Returning Browsers', 'line', returningTrend, { x: 9, y, width: 9, height: 6 }, chart('Day', ['NewBrowsers', 'ReturningBrowsers'], { hideLegend: false }));
 y += 6;
+const retentionScorecard = addQuery(`${events}
+let MinimumCohort=3;
+let Visits=Events | where EventName == "site_visited" and EventTime >= ago(180d) | summarize FirstSeen=min(EventTime), LastSeen=max(EventTime) by SessionHash;
+union
+  (Visits | summarize Eligible=countif(FirstSeen < ago(7d)), Returned=countif(FirstSeen < ago(7d) and LastSeen >= ago(7d)) | extend Window="7-day"),
+  (Visits | summarize Eligible=countif(FirstSeen < ago(30d)), Returned=countif(FirstSeen < ago(30d) and LastSeen >= ago(30d)) | extend Window="30-day")
+| extend ReturnRate=iff(Eligible < MinimumCohort or Returned < MinimumCohort, real(null), round(100.0 * Returned / Eligible, 1)), Target=case(Window == "7-day", 20.0, 10.0)
+| project Window, Eligible=iff(Eligible < MinimumCohort, long(null), Eligible), Returned=iff(Returned < MinimumCohort, long(null), Returned), ReturnRate, Target, Status=case(isnull(ReturnRate), "Privacy suppressed", ReturnRate >= Target, "On target", "Below target")`);
+addTile(funnelsPageId, '7/30-Day Browser Retention', 'table', retentionScorecard, { x: 0, y, width: 9, height: 5 }, table());
+const routeSourceBreakdown = addQuery(`${events}
+Events
+| where EventTime >= ago(30d) and EventName == "site_visited"
+| extend Route=iff(isempty(Journey), "unknown", Journey), AcquisitionSource=iff(isempty(Source), "unattributed", Source)
+| summarize Visitors=dcount(SessionHash) by Route, AcquisitionSource
+| where Visitors >= 3
+| order by Visitors desc`);
+addTile(funnelsPageId, 'Route and Source Breakdown', 'table', routeSourceBreakdown, { x: 9, y, width: 9, height: 5 }, table());
+y += 5;
 const depth = addQuery(`${events}
 Events
 | where EventTime between (ago(30d) .. now())

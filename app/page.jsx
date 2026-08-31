@@ -76,6 +76,14 @@ export default function Home() {
   const globeRef = useRef(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    track('site_visited', {
+      source: (params.get('utm_source') || document.referrer) ? 'attributed' : 'direct',
+      journey: 'homepage',
+    });
+  }, []);
+
+  useEffect(() => {
     // Mirrors the blocking script in layout.jsx so React state matches the
     // theme already applied to <html> before hydration.
     try {

@@ -22,6 +22,7 @@ export default function DeveloperActivityPage({ login }) {
 
   useEffect(() => {
     const source = new URLSearchParams(window.location.search).get('utm_source') || 'direct';
+    track('site_visited', { source: source === 'direct' ? 'direct' : 'attributed', journey: 'developer_profile' });
     track('profile_viewed', { login, source });
   }, [login]);
 

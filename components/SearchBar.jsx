@@ -171,7 +171,10 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       clearTimeout(timerRef.current);
-      if (query.trim()) track('activation_started', { journey: 'username_profile', source: 'search_enter' });
+      if (query.trim()) {
+        track('search_submitted', { action: mode, journey: 'developer_discovery', source: 'search_enter' });
+        track('activation_started', { journey: 'username_profile', source: 'search_enter' });
+      }
       doSearch(query, mode, { openExact: true });
     }
     if (e.key === 'Escape') {
@@ -199,6 +202,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
   const handleSample = (q) => {
     setQuery(q);
+    track('search_submitted', { action: mode, journey: 'developer_discovery', source: 'sample' });
     doSearch(q, mode, { openExact: true });
     inputRef.current?.focus();
   };
@@ -276,6 +280,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           disabled={!query.trim() || searching}
           onClick={() => {
             clearTimeout(timerRef.current);
+            track('search_submitted', { action: mode, journey: 'developer_discovery', source: 'search_button' });
             track('activation_started', { journey: 'username_profile', source: 'search_button' });
             doSearch(query, mode, { openExact: true });
           }}
