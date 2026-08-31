@@ -19,6 +19,12 @@ union actions, arrivals
 
 Compare referral arrivals, profile views, card generations, shares, and claims seven days after each distribution change. The weekly spotlight workflow produces a review-only artifact every Monday; publishing remains a human decision.
 
+## Social developer stories
+
+Developer spotlights, country leaderboard stories, and rank-movement stories link to the canonical `/share/<login>` preview with `utm_source`, `utm_medium`, `utm_campaign`, and `utm_content`. Only public profile and ranking fields are used in generated copy. Opening the attributed developer panel records `social_profile_opened` with the target login, source, and campaign journey; arbitrary query fields are not retained.
+
+Measure the seven-day social landing-to-profile conversion as unique sessions with `social_profile_opened` divided by unique sessions landing on `/share/` with a social story campaign. The product target is at least 10%.
+
 ## Weekly impact email
 
 Weekly impact emails use `utm_source=weekly_digest`, `utm_medium=email`, and `utm_campaign=weekly_impact`. An arrival records the privacy-safe `weekly_digest_returned` event with only the update type, journey, and source. The product adoption workbook compares seven-day return sessions with provider-accepted messages and reports progress toward the 20% return-rate target.

@@ -67,6 +67,28 @@ test('preserves distinct share channels while deduplicating retries', () => {
   assert.notEqual(linkedIn.id, copied.id);
 });
 
+test('preserves distinct leaderboard story types on the same share channel', () => {
+  const options = { session: 'session', secret: 'secret', now: '2026-08-21T10:05:00.000Z' };
+  const spotlight = createEngagementEvent({ eventName: 'profile_shared', targetLogin: 'octocat', properties: { channel: 'copy_link', action: 'developer_spotlight' } }, options);
+  const movement = createEngagementEvent({ eventName: 'profile_shared', targetLogin: 'octocat', properties: { channel: 'copy_link', action: 'rank_movement' } }, options);
+
+  assert.notEqual(spotlight.id, movement.id);
+});
+
+test('accepts attributed social profile opens without arbitrary campaign data', () => {
+  const event = normalizeEngagementEvent({
+    eventName: 'social_profile_opened',
+    targetLogin: 'OctoCat',
+    properties: { source: 'reddit', journey: 'rank_movement', utmContent: 'private-value' },
+  });
+
+  assert.deepEqual(event, {
+    eventName: 'social_profile_opened',
+    targetLogin: 'octocat',
+    properties: { source: 'reddit', journey: 'rank_movement' },
+  });
+});
+
 test('accepts only signed server sessions and replaces forged cookies', () => {
   const created = resolveEngagementSession('', 'secret', () => 'server-id');
   const restored = resolveEngagementSession(created.cookieValue, 'secret', () => 'unused');

@@ -2291,7 +2291,47 @@ body {
 }
 
 .leaderboard-board__developer div {
+  flex: 1 1 auto;
   min-width: 0;
+}
+
+.leaderboard-board__share {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--board-muted);
+  cursor: pointer;
+}
+
+.leaderboard-board__share:hover,
+.leaderboard-board__share:focus-visible {
+  border-color: var(--board-cyan);
+  color: var(--board-cyan);
+  outline-offset: 2px;
+}
+
+.leaderboard-board__share svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
 }
 
 .leaderboard-board__developer a {
