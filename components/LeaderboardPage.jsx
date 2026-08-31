@@ -16,7 +16,7 @@ import {
   LEADERBOARD_PERIODS,
 } from '../lib/leaderboard-movement.js';
 import { SCORE_METHODOLOGY } from '../lib/scoring.js';
-import { buildDeveloperStory, DEVELOPER_STORY_TYPES } from '../lib/share-attribution.js';
+import { acquisitionAttributionProperties, buildDeveloperStory, DEVELOPER_STORY_TYPES } from '../lib/share-attribution.js';
 import LeaderboardActivityRibbon from './LeaderboardActivityRibbon.jsx';
 import LeaderboardTrust from './LeaderboardTrust.jsx';
 
@@ -57,7 +57,8 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    track('site_visited', { source: params.get('utm_source') ? 'attributed' : 'direct', journey: 'leaderboard' });
+    const attribution = acquisitionAttributionProperties(params, { referrer: document.referrer, siteUrl: window.location.origin });
+    track('site_visited', { ...attribution, journey: 'leaderboard' });
   }, []);
 
   useEffect(() => {

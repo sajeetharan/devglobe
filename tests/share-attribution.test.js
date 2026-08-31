@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  acquisitionAttributionProperties,
   attributedGlobePath,
   buildDeveloperStory,
   developerInviteUrl,
@@ -9,6 +10,48 @@ import {
   normalizeDeveloperLogin,
   socialAttributionProperties,
 } from '../lib/share-attribution.js';
+
+test('normalizes acquisition attribution into bounded reporting categories', () => {
+  assert.deepEqual(acquisitionAttributionProperties(new URLSearchParams({
+    utm_source: 'weekly_digest',
+    utm_medium: 'email',
+    utm_campaign: 'weekly_impact',
+    utm_content: 'contribution_opportunity',
+  })), {
+    source: 'weekly_digest',
+    channel: 'email',
+    campaign: 'weekly_impact',
+    action: 'contribution_opportunity',
+  });
+  assert.deepEqual(acquisitionAttributionProperties(new URLSearchParams(), {
+    referrer: 'https://example.com/private/path',
+  }), {
+    source: 'external_referral',
+    channel: 'referral',
+    campaign: 'organic_referral',
+  });
+  assert.deepEqual(acquisitionAttributionProperties(new URLSearchParams({
+    utm_source: 'person@example.com',
+    utm_medium: 'private channel',
+    utm_campaign: 'secret campaign',
+    utm_content: 'private message',
+  })), {
+    source: 'other',
+    channel: 'other',
+    campaign: 'unknown',
+  });
+});
+
+test('does not classify same-origin navigation as acquisition', () => {
+  assert.deepEqual(acquisitionAttributionProperties(new URLSearchParams(), {
+    referrer: 'https://www.devglobe.dev/leaderboard?private=value',
+    siteUrl: 'https://www.devglobe.dev/developer/octocat',
+  }), {
+    source: 'direct',
+    channel: 'direct',
+    campaign: 'none',
+  });
+});
 
 test('builds channel-specific identity card referral URLs', () => {
   const linkedIn = new URL(identityCardShareUrl('https://www.devglobe.dev', 'OctoCat', 'linkedin', '4'));
@@ -51,13 +94,27 @@ test('preserves only campaign attribution when entering the globe', () => {
 });
 
 test('attributes member invitations without exposing identity outside ref', () => {
-  const url = new URL(developerInviteUrl('https://www.devglobe.dev', 'octocat', 'native_share'));
+  const url = new URL(developerInviteUrl('https://www.devglobe.dev', 'OctoCat', 'native_share'));
 
   assert.equal(url.pathname, '/');
   assert.equal(url.searchParams.get('ref'), 'octocat');
   assert.equal(url.searchParams.get('utm_source'), 'native_share');
   assert.equal(url.searchParams.get('utm_medium'), 'referral');
   assert.equal(url.searchParams.get('utm_campaign'), 'developer_invite');
+});
+
+test('bounds channels in invitation and developer story URLs', () => {
+  const invite = new URL(developerInviteUrl('https://www.devglobe.dev', 'OctoCat', 'person@example.com'));
+  const story = buildDeveloperStory({
+    siteUrl: 'https://www.devglobe.dev',
+    developer: { login: 'OctoCat' },
+    type: DEVELOPER_STORY_TYPES.SPOTLIGHT,
+    channel: 'person@example.com',
+  });
+
+  assert.equal(invite.searchParams.get('ref'), 'octocat');
+  assert.equal(invite.searchParams.get('utm_source'), 'copy_link');
+  assert.equal(new URL(story.url).searchParams.get('utm_source'), 'copy_link');
 });
 
 test('builds canonical public developer spotlight stories with bounded attribution', () => {
@@ -129,7 +186,7 @@ test('sanitizes hostile attribution before forwarding to the profile funnel', ()
 
   assert.equal(url.searchParams.get('dev'), 'octocat');
   assert.equal(url.searchParams.get('utm_source'), 'direct');
-  assert.equal(url.searchParams.get('utm_medium'), 'social');
+  assert.equal(url.searchParams.get('utm_medium'), 'direct');
   assert.equal(url.searchParams.get('utm_campaign'), 'shared_profile');
   assert.equal(url.searchParams.has('utm_content'), false);
 });

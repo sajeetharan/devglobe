@@ -18,7 +18,7 @@ import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
-import { socialAttributionProperties } from '../lib/share-attribution.js';
+import { acquisitionAttributionProperties, socialAttributionProperties } from '../lib/share-attribution.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
 import dynamic from 'next/dynamic';
@@ -77,8 +77,9 @@ export default function Home() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const attribution = acquisitionAttributionProperties(params, { referrer: document.referrer, siteUrl: window.location.origin });
     track('site_visited', {
-      source: (params.get('utm_source') || document.referrer) ? 'attributed' : 'direct',
+      ...attribution,
       journey: 'homepage',
     });
   }, []);
@@ -111,7 +112,8 @@ export default function Home() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('utm_source') !== 'weekly_digest') return;
+    const attribution = acquisitionAttributionProperties(params);
+    if (attribution.source !== 'weekly_digest' || attribution.campaign !== 'weekly_impact') return;
     const destination = params.get('open');
     if (['introductions', 'contributions'].includes(destination)) {
       try {
@@ -119,9 +121,9 @@ export default function Home() {
       } catch { /* The attributed landing still works without session storage. */ }
     }
     track('weekly_digest_returned', {
-      action: params.get('utm_content') || 'unknown',
+      ...attribution,
+      action: attribution.action || 'unknown',
       journey: 'weekly_digest',
-      source: 'weekly_digest',
     });
   }, []);
 
@@ -247,8 +249,8 @@ export default function Home() {
           return { ok: false, ...result };
         }
         setClaimStatus('claimed');
-        const source = socialAttributionProperties(new URLSearchParams(window.location.search)).source;
-        track('claim_completed', { login: user.login, source });
+        const attribution = acquisitionAttributionProperties(new URLSearchParams(window.location.search));
+        track('claim_completed', { login: user.login, ...attribution });
         setClaimedLogins(prev => new Set(prev).add(user.login));
         let claimedDeveloper = developers.find(developer => developer.login === user.login);
         // If a new profile was created, reload developers to include it
@@ -618,7 +620,7 @@ export default function Home() {
     if (existing) {
       deepLinkHandledRef.current = true;
       handleSelectDev(existing);
-      track('shared_profile_link_opened', { login: existing.login, ...attribution });
+      if (attribution.source !== 'direct') track('shared_profile_link_opened', { login: existing.login, ...attribution });
       return;
     }
 
@@ -630,7 +632,7 @@ export default function Home() {
         const developer = await response.json();
         if (developer?.login) {
           handleSelectDev(developer);
-          track('shared_profile_link_opened', { login: developer.login, ...attribution });
+          if (attribution.source !== 'direct') track('shared_profile_link_opened', { login: developer.login, ...attribution });
         }
       })
       .catch(() => {});

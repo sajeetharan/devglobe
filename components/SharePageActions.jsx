@@ -3,17 +3,18 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { track } from '../lib/analytics.js';
-import { identityCardShareUrl, socialAttributionProperties } from '../lib/share-attribution.js';
+import { acquisitionAttributionProperties, identityCardShareUrl, socialAttributionProperties } from '../lib/share-attribution.js';
 
 export default function SharePageActions({ login, profilePath, createPath, previewVersion }) {
   const [shareStatus, setShareStatus] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const attribution = socialAttributionProperties(params);
-    track('site_visited', { source: attribution.source, journey: 'share_profile' });
-    if (attribution.source !== 'direct') {
-      track('shared_profile_link_opened', { login, ...attribution });
+    const attribution = acquisitionAttributionProperties(params, { referrer: document.referrer, siteUrl: window.location.origin });
+    track('site_visited', { ...attribution, journey: 'share_profile' });
+    const socialAttribution = socialAttributionProperties(params);
+    if (socialAttribution.source !== 'direct') {
+      track('shared_profile_link_opened', { login, ...socialAttribution });
     }
   }, [login]);
 
