@@ -247,7 +247,7 @@ export default function Home() {
           return { ok: false, ...result };
         }
         setClaimStatus('claimed');
-        const source = new URLSearchParams(window.location.search).get('utm_source') || 'direct';
+        const source = socialAttributionProperties(new URLSearchParams(window.location.search)).source;
         track('claim_completed', { login: user.login, source });
         setClaimedLogins(prev => new Set(prev).add(user.login));
         let claimedDeveloper = developers.find(developer => developer.login === user.login);
