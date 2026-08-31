@@ -2,6 +2,34 @@
 
 Identity card shares and member invitations use `utm_source`, `utm_medium`, and `utm_campaign`. Review the rolling seven-day funnel in the Application Insights workspace with:
 
+## Campaign URL conventions
+
+Every distributed URL uses lowercase values from this bounded vocabulary. Do not put a login, email address, search phrase, referrer URL, or free-form campaign name in a UTM field.
+
+| Field | Allowed values |
+| --- | --- |
+| `utm_source` | `copy_link`, `facebook`, `linkedin`, `manual_outreach`, `native_share`, `reddit`, `share_page`, `weekly_digest`, `weekly_spotlight`, `x` |
+| `utm_medium` | `community`, `email`, `referral`, `social` |
+| `utm_campaign` | `agents`, `community`, `country_leaderboard`, `developer_activation`, `developer_invite`, `developer_spotlight`, `identity_card`, `india_top_50`, `product`, `rank_movement`, `weekly_impact` |
+| `utm_content` | A public GitHub login for profile stories, or `contribution_opportunity`, `introduction_request`, or `rank_movement` for the weekly digest |
+
+Unknown source, medium, and campaign values are recorded as `other`, `other`, and `unknown`. An untagged visit with a browser referrer is recorded as `external_referral` / `referral` / `organic_referral`; the referrer URL itself is never retained.
+
+Review bounded acquisition events by source, channel, and campaign with:
+
+```kusto
+AppEvents
+| where TimeGenerated >= ago(7d)
+| where Name in ("site_visited", "profile_viewed", "shared_profile_link_opened", "claim_completed", "weekly_digest_returned")
+| extend Source=tostring(Properties.source), Channel=tostring(Properties.channel), Campaign=tostring(Properties.campaign)
+| summarize Events=count(), Users=dcount(UserId), Sessions=dcount(SessionId) by Name, Source, Channel, Campaign
+| order by Events desc
+```
+
+Use the shared attribution helpers for generated URLs and arrival telemetry. Durable ingestion applies the same finite categories so direct API submissions cannot introduce unbounded dimensions.
+
+## Referral funnel
+
 ```kusto
 let window = 7d;
 let actions = AppEvents
@@ -21,9 +49,9 @@ Compare referral arrivals, profile views, card generations, shares, and claims s
 
 ## Social developer stories
 
-Developer spotlights, country leaderboard stories, and rank-movement stories link to the canonical `/share/<login>` preview with `utm_source`, `utm_medium`, `utm_campaign`, and `utm_content`. Only public profile and ranking fields are used in generated copy. Opening the attributed developer panel records `social_profile_opened` with the target login, source, and campaign journey; arbitrary query fields are not retained.
+Developer spotlights, country leaderboard stories, and rank-movement stories link to the canonical `/share/<login>` preview with `utm_source`, `utm_medium`, `utm_campaign`, and `utm_content`. Only public profile and ranking fields are used in generated copy. Opening the attributed developer panel records `referral_profile_opened` with the target login, source, and campaign journey; arbitrary query fields are not retained.
 
-Measure the seven-day social landing-to-profile conversion as unique sessions with `social_profile_opened` divided by unique sessions landing on `/share/` with a social story campaign. The product target is at least 10%.
+Measure the seven-day shared-link landing-to-profile conversion as unique sessions with `referral_profile_opened` divided by unique sessions landing on `/share/` with a sharing campaign. The product target is at least 10%.
 
 ## Weekly impact email
 

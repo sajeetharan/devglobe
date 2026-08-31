@@ -12,7 +12,7 @@ import { AI_TOOLS } from '../lib/ai-profile.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { resolveReadmeAccess } from '../lib/profile-readme.js';
 import { PROFILE_PRIMARY_ACTIONS, resolveProfilePrimaryAction } from '../lib/profile-primary-action.js';
-import { identityCardShareUrl, socialAttributionProperties } from '../lib/share-attribution.js';
+import { acquisitionAttributionProperties, attributedGlobePath, identityCardShareUrl } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
 import RepositoryAgentSignals from './RepositoryAgentSignals.jsx';
@@ -31,8 +31,8 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const primaryActionRecordedRef = useRef('');
 
   useEffect(() => {
-    const source = socialAttributionProperties(new URLSearchParams(window.location.search)).source;
-    track('profile_viewed', { login: dev.login, source });
+    const attribution = acquisitionAttributionProperties(new URLSearchParams(window.location.search));
+    track('profile_viewed', { login: dev.login, ...attribution });
   }, [dev.login]);
 
   const recordCardGeneration = () => {
@@ -48,11 +48,16 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   };
 
   const handleCopyDeepLink = async () => {
-    const deepLink = `${getSiteUrl()}/?dev=${encodeURIComponent(dev.login)}`;
+    const deepLink = new URL(attributedGlobePath(dev.login, {
+      utm_source: 'copy_link',
+      utm_medium: 'referral',
+      utm_campaign: 'identity_card',
+      utm_content: dev.login,
+    }), getSiteUrl()).toString();
     try {
       await navigator.clipboard.writeText(deepLink);
       setDeepLinkCopied(true);
-      track('profile_link_copied', { login: dev.login });
+      track('profile_link_copied', { login: dev.login, channel: 'copy_link' });
       setTimeout(() => setDeepLinkCopied(false), 2000);
     } catch {
       // Clipboard access can fail (e.g. permissions); the button simply won't confirm.

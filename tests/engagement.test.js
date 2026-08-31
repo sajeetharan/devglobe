@@ -62,8 +62,13 @@ test('preserves separate route visits in the same browser window', () => {
   const options = { session: 'session', secret: 'secret', now: '2026-08-21T10:05:00.000Z' };
   const homepage = createEngagementEvent({ eventName: 'site_visited', properties: { journey: 'homepage' } }, options);
   const leaderboard = createEngagementEvent({ eventName: 'site_visited', properties: { journey: 'leaderboard' } }, options);
+  const campaignHomepage = createEngagementEvent({
+    eventName: 'site_visited',
+    properties: { journey: 'homepage', source: 'x', channel: 'social', campaign: 'product' },
+  }, options);
 
   assert.notEqual(homepage.id, leaderboard.id);
+  assert.notEqual(homepage.id, campaignHomepage.id);
 });
 
 test('preserves distinct share channels while deduplicating retries', () => {
@@ -86,13 +91,13 @@ test('preserves distinct leaderboard story types on the same share channel', () 
 
 test('accepts attributed social profile opens without arbitrary campaign data', () => {
   const event = normalizeEngagementEvent({
-    eventName: 'social_profile_opened',
+    eventName: 'referral_profile_opened',
     targetLogin: 'OctoCat',
     properties: { source: 'reddit', journey: 'rank_movement', utmContent: 'private-value' },
   });
 
   assert.deepEqual(event, {
-    eventName: 'social_profile_opened',
+    eventName: 'referral_profile_opened',
     targetLogin: 'octocat',
     properties: { source: 'reddit', journey: 'rank_movement' },
   });
@@ -257,6 +262,41 @@ test('accepts privacy-safe weekly digest return attribution without a target pro
       journey: 'weekly_digest',
       source: 'weekly_digest',
     },
+  });
+});
+
+test('bounds acquisition categories during durable ingestion', () => {
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'site_visited',
+    properties: {
+      source: 'person@example.com',
+      channel: 'private channel',
+      campaign: 'secret campaign',
+      journey: 'homepage',
+    },
+  }), {
+    eventName: 'site_visited',
+    targetLogin: null,
+    properties: {
+      source: 'other',
+      channel: 'other',
+      campaign: 'unknown',
+      journey: 'homepage',
+    },
+  });
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'weekly_digest_returned',
+    properties: {
+      source: 'weekly_digest',
+      channel: 'email',
+      campaign: 'weekly_impact',
+      action: 'private message',
+    },
+  }).properties, {
+    source: 'weekly_digest',
+    channel: 'email',
+    campaign: 'weekly_impact',
+    action: 'unknown',
   });
 });
 

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { track } from '../lib/analytics.js';
 import { formatNum, formatRelativeTime } from '../lib/format.js';
 import { publicApiUrl } from '../lib/public-api.js';
-import { socialAttributionProperties } from '../lib/share-attribution.js';
+import { acquisitionAttributionProperties } from '../lib/share-attribution.js';
 import { useActivityFeed } from './useActivityFeed.js';
 import SpecialTags from './SpecialTags.jsx';
 import ImpactHistoryPanel from './ImpactHistoryPanel.jsx';
@@ -22,9 +22,9 @@ export default function DeveloperActivityPage({ login }) {
   } = useActivityFeed(login, { limit: 20 });
 
   useEffect(() => {
-    const source = socialAttributionProperties(new URLSearchParams(window.location.search)).source;
-    track('site_visited', { source: source === 'direct' ? 'direct' : 'attributed', journey: 'developer_profile' });
-    track('profile_viewed', { login, source });
+    const attribution = acquisitionAttributionProperties(new URLSearchParams(window.location.search), { referrer: document.referrer, siteUrl: window.location.origin });
+    track('site_visited', { ...attribution, journey: 'developer_profile' });
+    track('profile_viewed', { login, ...attribution });
   }, [login]);
 
   useEffect(() => {
