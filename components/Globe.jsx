@@ -7,6 +7,7 @@ import { getPlatformColor } from '../lib/scoring.js';
 import { formatNum } from '../lib/format.js';
 import { extractCountry, countryKey } from '../lib/country.js';
 import { getLanguageColor } from '../lib/language-colors.js';
+import { siAnthropic, siCursor, siGithubcopilot, siGooglegemini, siProbot, siWindsurf } from 'simple-icons';
 
 // Low-res Natural Earth countries (177 features), pinned to the commit that added
 // the dataset so the shapes can't change under us. Second entry is a mirror.
@@ -55,6 +56,15 @@ const arcEndLat = d => d.endLat;
 const arcEndLng = d => d.endLng;
 const arcColor = d => d.color;
 const arcLabel = d => d.label;
+
+const AGENT_ICONS = new Map([
+  ['github-copilot', siGithubcopilot],
+  ['claude-code', siAnthropic],
+  ['cursor', siCursor],
+  ['gemini-cli', siGooglegemini],
+  ['windsurf', siWindsurf],
+  ['custom-agent', siProbot],
+]);
 
 // Hexbin clustering (#30): above this camera altitude the globe is dense
 // enough (26k+ points) that individual points blur together, so we switch
@@ -124,6 +134,29 @@ function createAvatarMarker(developer, onSelectDev, setAutoRotate) {
   image.referrerPolicy = 'no-referrer';
   marker.appendChild(image);
 
+  return marker;
+}
+
+function createAgentMarker(agent, setAutoRotate) {
+  const marker = document.createElement('div');
+  marker.className = 'globe-agent-marker';
+  marker.style.setProperty('--agent-color', agent.color);
+  marker.setAttribute('role', 'img');
+  marker.setAttribute('aria-label', `${agent.name} relationships`);
+  marker.title = agent.name;
+  marker.addEventListener('mouseenter', () => setAutoRotate(false));
+  marker.addEventListener('mouseleave', () => setAutoRotate(true));
+
+  const icon = AGENT_ICONS.get(agent.id);
+  if (icon) {
+    marker.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${icon.path}" /></svg>`;
+  } else {
+    marker.textContent = agent.id === 'openai-codex' ? 'C' : 'AI';
+  }
+
+  const label = document.createElement('span');
+  label.textContent = agent.name;
+  marker.appendChild(label);
   return marker;
 }
 
@@ -247,6 +280,7 @@ const Globe = forwardRef(function Globe({
   onSelectCountry,
   onClearCountry,
   agentNetworkVisible = false,
+  agentRelationshipGraph = { nodes: [], developers: [], links: [] },
   tooltipDisabled = false,
   trendingLogins = [],
 }, ref) {
@@ -314,6 +348,13 @@ const Globe = forwardRef(function Globe({
     agentNetworkVisible ? geoDevs.filter(developer => developer.agentReady) : geoDevs
   ), [agentNetworkVisible, geoDevs]);
 
+  const agentNodeMarkers = useMemo(() => agentRelationshipGraph.nodes.map(node => ({
+    ...node,
+    markerType: 'agent',
+    markerLat: node.lat,
+    markerLng: node.lng,
+  })), [agentRelationshipGraph.nodes]);
+
   // Languages present in the current view, ranked by how many devs use them,
   // for the language-mode legend and filter dropdown.
   const topLanguagesPresent = useMemo(() => {
@@ -368,7 +409,7 @@ const Globe = forwardRef(function Globe({
   }, [countryFeatures, featuredGeoDevs, selectedCountry]);
 
   // Dynamic animated arcs on hover connecting developer to top collaborators
-  const arcsData = useMemo(() => {
+  const collaborationArcs = useMemo(() => {
     if (!hoverDev || !hoverDev.collaborators || hoverDev.collaborators.length === 0) {
       return [];
     }
@@ -396,6 +437,10 @@ const Globe = forwardRef(function Globe({
         };
       });
   }, [hoverDev]);
+
+  const arcsData = useMemo(() => (
+    agentNetworkVisible ? agentRelationshipGraph.links : collaborationArcs
+  ), [agentNetworkVisible, agentRelationshipGraph.links, collaborationArcs]);
 
   // Rose pulsing rings for the top trending gainers (#24) — layered on top of
   // whichever base ring set (score or agent-network) is currently active.
@@ -589,9 +634,15 @@ const Globe = forwardRef(function Globe({
   }, [selectedCountry]);
 
   const avatarElement = useCallback(
-    developer => createAvatarMarker(developer, onSelectDev, setAutoRotate),
+    marker => marker.markerType === 'agent'
+      ? createAgentMarker(marker, setAutoRotate)
+      : createAvatarMarker(marker, onSelectDev, setAutoRotate),
     [onSelectDev, setAutoRotate],
   );
+
+  const htmlMarkers = useMemo(() => (
+    agentNetworkVisible ? [...agentRelationshipGraph.developers, ...agentNodeMarkers] : avatarDevs
+  ), [agentNetworkVisible, agentNodeMarkers, agentRelationshipGraph.developers, avatarDevs]);
 
   useEffect(() => {
     if (!tooltipDisabled) return;
@@ -806,7 +857,7 @@ const Globe = forwardRef(function Globe({
           hexLabel={hexLabel}
           hexTransitionDuration={400}
           onHexClick={handleHexClick}
-          htmlElementsData={hexModeActive ? [] : avatarDevs}
+          htmlElementsData={hexModeActive ? [] : htmlMarkers}
           htmlLat={avatarLat}
           htmlLng={avatarLng}
           htmlAltitude={avatarAltitude}
@@ -901,8 +952,10 @@ const Globe = forwardRef(function Globe({
                 </>
               ) : agentNetworkVisible ? (
                 <>
+                  <span className="globe-legend__item"><span className="globe-legend__agent-mark">AI</span>Publicly listed tool</span>
+                  <span className="globe-legend__item"><span className="globe-legend__line" />Tool relationship</span>
                   <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#22d3ee' }} />Open to verified agents</span>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#64748b', opacity: 0.35 }} />Developer context</span>
+                  <span className="globe-legend__item">Links reflect public profile declarations</span>
                 </>
               ) : colorMode === 'language' ? (
                 topLanguagesPresent.length ? (

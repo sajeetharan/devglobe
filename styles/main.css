@@ -398,6 +398,7 @@ body {
   position: fixed;
   top: 112px;
   left: 50%;
+  width: min(720px, calc(100vw - 32px));
   transform: translateX(-50%);
   z-index: 90;
   display: flex;
@@ -495,6 +496,7 @@ body {
 
 .search-bar__inner {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 8px;
   background: var(--bg-panel-90);
@@ -1045,6 +1047,47 @@ body {
   object-fit: cover;
 }
 
+.globe-agent-marker {
+  position: relative;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--agent-color) 78%, white);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--agent-color) 24%, #071018);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--agent-color) 16%, transparent), 0 4px 18px rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.globe-agent-marker svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+}
+
+.globe-agent-marker > span {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  width: max-content;
+  max-width: 112px;
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--agent-color) 40%, transparent);
+  border-radius: 4px;
+  background: rgba(3, 7, 18, 0.86);
+  color: #f8fafc;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
 .spacerr-badge {
   position: fixed;
   bottom: 128px;
@@ -1121,6 +1164,24 @@ body {
   height: 8px;
   border-radius: 50%;
   display: inline-block;
+}
+
+.globe-legend__agent-mark {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid #22d3ee;
+  border-radius: 50%;
+  color: #22d3ee;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.globe-legend__line {
+  width: 20px;
+  border-top: 2px dashed #22d3ee;
+  opacity: 0.8;
 }
 
 /* Globe color mode toggle (score vs language) */
@@ -6095,8 +6156,7 @@ body {
     padding-left: 6px;
   }
   .search-bar__samples {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: none;
   }
   .header {
     padding: 0 12px;
@@ -6169,6 +6229,17 @@ body {
   .globe-avatar-marker {
     width: 20px;
     height: 20px;
+  }
+  .globe-agent-marker {
+    width: 28px;
+    height: 28px;
+  }
+  .globe-agent-marker svg {
+    width: 16px;
+    height: 16px;
+  }
+  .globe-agent-marker > span {
+    display: none;
   }
   .header__title {
     font-size: 16px;

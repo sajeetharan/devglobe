@@ -225,29 +225,27 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
   return (
     <div className="search-bar" id="search-bar">
-      {!profileOpen && !query && resultCount === null && (
+      {signedIn && !profileOpen && !query && resultCount === null && (
         <div className="search-bar__activation">
-          <span className="search-bar__eyebrow">{signedIn ? 'Your open-source snapshot' : 'Developer discovery'}</span>
-          <h2>{signedIn ? `Welcome back, @${currentUsername}` : 'Find an open-source developer'}</h2>
-          <p>{signedIn ? 'Review your ranking, recent activity, and next step.' : 'Search by GitHub username, name, or location. No sign-in required.'}</p>
-          {signedIn && (
-            <button
-              type="button"
-              className="search-bar__own-profile"
-              onClick={() => {
-                track('activation_started', { journey: 'username_profile', source: 'signed_in_cta' });
-                track('activation_action_selected', { action: 'open_own_profile', journey: 'username_profile', source: 'signed_in_cta' });
-                track('personalized_profile_viewed', { login: currentUsername, journey: 'username_profile', source: 'signed_in_cta' });
-                track('activation_completed', { login: currentUsername, journey: 'username_profile', outcome: 'profile_opened', source: 'signed_in_cta' });
-                onOpenOwnProfile?.();
-              }}
-            >
-              Open my profile
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M4 10h12M11 5l5 5-5 5" />
-              </svg>
-            </button>
-          )}
+          <span className="search-bar__eyebrow">Your open-source snapshot</span>
+          <h2>Welcome back, @{currentUsername}</h2>
+          <p>Review your ranking, recent activity, and next step.</p>
+          <button
+            type="button"
+            className="search-bar__own-profile"
+            onClick={() => {
+              track('activation_started', { journey: 'username_profile', source: 'signed_in_cta' });
+              track('activation_action_selected', { action: 'open_own_profile', journey: 'username_profile', source: 'signed_in_cta' });
+              track('personalized_profile_viewed', { login: currentUsername, journey: 'username_profile', source: 'signed_in_cta' });
+              track('activation_completed', { login: currentUsername, journey: 'username_profile', outcome: 'profile_opened', source: 'signed_in_cta' });
+              onOpenOwnProfile?.();
+            }}
+          >
+            Open my profile
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5" />
+            </svg>
+          </button>
         </div>
       )}
       <div className="search-bar__inner">

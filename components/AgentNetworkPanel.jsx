@@ -16,21 +16,24 @@ const LIFECYCLE = [
   { id: 'connect', label: 'Connect', detail: 'Public GitHub' },
 ];
 
-export default function AgentNetworkPanel({ globeLayerVisible = false, onToggleGlobeLayer }) {
+export default function AgentNetworkPanel({ globeLayerVisible = false, onToggleGlobeLayer, onGraphChange }) {
   const [snapshot, setSnapshot] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/agent-network')
+    fetch('/api/agent-network', { cache: 'no-store' })
       .then(async response => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Failed to load Agent Network');
-        if (!cancelled) setSnapshot(data);
+        if (!cancelled) {
+          setSnapshot(data);
+          onGraphChange?.(data.graph || { nodes: [], developers: [], links: [] });
+        }
       })
       .catch(loadError => { if (!cancelled) setError(loadError.message); });
     return () => { cancelled = true; };
-  }, []);
+  }, [onGraphChange]);
 
   if (error) return <div className="agent-network__state">{error}</div>;
   if (!snapshot) return <div className="agent-network__state">Loading Agent Network...</div>;
@@ -61,13 +64,13 @@ export default function AgentNetworkPanel({ globeLayerVisible = false, onToggleG
 
       <section className="agent-network__globe-control" aria-labelledby="agent-globe-title">
         <span>
-          <strong id="agent-globe-title">Agent-ready globe layer</strong>
-          <small>Highlight public profiles open to verified agents.</small>
+          <strong id="agent-globe-title">Agent and developer links</strong>
+          <small>Plot public AI tool declarations and opted-in developers.</small>
         </span>
         <button
           type="button"
           role="switch"
-          aria-label="Show agent-ready developers on the globe"
+          aria-label="Show AI tool and developer relationships on the globe"
           aria-checked={globeLayerVisible}
           className={globeLayerVisible ? 'agent-network__switch agent-network__switch--active' : 'agent-network__switch'}
           onClick={() => onToggleGlobeLayer?.(!globeLayerVisible)}

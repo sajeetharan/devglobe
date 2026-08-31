@@ -31,6 +31,7 @@ export default function Leaderboard({
   onViewChange,
   agentGlobeLayerVisible = false,
   onToggleAgentGlobeLayer,
+  onAgentGraphChange,
   trending,
   trendingError,
   onSelectDevByLogin,
@@ -344,6 +345,7 @@ export default function Leaderboard({
         <AgentNetworkPanel
           globeLayerVisible={agentGlobeLayerVisible}
           onToggleGlobeLayer={onToggleAgentGlobeLayer}
+          onGraphChange={onAgentGraphChange}
         />
       )}
       {activeView === 'trending' && (
