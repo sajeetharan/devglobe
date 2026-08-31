@@ -69,6 +69,7 @@ export default function Home() {
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
   const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
+  const [agentRelationshipGraph, setAgentRelationshipGraph] = useState({ nodes: [], developers: [], links: [] });
   const [trending, setTrending] = useState(null);
   const [trendingError, setTrendingError] = useState('');
   const [tourStep, setTourStep] = useState(null);
@@ -886,6 +887,7 @@ export default function Home() {
           onSelectCountry={handleSelectCountry}
           onClearCountry={handleClearCountry}
           agentNetworkVisible={agentGlobeLayerVisible}
+          agentRelationshipGraph={agentRelationshipGraph}
           tooltipDisabled={Boolean(selectedDev || compareDevs.length === 2)}
           trendingLogins={trending?.gainers?.slice(0, 10).map(entry => entry.login) || []}
         />
@@ -905,6 +907,7 @@ export default function Home() {
           onViewChange={setSidebarView}
           agentGlobeLayerVisible={agentGlobeLayerVisible}
           onToggleAgentGlobeLayer={setAgentGlobeLayerVisible}
+          onAgentGraphChange={setAgentRelationshipGraph}
           trending={trending}
           trendingError={trendingError}
           onSelectDevByLogin={handleSelectDevByLogin}

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildAgentRelationshipGraph,
   buildAgentNetworkSnapshot,
   getIntroductionLifecycle,
   isAgentReadyDeveloper,
@@ -37,7 +38,27 @@ test('marks only claimed public opt-ins as agent ready', () => {
 test('projects readiness without exposing AI profile settings', () => {
   const projected = projectAgentReadiness(developer('ready', 'USA'));
   assert.equal(projected.agentReady, true);
+  assert.deepEqual(projected.agentTools, ['github-copilot']);
   assert.equal('aiProfile' in projected, false);
+
+  const privateDeveloper = developer('private', 'USA');
+  privateDeveloper.aiProfile.visibility = 'private';
+  assert.deepEqual(projectAgentReadiness(privateDeveloper).agentTools, []);
+});
+
+test('builds bounded public tool-to-developer relationships', () => {
+  const developers = Array.from({ length: 4 }, (_, index) => ({
+    ...projectAgentReadiness(developer(`person-${index}`, 'USA', ['github-copilot', 'claude-code'])),
+    lat: 40 + index,
+    lng: -70 - index,
+  }));
+  const graph = buildAgentRelationshipGraph(developers, 2);
+
+  assert.deepEqual(graph.nodes.map(node => node.id), ['github-copilot', 'claude-code']);
+  assert.deepEqual(graph.developers.map(node => node.login), ['person-0', 'person-1']);
+  assert.equal(graph.links.length, 4);
+  assert.equal(graph.links.filter(link => link.toolId === 'github-copilot').length, 2);
+  assert.match(graph.links[0].label, /publicly listed/);
 });
 
 test('projects reportable aggregate Agent Network metrics', () => {

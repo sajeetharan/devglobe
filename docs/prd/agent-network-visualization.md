@@ -3,7 +3,7 @@
 **Status:** MVP implementation
 **Issue:** [#138](https://github.com/sajeetharan/devglobe/issues/138)
 **Depends on:** [#135](https://github.com/sajeetharan/devglobe/issues/135), [PR #137](https://github.com/sajeetharan/devglobe/pull/137)
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-31
 
 ## Summary
 
@@ -104,11 +104,16 @@ No new public event stream or identifiable analytics document is introduced.
   },
   "tools": [
     { "id": "github-copilot", "name": "GitHub Copilot", "count": 8 }
-  ]
+  ],
+  "graph": {
+    "nodes": [{ "id": "github-copilot", "name": "GitHub Copilot", "lat": 18, "lng": -148 }],
+    "developers": [{ "login": "example", "name": "Example", "avatarUrl": "https://avatars.githubusercontent.com/...", "lat": 40, "lng": -74 }],
+    "links": [{ "toolId": "github-copilot", "developerLogin": "example" }]
+  }
 }
 ```
 
-The endpoint is public, cacheable, and contains no identities.
+The endpoint is public and cacheable. The graph contains only claimed developers whose AI profile is public and explicitly open to verified agents. It excludes usage levels, contact settings, introduction participants, messages, projects, and private contact data. Each tool cohort and its rendered links remain subject to the privacy threshold and per-tool display cap.
 
 ## Accessibility
 

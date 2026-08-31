@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { buildAgentNetworkSnapshot } from '../../../lib/agent-network.js';
+import { buildAgentNetworkSnapshot, buildAgentRelationshipGraph, projectAgentReadiness } from '../../../lib/agent-network.js';
 import { getCosmosContainer } from '../../../lib/cosmos.js';
 
 export async function GET() {
@@ -15,7 +15,7 @@ export async function GET() {
   try {
     const [developerResult, introductionResult] = await Promise.all([
       developers.items.query({
-        query: `SELECT c.claimed, c.location, c.aiProfile
+        query: `SELECT c.login, c.name, c.avatarUrl, c.lat, c.lng, c.score, c.claimed, c.location, c.aiProfile
           FROM c
           WHERE c.claimed = true
             AND IS_DEFINED(c.aiProfile)
@@ -36,8 +36,9 @@ export async function GET() {
       developers: developerResult.resources,
       introductionCounts,
     });
+    const graph = buildAgentRelationshipGraph(developerResult.resources.map(projectAgentReadiness));
 
-    return NextResponse.json(snapshot, {
+    return NextResponse.json({ ...snapshot, graph }, {
       headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=600' },
     });
   } catch (error) {
