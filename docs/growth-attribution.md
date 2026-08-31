@@ -18,3 +18,9 @@ union actions, arrivals
 ```
 
 Compare referral arrivals, profile views, card generations, shares, and claims seven days after each distribution change. The weekly spotlight workflow produces a review-only artifact every Monday; publishing remains a human decision.
+
+## Weekly impact email
+
+Weekly impact emails use `utm_source=weekly_digest`, `utm_medium=email`, and `utm_campaign=weekly_impact`. An arrival records the privacy-safe `weekly_digest_returned` event with only the update type, journey, and source. The product adoption workbook compares seven-day return sessions with provider-accepted messages and reports progress toward the 20% return-rate target.
+
+Only contacts with a verified email and explicit weekly-update consent are eligible. A subscriber's first run records a private comparison baseline without sending email. The job suppresses generic email when an established subscriber has no rank movement, fresh contribution opportunity, or pending introduction request. Delivery logs contain aggregate counts and provider outcomes only; they exclude logins, email addresses, message content, and provider response bodies.

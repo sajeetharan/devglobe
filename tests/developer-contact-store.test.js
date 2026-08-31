@@ -9,6 +9,7 @@ import {
   iterateWeeklyDigestContacts,
   normalizeContactEmail,
   recordEmailVerificationReminder,
+  recordWeeklyDigestBaseline,
   saveDeveloperContact,
   setProductUpdatesPreference,
   verifyDeveloperContactEmail,
@@ -164,6 +165,22 @@ test('pages through verified weekly digest opt-ins', async () => {
     contacts.push(contact.login);
   }
   assert.deepEqual(contacts, ['One', 'Two']);
+});
+
+test('records a weekly rank baseline without marking a digest as sent', async () => {
+  const container = fakeContainer({
+    id: 'octocat',
+    login: 'OctoCat',
+    email: 'dev@example.com',
+    emailVerified: true,
+    productUpdatesEnabled: true,
+    _etag: 'etag-1',
+  });
+
+  assert.deepEqual(await recordWeeklyDigestBaseline('OctoCat', 42, { container, now: timestamp }), { updated: true });
+  assert.equal(container.saved.lastWeeklyDigestRank, 42);
+  assert.equal(container.saved.lastWeeklyDigestWeek, undefined);
+  assert.equal(container.saved.lastWeeklyDigestSentAt, undefined);
 });
 
 test('verification reminders are due only for opted-in unverified contacts after 72 hours', () => {

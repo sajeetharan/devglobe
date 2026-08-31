@@ -208,3 +208,23 @@ test('requires a target profile for completed profile activation events', () => 
     properties: { action: 'follow_impact', journey: 'profile_primary_action' },
   });
 });
+
+test('accepts privacy-safe weekly digest return attribution without a target profile', () => {
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'weekly_digest_returned',
+    properties: {
+      action: 'contribution_opportunity',
+      journey: 'weekly_digest',
+      source: 'weekly_digest',
+      utm_term: '2026-W35',
+    },
+  }), {
+    eventName: 'weekly_digest_returned',
+    targetLogin: null,
+    properties: {
+      action: 'contribution_opportunity',
+      journey: 'weekly_digest',
+      source: 'weekly_digest',
+    },
+  });
+});

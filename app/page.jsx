@@ -24,6 +24,7 @@ import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
 const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
+const WEEKLY_DIGEST_DESTINATION_KEY = 'devglobe-weekly-digest-destination';
 // See #182: fetch a small, fast initial batch for quick Time-to-Interactive,
 // then progressively fetch the rest in the background instead of one huge payload.
 const INITIAL_BATCH_SIZE = 500;
@@ -100,6 +101,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('utm_source') !== 'weekly_digest') return;
+    const destination = params.get('open');
+    if (['introductions', 'contributions'].includes(destination)) {
+      try {
+        sessionStorage.setItem(WEEKLY_DIGEST_DESTINATION_KEY, destination);
+      } catch { /* The attributed landing still works without session storage. */ }
+    }
+    track('weekly_digest_returned', {
+      action: params.get('utm_content') || 'unknown',
+      journey: 'weekly_digest',
+      source: 'weekly_digest',
+    });
+  }, []);
+
+  useEffect(() => {
     function syncSimilarLogin() {
       const login = new URLSearchParams(window.location.search).get('similar')?.trim();
       setSimilarLogin(/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(login || '') ? login : '');
@@ -132,6 +149,21 @@ export default function Home() {
             } catch { /* localStorage is optional for attribution. */ }
             track('github_auth_completed', { source });
             url.searchParams.delete('auth');
+            window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          }
+          let destination = url.searchParams.get('open');
+          if (!destination) {
+            try {
+              destination = sessionStorage.getItem(WEEKLY_DIGEST_DESTINATION_KEY);
+            } catch { /* Use the URL destination when session storage is unavailable. */ }
+          }
+          if (destination === 'introductions') setShowIntroductions(true);
+          if (destination === 'contributions') setShowContributions(true);
+          if (['introductions', 'contributions'].includes(destination)) {
+            try {
+              sessionStorage.removeItem(WEEKLY_DIGEST_DESTINATION_KEY);
+            } catch { /* The destination remains one-time within this render. */ }
+            url.searchParams.delete('open');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
           }
         }

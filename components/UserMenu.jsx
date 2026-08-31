@@ -237,7 +237,9 @@ export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onO
                     <strong>Weekly ranking email</strong>
                     <small>
                       {digestPreference.emailVerified
-                        ? 'Rank changes and DevGlobe updates'
+                        ? digestPreference.weeklyDigestEligible
+                          ? 'Active - sent only when something meaningful changes'
+                          : 'Rank changes, opportunities, or introduction requests'
                         : 'Verify your email to subscribe'}
                     </small>
                   </span>

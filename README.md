@@ -239,7 +239,7 @@ Claimed-profile visibility insights use allow-listed engagement events with hash
 
 Claimed developers can also configure personalized open-source contribution recommendations. Candidates come only from public, fresh, unassigned GitHub issues in repositories with contribution guidance. Create the shared quota-state container with `node scripts/setup-contribution-state-container.js` before deployment. See the [contribution opportunities contract](docs/prd/contribution-opportunities.md).
 
-Verified users can explicitly opt in to a Monday weekly digest from the user menu. The digest includes current global and country rankings, rank movement since the previous digest, current DevGlobe features, and an Explore DevGlobe link. The Azure Functions app invokes `/api/cron/weekly-digest` at 13:00 UTC each Monday; only verified contacts with `productUpdatesEnabled: true` are eligible. Each message uses a per-user, per-week idempotency key and includes one-click unsubscribe headers and a signed unsubscribe link.
+Verified users can explicitly opt in to a Monday weekly digest from the user menu. The first run records a private comparison baseline without sending email; later messages require rank movement, a fresh contribution opportunity, or a pending introduction request and include an attributed deep link to the relevant action. The Azure Functions app invokes `/api/cron/weekly-digest` at 13:00 UTC each Monday; only verified contacts with `productUpdatesEnabled: true` are eligible. Each message uses a per-user, per-week idempotency key and includes one-click unsubscribe headers and a signed unsubscribe link.
 
 Generate a manual-review activation queue and weekly social spotlight from public, unclaimed profiles:
 
