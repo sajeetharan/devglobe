@@ -878,6 +878,7 @@ export default function Home() {
             onCardGenerated={targetLogin => recordPlatformActivity('generated_card', targetLogin)}
             onReadmeGenerated={targetLogin => recordPlatformActivity('generated_readme', targetLogin)}
             onOpenSimilar={handleOpenSimilar}
+            onOpenContributions={() => setShowContributions(true)}
             onAddToShortlist={login => { setShortlistLogin(login); setShowShortlists(true); }}
             claimedLogins={claimedLogins}
             user={user}
