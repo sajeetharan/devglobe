@@ -1,12 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { track } from '../lib/analytics.js';
 import { identityCardShareUrl } from '../lib/share-attribution.js';
 
 export default function SharePageActions({ login, profilePath, createPath, previewVersion }) {
   const [shareStatus, setShareStatus] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    track('site_visited', { source: params.get('utm_source') ? 'attributed' : 'direct', journey: 'share_profile' });
+  }, []);
 
   async function shareCard() {
     const url = identityCardShareUrl(window.location.origin, login, 'native_share', previewVersion);

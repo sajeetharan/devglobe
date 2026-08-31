@@ -55,6 +55,15 @@ test('deduplicates rerenders inside a session window without storing raw session
   assert.notEqual(first.id, nextWindow.id);
   assert.notEqual(first.sessionHash, 'raw-session');
   assert.equal(first.partitionKey, 'octocat');
+  assert.equal(first.instrumentationVersion, 2);
+});
+
+test('preserves separate route visits in the same browser window', () => {
+  const options = { session: 'session', secret: 'secret', now: '2026-08-21T10:05:00.000Z' };
+  const homepage = createEngagementEvent({ eventName: 'site_visited', properties: { journey: 'homepage' } }, options);
+  const leaderboard = createEngagementEvent({ eventName: 'site_visited', properties: { journey: 'leaderboard' } }, options);
+
+  assert.notEqual(homepage.id, leaderboard.id);
 });
 
 test('preserves distinct share channels while deduplicating retries', () => {
@@ -249,4 +258,18 @@ test('accepts privacy-safe weekly digest return attribution without a target pro
       source: 'weekly_digest',
     },
   });
+});
+
+test('accepts visitor and search funnel events without storing query text', () => {
+  for (const eventName of ['site_visited', 'search_submitted']) {
+    const event = normalizeEngagementEvent({
+      eventName,
+      properties: { action: 'text', journey: 'developer_discovery', source: 'search_button', query: 'private search text' },
+    });
+    assert.deepEqual(event, {
+      eventName,
+      targetLogin: null,
+      properties: { action: 'text', journey: 'developer_discovery', source: 'search_button' },
+    });
+  }
 });

@@ -14,7 +14,7 @@ The dashboard contains three pages:
 
 1. **Adoption Overview** - 30-day KPIs, daily and weekly trends, engagement rate, and value actions.
 2. **Usage & Acquisition** - product-area usage, source attribution, feature adoption, journey performance, and popular profiles.
-3. **Funnels & Retention** - ordered discovery, exploration, and mission funnels plus new-versus-returning browser trends.
+3. **Funnels & Retention** - weekly scorecard, visitor-to-value funnel, 7/30-day retention, route/source breakdown, and telemetry-gap alerts.
 
 ## Data source
 
@@ -75,17 +75,23 @@ Import `dashboards/devglobe-product-adoption-dashboard.json` from **Azure Data E
 
 ## Metric definitions
 
+- **Visitor**: a non-synthetic browser page view on a non-localhost route.
+- **Search submission**: an explicit Enter, button, or sample-search action. Raw search text is never collected.
+- **Profile open**: a browser with `profile_viewed` after an explicit search stage.
+- **Primary-action completion**: a browser with `next_action_selected` and `journey=profile_primary_action` after opening a profile.
 - **Active session**: a privacy-safe browser session with at least one intentional event in the period.
 - **Engaged session**: an active session with at least two distinct event types.
 - **Value session**: a session containing card generation, profile sharing, profile claim, mission completion, or a next-action selection.
-- **Returning browser**: a session hash observed before the reporting day. This is directional browser retention, not authenticated-user retention.
+- **Returning browser**: the same opaque browser identifier observed in a later 7- or 30-day window. The durable HttpOnly identifier and engagement events expire after 180 days. This is directional browser retention, not authenticated-user identity.
 - **Profiles reached**: distinct public developer logins referenced by tracked events.
 
-Repeated equivalent events are deduplicated by the application in 30-minute windows. The dashboard also deduplicates change-feed rows by event ID.
+Repeated equivalent events are deduplicated by the application in 30-minute windows. The dashboard also deduplicates change-feed rows by event ID. Funnel and retention cohorts below three browsers are suppressed. Local, test, synthetic, and non-human events are excluded.
+
+The scorecard compares the latest rolling seven days with the immediately preceding seven days. Initial weekly targets are 100 visitors, 30 searches, 20 profile opens, 10 primary actions, 25% visitor-to-search, 50% search-to-profile, 15% profile-to-action, 20% seven-day return, and 10% thirty-day return. Recalibrate after four complete production weeks.
 
 ## Views and attribution limitations
 
-Durable engagement telemetry records intentional product actions. `profile_viewed` and `mission_viewed` are included, but generic route page views are not written to `engagement-events`. For site traffic, bounce rate, and landing-page views, use the Application Insights `AppPageViews` data documented in `docs/growth-attribution.md` or add a privacy-reviewed page-view event to the durable contract.
+Instrumentation version 2 adds durable `site_visited` and `search_submitted` events. Periods before its deployment are incomplete and must not be treated as equivalent. The telemetry-health tiles alert when required funnel events are missing for seven days or stale for more than 24 hours.
 
 Source, channel, journey, and action values are optional. The dashboard groups missing source values as **Unattributed** rather than inferring attribution. Session and privacy hashes are pseudonymous and must not be exported or used for individual tracking.
 

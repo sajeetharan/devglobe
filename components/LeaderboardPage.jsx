@@ -56,6 +56,11 @@ export default function LeaderboardPage() {
   const [shareStatus, setShareStatus] = useState('');
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    track('site_visited', { source: params.get('utm_source') ? 'attributed' : 'direct', journey: 'leaderboard' });
+  }, []);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem('devglobe-theme');
       const initialTheme = stored === 'light' || stored === 'dark'
