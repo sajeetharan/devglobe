@@ -6,19 +6,32 @@ import {
   developerInviteUrl,
   DEVELOPER_STORY_TYPES,
   identityCardShareUrl,
+  normalizeDeveloperLogin,
   socialAttributionProperties,
 } from '../lib/share-attribution.js';
 
 test('builds channel-specific identity card referral URLs', () => {
-  const linkedIn = new URL(identityCardShareUrl('https://www.devglobe.dev', 'octo cat', 'linkedin', '4'));
+  const linkedIn = new URL(identityCardShareUrl('https://www.devglobe.dev', 'OctoCat', 'linkedin', '4'));
   const copied = new URL(identityCardShareUrl('https://www.devglobe.dev', 'octocat', 'copy_link', '4'));
 
-  assert.equal(linkedIn.pathname, '/share/octo%20cat');
+  assert.equal(linkedIn.pathname, '/share/octocat');
   assert.equal(linkedIn.searchParams.get('v'), '4');
   assert.equal(linkedIn.searchParams.get('utm_source'), 'linkedin');
   assert.equal(linkedIn.searchParams.get('utm_medium'), 'social');
   assert.equal(linkedIn.searchParams.get('utm_campaign'), 'identity_card');
+  assert.equal(linkedIn.searchParams.get('utm_content'), 'octocat');
   assert.equal(copied.searchParams.get('utm_medium'), 'referral');
+});
+
+test('bounds identity card channels and normalizes X referrals', () => {
+  const x = new URL(identityCardShareUrl('https://www.devglobe.dev', 'octocat', 'twitter', '5'));
+  const unknown = new URL(identityCardShareUrl('https://www.devglobe.dev', 'octocat', 'person@example.com', '5'));
+
+  assert.equal(x.searchParams.get('utm_source'), 'x');
+  assert.equal(x.searchParams.get('utm_medium'), 'social');
+  assert.equal(unknown.searchParams.get('utm_source'), 'copy_link');
+  assert.equal(unknown.searchParams.get('utm_medium'), 'referral');
+  assert.throws(() => identityCardShareUrl('https://www.devglobe.dev', '../private', 'copy_link', '5'), /valid developer login/);
 });
 
 test('preserves only campaign attribution when entering the globe', () => {
@@ -103,4 +116,25 @@ test('allow-lists social attribution values before telemetry', () => {
     utm_source: 'person@example.com',
     utm_campaign: 'private campaign text',
   })), { source: 'direct', journey: 'shared_profile' });
+});
+
+test('sanitizes hostile attribution before forwarding to the profile funnel', () => {
+  const path = attributedGlobePath('OctoCat', {
+    utm_source: 'person@example.com',
+    utm_medium: 'private text',
+    utm_campaign: 'secret campaign',
+    utm_content: '../private',
+  });
+  const url = new URL(path, 'https://www.devglobe.dev');
+
+  assert.equal(url.searchParams.get('dev'), 'octocat');
+  assert.equal(url.searchParams.get('utm_source'), 'direct');
+  assert.equal(url.searchParams.get('utm_medium'), 'social');
+  assert.equal(url.searchParams.get('utm_campaign'), 'shared_profile');
+  assert.equal(url.searchParams.has('utm_content'), false);
+});
+
+test('normalizes canonical developer logins', () => {
+  assert.equal(normalizeDeveloperLogin('OctoCat'), 'octocat');
+  assert.throws(() => normalizeDeveloperLogin('../private'), /valid developer login/);
 });

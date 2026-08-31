@@ -3,20 +3,24 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { track } from '../lib/analytics.js';
-import { identityCardShareUrl } from '../lib/share-attribution.js';
+import { identityCardShareUrl, socialAttributionProperties } from '../lib/share-attribution.js';
 
 export default function SharePageActions({ login, profilePath, createPath, previewVersion }) {
   const [shareStatus, setShareStatus] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    track('site_visited', { source: params.get('utm_source') ? 'attributed' : 'direct', journey: 'share_profile' });
-  }, []);
+    const attribution = socialAttributionProperties(params);
+    track('site_visited', { source: attribution.source, journey: 'share_profile' });
+    if (attribution.source !== 'direct') {
+      track('shared_profile_link_opened', { login, ...attribution });
+    }
+  }, [login]);
 
   async function shareCard() {
-    const url = identityCardShareUrl(window.location.origin, login, 'native_share', previewVersion);
     try {
       if (navigator.share) {
+        const url = identityCardShareUrl(window.location.origin, login, 'native_share', previewVersion);
         await navigator.share({
           title: `@${login}'s developer card`,
           text: `Explore @${login}'s open-source developer identity on DevGlobe.`,
@@ -25,6 +29,7 @@ export default function SharePageActions({ login, profilePath, createPath, previ
         setShareStatus('Shared');
         track('identity_card_shared', { login, channel: 'native_share' });
       } else {
+        const url = identityCardShareUrl(window.location.origin, login, 'copy_link', previewVersion);
         await navigator.clipboard.writeText(url);
         setShareStatus('Link copied');
         track('identity_card_shared', { login, channel: 'copy_link' });

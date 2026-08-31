@@ -1,16 +1,16 @@
 import { getSiteUrl, SOCIAL_PREVIEW_VERSION } from '../../../lib/site.js';
-import { attributedGlobePath } from '../../../lib/share-attribution.js';
+import { attributedGlobePath, normalizeDeveloperLogin } from '../../../lib/share-attribution.js';
 import SharePageActions from '../../../components/SharePageActions.jsx';
 
 export const revalidate = 86400;
 
 export async function generateMetadata({ params }) {
-  const { login } = await params;
+  const login = normalizeDeveloperLogin((await params).login);
   const siteUrl = getSiteUrl();
   const encodedLogin = encodeURIComponent(login);
   const title = `@${login}'s Developer Card | DevGlobe`;
   const description = `Explore @${login}'s open-source developer identity, global rank, and impact on DevGlobe.`;
-  const pageUrl = `${siteUrl}/share/${encodedLogin}?v=${SOCIAL_PREVIEW_VERSION}`;
+  const pageUrl = `${siteUrl}/share/${encodedLogin}`;
   const imageUrl = `${siteUrl}/api/preview/v${SOCIAL_PREVIEW_VERSION}/${encodedLogin}.png`;
 
   return {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function DeveloperSharePage({ params, searchParams }) {
-  const { login } = await params;
+  const login = normalizeDeveloperLogin((await params).login);
   const tracking = await searchParams;
   const encodedLogin = encodeURIComponent(login);
   const siteUrl = getSiteUrl();

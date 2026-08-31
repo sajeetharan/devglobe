@@ -12,7 +12,7 @@ import { AI_TOOLS } from '../lib/ai-profile.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { resolveReadmeAccess } from '../lib/profile-readme.js';
 import { PROFILE_PRIMARY_ACTIONS, resolveProfilePrimaryAction } from '../lib/profile-primary-action.js';
-import { identityCardShareUrl } from '../lib/share-attribution.js';
+import { identityCardShareUrl, socialAttributionProperties } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
 import RepositoryAgentSignals from './RepositoryAgentSignals.jsx';
@@ -31,7 +31,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const primaryActionRecordedRef = useRef('');
 
   useEffect(() => {
-    const source = new URLSearchParams(window.location.search).get('utm_source') || 'direct';
+    const source = socialAttributionProperties(new URLSearchParams(window.location.search)).source;
     track('profile_viewed', { login: dev.login, source });
   }, [dev.login]);
 
@@ -444,7 +444,8 @@ function AiCollaborationProfile({ dev, profile }) {
 
   const shareAgentProfile = async () => {
     const tools = profile.tools.map(tool => toolNames.get(tool.id) || tool.id).join(' · ');
-    const url = `${window.location.origin}/share/${encodeURIComponent(dev.login)}`;
+    const channel = navigator.share ? 'native_share' : 'copy_link';
+    const url = identityCardShareUrl(window.location.origin, dev.login, channel, SOCIAL_PREVIEW_VERSION);
     const text = `${dev.name || `@${dev.login}`} is open to verified AI agent collaborations on DevGlobe.${tools ? ` ${tools}.` : ''}`;
     try {
       if (navigator.share) {
@@ -454,7 +455,7 @@ function AiCollaborationProfile({ dev, profile }) {
         await navigator.clipboard.writeText(`${text}\n${url}`);
         setShareStatus('Copied');
       }
-      track('agent_profile_shared', { login: dev.login });
+      track('agent_profile_shared', { login: dev.login, channel });
     } catch (error) {
       if (error.name !== 'AbortError') setShareStatus('Unable to share');
     }
@@ -843,10 +844,11 @@ function CardModal({ dev, claimSuccess, onClose }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [captionCopiedFor, setCaptionCopiedFor] = useState('');
+  const [shareStatus, setShareStatus] = useState('');
   const { login } = dev;
   const name = dev.name || login;
   const cardUrl = `/api/card?login=${encodeURIComponent(login)}&v=${IDENTITY_CARD_VERSION}`;
-  const shareUrls = Object.fromEntries(['copy_link', 'twitter', 'facebook', 'linkedin', 'reddit']
+  const shareUrls = Object.fromEntries(['copy_link', 'x', 'facebook', 'linkedin', 'reddit']
     .map(channel => [channel, identityCardShareUrl(getSiteUrl(), login, channel, SOCIAL_PREVIEW_VERSION)]));
 
   const rankText = dev.globalRank ? `Global #${dev.globalRank} of ${dev.globalTotal}` : 'Ranked on DevGlobe';
@@ -858,7 +860,7 @@ function CardModal({ dev, claimSuccess, onClose }) {
   const facebookCaption = `Open-source work tells a richer story than a job title.\n\nDevGlobe mapped my public contributions into a developer identity that helps teams, communities, and AI agents discover what I build and where I can contribute.\n\n${agent.name} · ${rankText}\n\nExplore my profile and create yours.\n\n${hashtagText}`;
 
   const shareLinks = {
-    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterCaption)}&url=${encodeURIComponent(shareUrls.twitter)}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterCaption)}&url=${encodeURIComponent(shareUrls.x)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrls.facebook)}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrls.linkedin)}`,
     reddit: `https://reddit.com/submit?url=${encodeURIComponent(shareUrls.reddit)}&title=${encodeURIComponent(`${name}'s open-source developer identity on DevGlobe - ${agent.name}, ${rankText}`)}`,
@@ -886,12 +888,29 @@ function CardModal({ dev, claimSuccess, onClose }) {
   };
 
   const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(shareUrls.copy_link);
-    track('identity_card_shared', { login, channel: 'copy_link' });
+    try {
+      await navigator.clipboard.writeText(shareUrls.copy_link);
+      setShareStatus('Card link copied');
+      track('identity_card_shared', { login, channel: 'copy_link' });
+    } catch {
+      setShareStatus('Unable to copy link');
+    }
+  };
+
+  const handleNativeShare = async () => {
+    try {
+      if (!navigator.share) return handleCopyLink();
+      await navigator.share({ title: `${name}'s developer card`, text: `Explore ${name}'s open-source developer identity on DevGlobe.`, url: identityCardShareUrl(getSiteUrl(), login, 'native_share', SOCIAL_PREVIEW_VERSION) });
+      setShareStatus('Card shared');
+      track('identity_card_shared', { login, channel: 'native_share' });
+    } catch (shareError) {
+      if (shareError.name !== 'AbortError') setShareStatus('Unable to share card');
+    }
   };
 
   const handleLinkedInShare = () => {
     navigator.clipboard?.writeText(linkedinCaption).then(() => setCaptionCopiedFor('LinkedIn')).catch(() => {});
+    setShareStatus('Opening LinkedIn');
     track('identity_card_shared', { login, channel: 'linkedin' });
     window.open(shareLinks.linkedin, '_blank', 'noopener,noreferrer');
   };
@@ -900,6 +919,7 @@ function CardModal({ dev, claimSuccess, onClose }) {
     if (channel === 'facebook') {
       navigator.clipboard?.writeText(facebookCaption).then(() => setCaptionCopiedFor('Facebook')).catch(() => {});
     }
+    setShareStatus(`Opening ${channel === 'x' ? 'X' : channel[0].toUpperCase() + channel.slice(1)}`);
     track('identity_card_shared', { login, channel });
   };
 
@@ -965,6 +985,14 @@ function CardModal({ dev, claimSuccess, onClose }) {
             </svg>
             Copy Link
           </button>
+          <button className="card-modal__btn card-modal__btn--copy" onClick={handleNativeShare}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+              <path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" />
+            </svg>
+            Share
+          </button>
+          <span className="card-modal__action-status" role="status" aria-live="polite">{shareStatus}</span>
         </div>
 
         <div className="card-modal__share">
@@ -977,7 +1005,7 @@ function CardModal({ dev, claimSuccess, onClose }) {
               <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>
           </button>
-          <a href={shareLinks.twitter} target="_blank" rel="noreferrer" className="card-modal__social card-modal__social--twitter" title="Share on X/Twitter" onClick={() => handleSocialShare('twitter')}>
+          <a href={shareLinks.twitter} target="_blank" rel="noreferrer" className="card-modal__social card-modal__social--twitter" title="Share on X" aria-label="Share on X" onClick={() => handleSocialShare('x')}>
             <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
               <path d="M13.5 1h-3.7L8 3.6 6.2 1H2.5L6.6 6.5 2.3 13h1.7l2.5-3.2L9 13h4.2l-4.5-6.7L13.5 1zm-1.1 11h-1L4.5 2h1l6.9 10z" />
             </svg>

@@ -273,3 +273,9 @@ test('accepts visitor and search funnel events without storing query text', () =
     });
   }
 });
+
+test('collapses unknown share channels before durable storage', () => {
+  const event = normalizeEngagementEvent({ eventName: 'profile_shared', targetLogin: 'octocat', properties: { channel: 'person@example.com' } });
+
+  assert.equal(event.properties.channel, 'other');
+});

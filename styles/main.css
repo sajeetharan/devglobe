@@ -8705,8 +8705,17 @@ body {
 
 .card-modal__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 20px;
+}
+
+.card-modal__action-status {
+  flex-basis: 100%;
+  min-height: 16px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .card-modal__btn {
@@ -8721,6 +8730,7 @@ body {
   border: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
+  min-height: 44px;
 }
 
 .card-modal__btn:hover {
@@ -8777,8 +8787,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: transparent;
