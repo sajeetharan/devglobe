@@ -68,7 +68,7 @@ export default function Home() {
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
   const [agentProfileStatus, setAgentProfileStatus] = useState('idle');
-  const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
+  const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(true);
   const [agentRelationshipGraph, setAgentRelationshipGraph] = useState({ nodes: [], developers: [], links: [] });
   const [trending, setTrending] = useState(null);
   const [trendingError, setTrendingError] = useState('');
@@ -84,6 +84,20 @@ export default function Home() {
       journey: 'homepage',
     });
   }, []);
+
+  useEffect(() => {
+    if (!agentGlobeLayerVisible || agentRelationshipGraph.nodes.length) return;
+
+    let cancelled = false;
+    fetch('/api/agent-network', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (!cancelled && data?.graph) setAgentRelationshipGraph(data.graph);
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [agentGlobeLayerVisible, agentRelationshipGraph.nodes.length]);
 
   useEffect(() => {
     // Mirrors the blocking script in layout.jsx so React state matches the
