@@ -33,12 +33,25 @@ test('resolveBadgeStat defaults to globalRank for an unknown or missing stat par
 });
 
 test('resolveBadgeStat formats each supported stat', () => {
-  const dev = developer();
+  const dev = developer({ topLanguage: 'C' });
   assert.equal(resolveBadgeStat(dev, 'globalRank').value, 'Global #4');
   assert.equal(resolveBadgeStat(dev, 'countryRank').value, 'USA #2');
   assert.equal(resolveBadgeStat(dev, 'cityRank').value, 'Portland #1');
   assert.equal(resolveBadgeStat(dev, 'score').value, '91/100');
   assert.equal(resolveBadgeStat(dev, 'stars').value, '182.0K stars');
+  assert.equal(resolveBadgeStat(dev, 'language').value, 'C');
+});
+
+test('resolveBadgeStat degrades to unranked when topLanguage is missing', () => {
+  const result = resolveBadgeStat(developer({ topLanguage: null }), 'language');
+  assert.equal(result.unranked, true);
+  assert.equal(result.value, 'unranked');
+});
+
+test('resolveBadgeStat surfaces the developer claimed flag for every stat', () => {
+  assert.equal(resolveBadgeStat(developer({ claimed: true }), 'score').claimed, true);
+  assert.equal(resolveBadgeStat(developer({ claimed: false }), 'score').claimed, false);
+  assert.equal(resolveBadgeStat(null, 'score').claimed, false);
 });
 
 test('resolveBadgeStat degrades to unranked when a stat is missing on the developer', () => {
@@ -67,4 +80,17 @@ test('renderBadgeSvg widens automatically for longer values', () => {
   const longSvg = renderBadgeSvg({ value: 'Global #123456' });
   const widthOf = svg => Number(svg.match(/width="(\d+)"/)[1]);
   assert.ok(widthOf(longSvg) > widthOf(shortSvg));
+});
+
+test('renderBadgeSvg marks unclaimed profiles distinctly from claimed ones', () => {
+  const claimedSvg = renderBadgeSvg({ value: 'Global #4', claimed: true });
+  const unclaimedSvg = renderBadgeSvg({ value: 'Global #4', claimed: false });
+  assert.doesNotMatch(claimedSvg, /unclaimed/);
+  assert.match(unclaimedSvg, /unclaimed profile/);
+  assert.notEqual(claimedSvg, unclaimedSvg);
+});
+
+test('renderBadgeSvg does not add the unclaimed mark to unranked badges', () => {
+  const svg = renderBadgeSvg({ value: 'unranked', unranked: true, claimed: false });
+  assert.doesNotMatch(svg, /unclaimed/);
 });
