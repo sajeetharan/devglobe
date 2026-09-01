@@ -344,9 +344,7 @@ const Globe = forwardRef(function Globe({
     return list;
   }, [developers, selectedCountry]);
 
-  const featuredGeoDevs = useMemo(() => (
-    agentNetworkVisible ? geoDevs.filter(developer => developer.agentReady) : geoDevs
-  ), [agentNetworkVisible, geoDevs]);
+  const featuredGeoDevs = geoDevs;
 
   const agentNodeMarkers = useMemo(() => agentRelationshipGraph.nodes.map(node => ({
     ...node,
@@ -377,9 +375,8 @@ const Globe = forwardRef(function Globe({
   }, [languageFilter, topLanguagesPresent]);
 
   const labelDevs = useMemo(() => {
-    if (agentNetworkVisible) return featuredGeoDevs.slice(0, 80);
     return featuredGeoDevs.filter(d => d.score >= 80);
-  }, [agentNetworkVisible, featuredGeoDevs]);
+  }, [featuredGeoDevs]);
 
   // Show one top developer per represented country and use country geometry rather
   // than unreliable profile geocodes for the avatar's visual anchor.
@@ -439,7 +436,7 @@ const Globe = forwardRef(function Globe({
   }, [hoverDev]);
 
   const arcsData = useMemo(() => (
-    agentNetworkVisible ? agentRelationshipGraph.links : collaborationArcs
+    agentNetworkVisible ? [...agentRelationshipGraph.links, ...collaborationArcs] : collaborationArcs
   ), [agentNetworkVisible, agentRelationshipGraph.links, collaborationArcs]);
 
   // Rose pulsing rings for the top trending gainers (#24) — layered on top of
@@ -450,7 +447,7 @@ const Globe = forwardRef(function Globe({
   );
 
   const trendingRings = useMemo(() => {
-    if (agentNetworkVisible || !trendingLoginSet.size) return [];
+    if (!trendingLoginSet.size) return [];
     return geoDevs
       .filter(d => d.login && trendingLoginSet.has(d.login.toLowerCase()))
       .map(d => ({
@@ -462,22 +459,10 @@ const Globe = forwardRef(function Globe({
         color: '#fb7185', // rose — distinct from the score/language ring colors
         login: d.login,
       }));
-  }, [agentNetworkVisible, geoDevs, trendingLoginSet]);
+  }, [geoDevs, trendingLoginSet]);
 
   // Pulsing rings for top 10 developers + active hovered developer's collaborators
   const ringsData = useMemo(() => {
-    if (agentNetworkVisible) {
-      return featuredGeoDevs.slice(0, 120).map(developer => ({
-        lat: developer.lat,
-        lng: developer.lng,
-        maxR: 4,
-        propagationSpeed: 2,
-        repeatPeriod: 1400,
-        color: '#22d3ee',
-        login: developer.login,
-      }));
-    }
-
     const base = geoDevs.slice(0, 10).map(d => ({
       lat: d.lat,
       lng: d.lng,
@@ -505,26 +490,23 @@ const Globe = forwardRef(function Globe({
     }
 
     return [...base, ...trendingRings];
-  }, [agentNetworkVisible, featuredGeoDevs, geoDevs, hoverDev, trendingRings]);
+  }, [geoDevs, hoverDev, trendingRings]);
 
   const displayPointAltitude = useCallback(developer => {
-    if (!agentNetworkVisible) return pointAltitude(developer);
-    return developer.agentReady ? 0.075 : 0.006;
-  }, [agentNetworkVisible]);
+    return pointAltitude(developer);
+  }, []);
 
   const displayPointRadius = useCallback(developer => {
-    if (!agentNetworkVisible) return pointRadius(developer);
-    return developer.agentReady ? 0.9 : 0.14;
-  }, [agentNetworkVisible]);
+    return pointRadius(developer);
+  }, []);
 
   const displayPointColor = useCallback(developer => {
-    if (agentNetworkVisible) return developer.agentReady ? '#22d3ee' : 'rgba(100, 116, 139, 0.16)';
     if (colorMode === 'language') {
       if (languageFilter && developer.topLanguage !== languageFilter) return 'rgba(100, 116, 139, 0.12)';
       return getLanguageColor(developer.topLanguage);
     }
     return pointColor(developer);
-  }, [agentNetworkVisible, colorMode, languageFilter]);
+  }, [colorMode, languageFilter]);
 
   // Developers per country, keyed the same way the leaderboard filters
   const devCountByCountry = useMemo(() => {
@@ -603,8 +585,7 @@ const Globe = forwardRef(function Globe({
     if (zoomDebounceRef.current) clearTimeout(zoomDebounceRef.current);
   }, []);
 
-  const hexModeActive = !agentNetworkVisible
-    && cameraAltitude != null
+  const hexModeActive = cameraAltitude != null
     && (hexModeActiveRef.current
       ? cameraAltitude > HEX_EXIT_ALTITUDE  // already clustered: only drop out once well below the enter line
       : cameraAltitude > HEX_ENTER_ALTITUDE); // not yet clustered: need to cross the higher enter line
@@ -640,9 +621,14 @@ const Globe = forwardRef(function Globe({
     [onSelectDev, setAutoRotate],
   );
 
-  const htmlMarkers = useMemo(() => (
-    agentNetworkVisible ? [...agentRelationshipGraph.developers, ...agentNodeMarkers] : avatarDevs
-  ), [agentNetworkVisible, agentNodeMarkers, agentRelationshipGraph.developers, avatarDevs]);
+  const htmlMarkers = useMemo(() => {
+    if (!agentNetworkVisible) return avatarDevs;
+    const visibleLogins = new Set(avatarDevs.map(developer => developer.login?.toLowerCase()));
+    const linkedDevelopers = agentRelationshipGraph.developers.filter(
+      developer => !visibleLogins.has(developer.login?.toLowerCase())
+    );
+    return [...avatarDevs, ...linkedDevelopers, ...agentNodeMarkers];
+  }, [agentNetworkVisible, agentNodeMarkers, agentRelationshipGraph.developers, avatarDevs]);
 
   useEffect(() => {
     if (!tooltipDisabled) return;
@@ -857,7 +843,9 @@ const Globe = forwardRef(function Globe({
           hexLabel={hexLabel}
           hexTransitionDuration={400}
           onHexClick={handleHexClick}
-          htmlElementsData={hexModeActive ? [] : htmlMarkers}
+          htmlElementsData={hexModeActive
+            ? (agentNetworkVisible ? [...agentRelationshipGraph.developers, ...agentNodeMarkers] : [])
+            : htmlMarkers}
           htmlLat={avatarLat}
           htmlLng={avatarLng}
           htmlAltitude={avatarAltitude}
@@ -908,7 +896,7 @@ const Globe = forwardRef(function Globe({
         </button>
         {!controlsCollapsed && (
           <>
-            {!agentNetworkVisible && !hexModeActive && (
+            {!hexModeActive && (
               <div className="globe-color-mode">
                 <div className="globe-color-mode__toggle" role="group" aria-label="Globe color mode">
                   <button
@@ -950,13 +938,6 @@ const Globe = forwardRef(function Globe({
                   <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(60) }} />Many developers</span>
                   <span className="globe-legend__item">Zoom in or click a cluster to see individual developers</span>
                 </>
-              ) : agentNetworkVisible ? (
-                <>
-                  <span className="globe-legend__item"><span className="globe-legend__agent-mark">AI</span>Publicly listed tool</span>
-                  <span className="globe-legend__item"><span className="globe-legend__line" />Tool relationship</span>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#22d3ee' }} />Open to verified agents</span>
-                  <span className="globe-legend__item">Links reflect public profile declarations</span>
-                </>
               ) : colorMode === 'language' ? (
                 topLanguagesPresent.length ? (
                   topLanguagesPresent.slice(0, 8).map(language => (
@@ -974,6 +955,13 @@ const Globe = forwardRef(function Globe({
                   <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#34d399' }} />Strong (60+)</span>
                   <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#3b82f6' }} />Solid (40+)</span>
                   <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#6366f1' }} />Emerging</span>
+                </>
+              )}
+              {agentNetworkVisible && (
+                <>
+                  <span className="globe-legend__item"><span className="globe-legend__agent-mark">AI</span>Publicly listed tool</span>
+                  <span className="globe-legend__item"><span className="globe-legend__line" />Tool relationship</span>
+                  <span className="globe-legend__item">Links reflect public profile declarations</span>
                 </>
               )}
               {trendingRings.length > 0 && (
