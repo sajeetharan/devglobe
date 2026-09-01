@@ -319,3 +319,16 @@ test('collapses unknown share channels before durable storage', () => {
 
   assert.equal(event.properties.channel, 'other');
 });
+
+test('accepts bounded agent onboarding events without prompt or identity data', () => {
+  for (const eventName of ['agent_setup_viewed', 'agent_config_copied', 'agent_setup_started', 'agent_onboarding_completed']) {
+    assert.deepEqual(normalizeEngagementEvent({
+      eventName,
+      properties: { source: 'vscode', prompt: 'private prompt text', email: 'person@example.com' },
+    }), {
+      eventName,
+      targetLogin: null,
+      properties: { source: 'vscode' },
+    });
+  }
+});
