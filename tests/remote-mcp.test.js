@@ -37,7 +37,7 @@ test('remote MCP initializes and lists DevGlobe tools without a session', async 
     },
   })));
   assert.equal(initialization.result.serverInfo.name, 'devglobe');
-  assert.equal(initialization.result.serverInfo.version, '1.5.0');
+  assert.equal(initialization.result.serverInfo.version, '1.5.1');
   assert.equal(initialization.result.serverInfo.websiteUrl, 'https://www.devglobe.dev');
   assert.match(initialization.result.instructions, /github\.com\/sajeetharan\/devglobe/);
   assert.deepEqual(initialization.result.capabilities.resources, { listChanged: true });
