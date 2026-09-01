@@ -1107,6 +1107,15 @@ body {
   object-fit: cover;
 }
 
+.globe-avatar-marker--repository::after {
+  position: absolute;
+  inset: -5px;
+  border: 1px dashed #22d3ee;
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
 .globe-agent-marker {
   position: relative;
   display: grid;
@@ -3340,6 +3349,10 @@ body {
 
 .agent-network__metrics > div:nth-child(2n) { border-right: 0; }
 .agent-network__metrics > div:nth-last-child(-n + 2) { border-bottom: 0; }
+.agent-network__metrics > div:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  border-right: 0;
+}
 
 .agent-network__metrics dt {
   color: var(--text-muted);

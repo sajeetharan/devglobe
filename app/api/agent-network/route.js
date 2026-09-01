@@ -15,14 +15,18 @@ export async function GET() {
   try {
     const [developerResult, introductionResult] = await Promise.all([
       developers.items.query({
-        query: `SELECT c.login, c.name, c.avatarUrl, c.lat, c.lng, c.score, c.claimed, c.location, c.aiProfile
+        query: `SELECT c.id, c.login, c.name, c.avatarUrl, c.lat, c.lng, c.score, c.claimed, c.location, c.aiProfile,
+          c.repositoryAgentSignals.toolIds AS repositoryAgentTools
           FROM c
-          WHERE c.claimed = true
-            AND IS_DEFINED(c.aiProfile)
-            AND c.aiProfile.visibility = 'public'
-            AND c.aiProfile.acceptsAgentRequests = true
-            AND c.aiProfile.contactPolicy = 'verified-agents'
-            AND (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved')`,
+          WHERE (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved')
+            AND (
+              (c.claimed = true
+                AND IS_DEFINED(c.aiProfile)
+                AND c.aiProfile.visibility = 'public'
+                AND c.aiProfile.acceptsAgentRequests = true
+                AND c.aiProfile.contactPolicy = 'verified-agents')
+              OR (IS_ARRAY(c.repositoryAgentSignals.toolIds) AND ARRAY_LENGTH(c.repositoryAgentSignals.toolIds) > 0)
+            )`,
       }).fetchAll(),
       introductions.items.query({
         query: 'SELECT c.status, COUNT(1) AS count FROM c GROUP BY c.status',

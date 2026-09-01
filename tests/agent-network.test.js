@@ -61,6 +61,52 @@ test('builds bounded public tool-to-developer relationships', () => {
   assert.match(graph.links[0].label, /publicly listed/);
 });
 
+test('plots repository evidence without implying agent contact consent', () => {
+  const repositoryDeveloper = projectAgentReadiness({
+    login: 'repo-user',
+    lat: 40,
+    lng: -70,
+    claimed: false,
+    repositoryAgentSignals: {
+      signals: [{ id: 'github-copilot' }, { id: 'claude-code' }, { id: 'unknown-tool' }],
+    },
+  });
+  const graph = buildAgentRelationshipGraph([repositoryDeveloper], 20, 1);
+
+  assert.equal(repositoryDeveloper.agentReady, false);
+  assert.deepEqual(repositoryDeveloper.repositoryAgentTools, ['github-copilot', 'claude-code']);
+  assert.deepEqual(graph.nodes.map(node => node.id), ['github-copilot', 'claude-code']);
+  assert.equal(graph.links.every(link => link.source === 'public-repository'), true);
+  assert.equal(graph.developers[0].repositoryDetected, true);
+  assert.match(graph.links[0].label, /configuration detected/);
+});
+
+test('accepts projected repository tool IDs from the aggregate query', () => {
+  const projected = projectAgentReadiness({
+    login: 'projected-user',
+    claimed: false,
+    repositoryAgentTools: ['github-copilot', 'unknown-tool', 'github-copilot'],
+  });
+
+  assert.deepEqual(projected.repositoryAgentTools, ['github-copilot']);
+  assert.equal('repositoryAgentSignals' in projected, false);
+});
+
+test('counts duplicate login documents once for privacy and links', () => {
+  const duplicates = [
+    { id: 'duplicate-old', login: 'Duplicate', lat: 40, lng: -70, repositoryAgentTools: ['github-copilot'] },
+    { id: 'duplicate-new', login: 'duplicate', lat: 41, lng: -71, repositoryAgentTools: ['github-copilot'] },
+    { id: 'second', login: 'second', lat: 42, lng: -72, repositoryAgentTools: ['github-copilot'] },
+  ];
+  const suppressed = buildAgentRelationshipGraph(duplicates, 20, 3);
+  const visible = buildAgentRelationshipGraph(duplicates, 20, 2);
+
+  assert.equal(suppressed.links.length, 0);
+  assert.equal(visible.links.length, 2);
+  assert.deepEqual(visible.developers.map(developer => developer.login.toLowerCase()).sort(), ['duplicate', 'second']);
+  assert.equal(visible.developers.every(developer => developer.id), true);
+});
+
 test('projects reportable aggregate Agent Network metrics', () => {
   const snapshot = buildAgentNetworkSnapshot({
     developers: [
@@ -72,8 +118,26 @@ test('projects reportable aggregate Agent Network metrics', () => {
   });
 
   assert.deepEqual(snapshot.metrics.openDevelopers, { value: 3, suppressed: false });
+  assert.deepEqual(snapshot.metrics.repositoryDevelopers, { value: null, suppressed: true });
   assert.deepEqual(snapshot.metrics.countries, { value: 3, suppressed: false });
   assert.deepEqual(snapshot.tools, [{ id: 'github-copilot', name: 'GitHub Copilot', count: 3 }]);
+});
+
+test('combines declared and repository-detected tools without double counting developers', () => {
+  const developers = [
+    {
+      ...developer('one', 'USA', ['github-copilot']),
+      repositoryAgentSignals: { signals: [{ id: 'github-copilot' }, { id: 'claude-code' }] },
+    },
+    { login: 'two', repositoryAgentSignals: { signals: [{ id: 'claude-code' }] } },
+    { login: 'three', repositoryAgentSignals: { signals: [{ id: 'claude-code' }] } },
+  ];
+  const snapshot = buildAgentNetworkSnapshot({ developers });
+
+  assert.deepEqual(snapshot.metrics.repositoryDevelopers, { value: 3, suppressed: false });
+  assert.deepEqual(snapshot.tools, [
+    { id: 'claude-code', name: 'Claude Code', count: 3 },
+  ]);
 });
 
 test('suppresses small cohorts and excludes private or unclaimed profiles', () => {

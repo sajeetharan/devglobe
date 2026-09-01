@@ -14,6 +14,12 @@ DevGlobe publishes machine-readable discovery without claiming authentication ca
 - `/robots.txt` includes Content Signals while retaining crawler access rules.
 - Supported early-preview browsers receive guarded, read-only WebMCP search and profile tools.
 
+## Repository agent evidence
+
+DevGlobe periodically scans filenames in a bounded set of recent public owner repositories for recognized agent configuration conventions. Detected tools can appear on the globe as repository evidence after the privacy threshold is met. The scan excludes private, forked, and archived repositories and does not read file contents.
+
+Repository detection does not prove personal tool usage and does not grant contact permission. Agent introductions remain available only for claimed developers who publish an AI profile and explicitly accept verified-agent requests.
+
 DevGlobe publishes protected-resource metadata without listing an authorization server. The current agent credentials are static bearer tokens, not OAuth grants. Adding RFC 8414 authorization-server metadata requires an OAuth 2.1 issuer with authorization and token endpoints; those endpoints must not be advertised until DevGlobe can issue and validate scoped grants.
 
 ## DNS-AID deployment

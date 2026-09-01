@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import functionAgentSignals from '../functions/shared/repository-agent-signals.js';
 import { createRepositoryAgentSignalsHandler } from '../app/api/repository-agent-signals/route.js';
 import {
   detectRepositoryAgentSignals,
@@ -7,6 +8,8 @@ import {
   MAX_AGENT_SIGNAL_PATHS,
   MAX_AGENT_SIGNAL_REPOSITORIES,
 } from '../lib/repository-agent-signals.js';
+
+const { scanDeveloperRepositorySignals } = functionAgentSignals;
 
 test('detects agent configuration paths without reading repository content', () => {
   const signals = detectRepositoryAgentSignals([{
@@ -90,4 +93,35 @@ test('API rejects malformed usernames before GitHub lookup', async () => {
   assert.equal(response.status, 400);
   assert.equal((await response.json()).code, 'invalid_login');
   assert.equal(called, false);
+});
+
+test('scheduled scanner stores only filename evidence from eligible owner repositories', async () => {
+  const calls = [];
+  const result = await scanDeveloperRepositorySignals(async url => {
+    calls.push(String(url));
+    if (String(url).includes('/users/')) return Response.json([
+      { full_name: 'octocat/agents', default_branch: 'main', private: false, fork: false, archived: false },
+      { full_name: 'octocat/private', default_branch: 'main', private: true, fork: false, archived: false },
+      { full_name: 'octocat/fork', default_branch: 'main', private: false, fork: true, archived: false },
+    ]);
+    return Response.json({ tree: [
+      { type: 'blob', path: '.github/copilot-instructions.md' },
+      { type: 'blob', path: 'CLAUDE.md' },
+      { type: 'tree', path: '.cursor' },
+    ] });
+  }, 'octocat', 'test-token');
+
+  assert.equal(result.scannedRepositories, 1);
+  assert.deepEqual(result.signals.map(signal => signal.id), ['claude-code', 'github-copilot']);
+  assert.equal(calls.length, 2);
+  assert.equal(JSON.stringify(result).includes('content'), false);
+});
+
+test('scheduled scanner fails the profile when a repository tree cannot be read', async () => {
+  await assert.rejects(
+    scanDeveloperRepositorySignals(async url => String(url).includes('/users/')
+      ? Response.json([{ full_name: 'octocat/agents', default_branch: 'main', private: false, fork: false, archived: false }])
+      : new Response(null, { status: 403, headers: { 'x-ratelimit-remaining': '0' } }), 'octocat', 'test-token'),
+    error => error.status === 403 && error.rateLimitRemaining === 0,
+  );
 });
