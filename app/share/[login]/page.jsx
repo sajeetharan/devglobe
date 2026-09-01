@@ -11,12 +11,13 @@ export async function generateMetadata({ params }) {
   const title = `@${login}'s Developer Card | DevGlobe`;
   const description = `Explore @${login}'s open-source developer identity, global rank, and impact on DevGlobe.`;
   const pageUrl = `${siteUrl}/share/${encodedLogin}`;
+  const canonicalUrl = `${siteUrl}/developer/${encodedLogin}`;
   const imageUrl = `${siteUrl}/api/preview/v${SOCIAL_PREVIEW_VERSION}/${encodedLogin}.png`;
 
   return {
     title,
     description,
-    alternates: { canonical: pageUrl },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
       description,
@@ -40,6 +41,7 @@ export default async function DeveloperSharePage({ params, searchParams }) {
   const encodedLogin = encodeURIComponent(login);
   const siteUrl = getSiteUrl();
   const pageUrl = `${siteUrl}/share/${encodedLogin}`;
+  const canonicalUrl = `${siteUrl}/developer/${encodedLogin}`;
   const attribution = {
     utm_source: 'share_page',
     utm_medium: 'referral',
@@ -52,8 +54,8 @@ export default async function DeveloperSharePage({ params, searchParams }) {
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
-    '@id': `${pageUrl}#profile`,
-    url: pageUrl,
+    '@id': `${canonicalUrl}#profile`,
+    url: canonicalUrl,
     name: `@${login}'s Developer Profile | DevGlobe`,
     description: profileDescription,
     isPartOf: { '@id': `${siteUrl}/#website` },
@@ -61,7 +63,7 @@ export default async function DeveloperSharePage({ params, searchParams }) {
       '@type': 'Person',
       identifier: login,
       name: `@${login}`,
-      url: pageUrl,
+      url: canonicalUrl,
       sameAs: [`https://github.com/${encodedLogin}`],
     },
   };
