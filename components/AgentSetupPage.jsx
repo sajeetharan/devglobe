@@ -1,79 +1,27 @@
 'use client';
 
 import Link from 'next/link';
+import { AGENT_CLIENTS, AGENT_WORKFLOWS, DEVGLOBE_MCP_ENDPOINT } from '../lib/agent-onboarding.js';
 import { track } from '../lib/analytics.js';
 import { useEffect, useState } from 'react';
 import styles from './AgentSetupPage.module.css';
 
-const endpoint = 'https://www.devglobe.dev/mcp';
 const marketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
-const clients = [
-  {
-    id: 'vscode',
-    name: 'VS Code',
-    file: '.vscode/mcp.json',
-    setupUrl: marketplaceUrl,
-    setupLabel: 'Install VS Code extension',
-    config: `{
-  "servers": {
-    "devglobe": {
-      "type": "http",
-      "url": "${endpoint}"
-    }
-  }
-}`,
-  },
-  {
-    id: 'claude',
-    name: 'Claude',
-    file: 'Remote MCP server URL',
-    setupUrl: 'https://claude.ai/customize/connectors',
-    setupLabel: 'Copy URL and open Claude',
-    config: endpoint,
-  },
-  {
-    id: 'cursor',
-    name: 'Cursor',
-    file: '.cursor/mcp.json',
-    setupUrl: 'https://cursor.com/docs/context/mcp',
-    setupLabel: 'Copy config and open guide',
-    config: `{
-  "mcpServers": {
-    "devglobe": {
-      "url": "${endpoint}"
-    }
-  }
-}`,
-  },
-  {
-    id: 'http',
-    name: 'HTTP',
-    file: 'Streamable HTTP',
-    config: endpoint,
-  },
-];
-
-const workflows = [
-  'Find three TypeScript maintainers in Canada and explain the public evidence for each match.',
-  'Find Python developers who are accepting requests from verified agents.',
-  'Compare the open-source contribution signals of two relevant candidates without making a hiring recommendation.',
-  'Request an introduction only after I approve the developer, project, and reason.',
-];
 
 export default function AgentSetupPage() {
   const [selectedId, setSelectedId] = useState('vscode');
   const [copied, setCopied] = useState('');
-  const selected = clients.find(client => client.id === selectedId) || clients[0];
+  const selected = AGENT_CLIENTS.find(client => client.id === selectedId) || AGENT_CLIENTS[0];
 
   useEffect(() => {
     track('agent_setup_viewed');
   }, []);
 
-  async function copy(value, type) {
+  async function copy(value, type, eventName = 'agent_config_copied', source = type) {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(type);
-      track('agent_config_copied', { client: type });
+      track(eventName, { source });
       window.setTimeout(() => setCopied(''), 1800);
     } catch {
       setCopied('error');
@@ -106,12 +54,12 @@ export default function AgentSetupPage() {
           >
             Install for VS Code
           </a>
-          <span>Search profiles and copy MCP setup directly from the Command Palette.</span>
+          <span>Use the extension UI, or connect DevGlobe directly to GitHub Copilot below.</span>
         </div>
         <div className={styles.endpoint}>
           <span>Streamable HTTP</span>
-          <code>{endpoint}</code>
-          <button type="button" onClick={() => copy(endpoint, 'endpoint')}>{copied === 'endpoint' ? 'Copied' : 'Copy endpoint'}</button>
+          <code>{DEVGLOBE_MCP_ENDPOINT}</code>
+          <button type="button" onClick={() => copy(DEVGLOBE_MCP_ENDPOINT, 'endpoint')}>{copied === 'endpoint' ? 'Copied' : 'Copy endpoint'}</button>
         </div>
       </header>
 
@@ -124,7 +72,7 @@ export default function AgentSetupPage() {
           </div>
         </div>
         <div className={styles.clientPicker} role="tablist" aria-label="MCP clients">
-          {clients.map(client => (
+          {AGENT_CLIENTS.map(client => (
             <button
               type="button"
               role="tab"
@@ -146,26 +94,29 @@ export default function AgentSetupPage() {
           </div>
           <pre><code>{selected.config}</code></pre>
         </div>
-        {selected.setupUrl && (
-          <div className={styles.setupAction}>
+        <div className={styles.setupAction}>
+          {selected.setupUrl ? (
             <a
               href={selected.setupUrl}
               target="_blank"
               rel="noreferrer"
               onClick={() => {
-                if (selected.id !== 'vscode') copy(selected.config, selected.id);
-                track('agent_client_setup_clicked', { client: selected.id });
+                copy(selected.config, selected.id);
+                track('agent_setup_started', { source: selected.id });
               }}
             >
-              {copied === selected.id && selected.id !== 'vscode' ? 'Copied. Continue setup' : selected.setupLabel}
+              {copied === selected.id ? 'Copied. Continue setup' : selected.setupLabel}
             </a>
-            <span>
-              {selected.id === 'claude' && 'Paste the URL into Add custom connector.'}
-              {selected.id === 'cursor' && 'Save the copied JSON in your project or global MCP configuration.'}
-              {selected.id === 'vscode' && 'The extension adds DevGlobe from the Command Palette.'}
-            </span>
-          </div>
-        )}
+          ) : (
+            <button type="button" onClick={() => {
+              copy(selected.config, selected.id);
+              track('agent_setup_started', { source: selected.id });
+            }}>
+              {copied === selected.id ? 'Install command copied' : selected.setupLabel}
+            </button>
+          )}
+          <span>{selected.setupHint}</span>
+        </div>
         {copied === 'error' && <p className={styles.copyError} role="status">Clipboard access was unavailable.</p>}
       </section>
 
@@ -173,16 +124,16 @@ export default function AgentSetupPage() {
         <div className={styles.sectionHeading}>
           <span>02</span>
           <div>
-            <h2 id="agent-workflows-title">Put it to work</h2>
-            <p>Prompts designed around DevGlobe&apos;s consent and evidence boundaries.</p>
+            <h2 id="agent-workflows-title">Verify with a real search</h2>
+            <p>After DevGlobe appears in your client&apos;s tools, copy one prompt to complete setup.</p>
           </div>
         </div>
         <div className={styles.workflows}>
-          {workflows.map((workflow, index) => (
+          {AGENT_WORKFLOWS.map((workflow, index) => (
             <article key={workflow}>
               <span>0{index + 1}</span>
               <p>{workflow}</p>
-              <button type="button" onClick={() => copy(workflow, `workflow_${index + 1}`)}>
+              <button type="button" onClick={() => copy(workflow, `workflow_${index + 1}`, 'agent_onboarding_completed', selected.id)}>
                 {copied === `workflow_${index + 1}` ? 'Copied' : 'Copy prompt'}
               </button>
             </article>

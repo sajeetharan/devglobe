@@ -14,6 +14,42 @@ Client-specific copyable configurations are available at:
 https://www.devglobe.dev/agents
 ```
 
+## Client Setup
+
+### VS Code and GitHub Copilot
+
+Install DevGlobe in your VS Code user profile with the official `--add-mcp` command:
+
+```bash
+code --add-mcp '{"name":"devglobe","type":"http","url":"https://www.devglobe.dev/mcp"}'
+```
+
+Review and approve the server when VS Code prompts you, open GitHub Copilot Chat, and ask:
+
+```text
+Find three TypeScript maintainers in Canada and explain the public evidence for each match.
+```
+
+### Claude
+
+Open [Customize > Connectors](https://claude.ai/customize/connectors), choose **Add custom connector**, and use `https://www.devglobe.dev/mcp` as the remote MCP server URL. Enable DevGlobe for the conversation before using a discovery prompt. Team and Enterprise workspaces require an owner to add the connector first.
+
+### Cursor
+
+Add the following to `.cursor/mcp.json`, then confirm that DevGlobe appears in Cursor's MCP tools:
+
+```json
+{
+  "mcpServers": {
+    "devglobe": {
+      "url": "https://www.devglobe.dev/mcp"
+    }
+  }
+}
+```
+
+The setup page records only the selected client and funnel stage. It never sends configuration contents, prompt text, or identity in onboarding telemetry.
+
 For an anonymous discovery-only connection, use this VS Code `mcp.json` entry:
 
 ```json
