@@ -25,7 +25,6 @@ import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
 const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
-const DISMISSED_CLAIM_NOTICE_KEY = 'devglobe-dismissed-claim-notice';
 const WEEKLY_DIGEST_DESTINATION_KEY = 'devglobe-weekly-digest-destination';
 // See #182: fetch a small, fast initial batch for quick Time-to-Interactive,
 // then progressively fetch the rest in the background instead of one huge payload.
@@ -60,7 +59,6 @@ export default function Home() {
   const [cardContext, setCardContext] = useState(null);
   const [showAddMe, setShowAddMe] = useState(false);
   const [addMeUsername, setAddMeUsername] = useState('');
-  const [verificationUsername, setVerificationUsername] = useState('');
   const [showClaimPending, setShowClaimPending] = useState(false);
   const [showAiProfile, setShowAiProfile] = useState(false);
   const [showIntroductions, setShowIntroductions] = useState(false);
@@ -320,10 +318,8 @@ export default function Home() {
     if (!pendingUsername) return;
 
     if (pendingUsername.toLowerCase() !== user.login.toLowerCase()) {
-      const noticeId = `${pendingUsername.toLowerCase()}:${user.login.toLowerCase()}`;
-      if (localStorage.getItem(DISMISSED_CLAIM_NOTICE_KEY) === noticeId) return;
-      setVerificationUsername(pendingUsername);
-      setShowAddMe(true);
+      localStorage.removeItem(PENDING_CLAIM_KEY);
+      localStorage.removeItem(PENDING_README_KEY);
       return;
     }
 
@@ -763,18 +759,12 @@ export default function Home() {
   }, []);
 
   const handleAddMe = useCallback(() => {
-    setVerificationUsername('');
     setShowAddMe(true);
   }, []);
 
   const handleCloseAddMe = useCallback(() => {
-    if (verificationUsername && user?.login) {
-      const noticeId = `${verificationUsername.toLowerCase()}:${user.login.toLowerCase()}`;
-      try { localStorage.setItem(DISMISSED_CLAIM_NOTICE_KEY, noticeId); } catch { /* Dismiss for this session when storage is unavailable. */ }
-    }
     setShowAddMe(false);
-    setVerificationUsername('');
-  }, [user?.login, verificationUsername]);
+  }, []);
 
   const handleHome = useCallback(() => {
     hasActiveSearchRef.current = false;
@@ -952,7 +942,6 @@ export default function Home() {
             onClose={handleCloseAddMe}
             user={user}
             onVerify={handleClaim}
-            verificationUsername={verificationUsername}
             initialUsername={addMeUsername}
           />
         )}
