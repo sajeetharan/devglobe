@@ -13,6 +13,7 @@ Azure Functions serves:
 - `GET /api/activities`
 - `GET /api/activities/live`
 - GitHub activity ingestion every five minutes
+- Repository agent-signal ingestion every fifteen minutes
 - Hourly generation of the compressed developer snapshot
 
 Azure Blob Storage serves `developers.json` directly to browsers. Azure Container Apps serves the frontend, OAuth, private account mutations, nominations, cards, share metadata, and MCP endpoint.
@@ -29,6 +30,10 @@ The deployment uses these resources in `devglobe-rg`:
 - Static website endpoint: `https://devglobeactivityfn.z13.web.core.windows.net/`
 
 The Container App and Function App require their existing Cosmos, GitHub, and Azure OpenAI application settings. Never place secrets in public frontend variables or image build arguments.
+
+The `repository-agent-ingest` timer uses the Function App's `GITHUB_TOKEN` to scan a bounded batch of stale developer profiles. It examines filenames from up to eight recent public, non-fork, non-archived owner repositories and stores the resulting tool IDs and evidence on the existing developer document. It never reads or stores repository file contents. Each profile is refreshed after seven days, and GitHub rate-limit responses stop the current batch.
+
+Repository evidence is observational. It does not imply that a developer personally uses a tool or consents to agent contact; only a public, self-declared AI profile controls contact availability.
 
 ## Frontend configuration
 
@@ -68,3 +73,4 @@ Confirm all of the following after deployment:
 - `/api/search?q=typescript&mode=text` returns bounded results.
 - Blob `developers.json` returns `Content-Encoding: gzip` and a long-lived cache header.
 - The activity timer writes directly to the activity container.
+- `repository-agent-ingest` logs bounded updates and persists `repositoryAgentSignals.scannedAt`, `toolIds`, and filename evidence without repository contents.

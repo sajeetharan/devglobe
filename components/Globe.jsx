@@ -101,12 +101,16 @@ function hexResolutionForAltitude(altitude) {
 
 function createAvatarMarker(developer, onSelectDev, setAutoRotate) {
   const marker = document.createElement('div');
-  marker.className = 'globe-avatar-marker';
+  marker.className = developer.repositoryDetected
+    ? 'globe-avatar-marker globe-avatar-marker--repository'
+    : 'globe-avatar-marker';
   marker.style.setProperty('--marker-color', getScoreColor(developer.score));
   marker.setAttribute('role', 'button');
   marker.setAttribute('tabindex', '0');
-  marker.setAttribute('aria-label', `Open ${developer.name || developer.login}'s profile`);
-  marker.title = developer.name || developer.login;
+  const name = developer.name || developer.login;
+  const evidence = developer.repositoryDetected ? '; AI configuration detected in public repositories' : '';
+  marker.setAttribute('aria-label', `Open ${name}'s profile${evidence}`);
+  marker.title = `${name}${evidence}`;
 
   const selectDeveloper = (event) => {
     event.stopPropagation();
@@ -959,9 +963,9 @@ const Globe = forwardRef(function Globe({
               )}
               {agentNetworkVisible && (
                 <>
-                  <span className="globe-legend__item"><span className="globe-legend__agent-mark">AI</span>Publicly listed tool</span>
-                  <span className="globe-legend__item"><span className="globe-legend__line" />Tool relationship</span>
-                  <span className="globe-legend__item">Links reflect public profile declarations</span>
+                  <span className="globe-legend__item"><span className="globe-legend__agent-mark">AI</span>Declared or repository-detected tool</span>
+                  <span className="globe-legend__item"><span className="globe-legend__line" />Public evidence relationship</span>
+                  <span className="globe-legend__item">Repository detection does not imply contact consent</span>
                 </>
               )}
               {trendingRings.length > 0 && (

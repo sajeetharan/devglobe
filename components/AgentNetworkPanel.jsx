@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 const METRICS = [
   { key: 'openDevelopers', label: 'Open developers' },
+  { key: 'repositoryDevelopers', label: 'Repo signals' },
   { key: 'acceptedConnections', label: 'Connections' },
   { key: 'pendingRequests', label: 'In review' },
   { key: 'countries', label: 'Countries' },
@@ -43,9 +44,9 @@ export default function AgentNetworkPanel({ globeLayerVisible = false, onToggleG
   return (
     <div className="agent-network">
       <header className="agent-network__header">
-        <span>CONSENT-BASED NETWORK</span>
+        <span>PUBLIC AGENT SIGNALS</span>
         <h2>Agent Network</h2>
-        <p>Aggregate activity from public, opted-in profiles.</p>
+        <p>Public declarations and repository configuration evidence.</p>
       </header>
 
       <dl className="agent-network__metrics">
@@ -65,7 +66,7 @@ export default function AgentNetworkPanel({ globeLayerVisible = false, onToggleG
       <section className="agent-network__globe-control" aria-labelledby="agent-globe-title">
         <span>
           <strong id="agent-globe-title">Agent and developer links</strong>
-          <small>Plot public AI tool declarations and opted-in developers.</small>
+          <small>Plot public declarations and repository configuration evidence.</small>
         </span>
         <button
           type="button"
@@ -94,7 +95,7 @@ export default function AgentNetworkPanel({ globeLayerVisible = false, onToggleG
       <section className="agent-network__section" aria-labelledby="agent-tools-title">
         <div className="agent-network__section-heading">
           <h3 id="agent-tools-title">AI tools</h3>
-          <span>Self-declared</span>
+          <span>Declared + repository-detected</span>
         </div>
         {snapshot.tools.length > 0 ? (
           <div className="agent-network__tools">
@@ -106,12 +107,12 @@ export default function AgentNetworkPanel({ globeLayerVisible = false, onToggleG
             ))}
           </div>
         ) : (
-          <p className="agent-network__suppressed">Tool cohorts appear after {snapshot.privacyThreshold} public declarations.</p>
+          <p className="agent-network__suppressed">Tool cohorts appear after {snapshot.privacyThreshold} public signals.</p>
         )}
       </section>
 
       <footer className="agent-network__footer">
-        <p className="agent-network__privacy">Small cohorts are hidden to protect developer privacy.</p>
+        <p className="agent-network__privacy">Repository evidence does not imply personal usage or contact consent. Small cohorts are hidden.</p>
         <a
           href="https://github.com/sajeetharan/devglobe/blob/main/docs/mcp-server.md"
           target="_blank"
