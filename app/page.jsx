@@ -67,6 +67,7 @@ export default function Home() {
   const [showContributions, setShowContributions] = useState(false);
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
+  const [agentProfileStatus, setAgentProfileStatus] = useState('idle');
   const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
   const [agentRelationshipGraph, setAgentRelationshipGraph] = useState({ nodes: [], developers: [], links: [] });
   const [trending, setTrending] = useState(null);
@@ -220,16 +221,42 @@ export default function Home() {
     }
   }, [user, developers]);
 
+  useEffect(() => {
+    if (!user || claimStatus !== 'claimed') {
+      setAgentProfileStatus('idle');
+      return undefined;
+    }
+
+    let cancelled = false;
+    setAgentProfileStatus('loading');
+    fetch('/api/ai-profile', { cache: 'no-store', credentials: 'same-origin' })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to load AI profile');
+        return data.profile;
+      })
+      .then(profile => {
+        if (!cancelled) setAgentProfileStatus(profile?.tools?.length > 0 ? 'configured' : 'missing');
+      })
+      .catch(() => {
+        if (!cancelled) setAgentProfileStatus('unavailable');
+      });
+
+    return () => { cancelled = true; };
+  }, [user, claimStatus]);
+
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
     setClaimStatus('unclaimed');
+    setAgentProfileStatus('idle');
     setShowAiProfile(false);
     setShowIntroductions(false);
   }, []);
 
-  const handleAiProfileSaved = useCallback((aiProfile) => {
-    setSelectedDev(current => current?.login === user?.login ? { ...current, aiProfile } : current);
+  const handleAiProfileSaved = useCallback((publicAiProfile, savedProfile) => {
+    setSelectedDev(current => current?.login === user?.login ? { ...current, aiProfile: publicAiProfile } : current);
+    setAgentProfileStatus(savedProfile?.tools?.length > 0 ? 'configured' : 'missing');
     setCompletionVersion(version => version + 1);
   }, [user]);
 
@@ -693,6 +720,12 @@ export default function Home() {
     setSidebarOpen(true);
   }, [sidebarView]);
 
+  const handleOpenAgentNetwork = useCallback(() => {
+    setSidebarView('agents');
+    setSidebarOpen(true);
+    setAgentGlobeLayerVisible(true);
+  }, []);
+
   const handleCloseSidebar = useCallback(() => {
     setSidebarOpen(false);
     setSidebarView('leaderboard');
@@ -849,8 +882,10 @@ export default function Home() {
         signedIn={Boolean(user)}
         currentUsername={user?.login || ''}
         profileOpen={Boolean(selectedDev)}
-        onOpenOwnProfile={handleOpenOwnProfile}
         onOpenActivity={handleOpenActivity}
+        showAgentPrompt={agentProfileStatus === 'missing'}
+        onOpenAgentProfile={() => setShowAiProfile(true)}
+        onOpenAgentNetwork={handleOpenAgentNetwork}
         showMissionPreview={false}
       />
       <QuickTour

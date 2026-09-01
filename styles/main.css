@@ -409,17 +409,37 @@ body {
 }
 
 .search-bar__activation {
+  position: relative;
   display: grid;
-  justify-items: center;
+  justify-items: start;
   width: min(620px, calc(100vw - 32px));
   gap: 5px;
-  padding: 16px 20px;
+  padding: 16px 56px 16px 20px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg-panel-90);
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow-strong);
-  text-align: center;
+  text-align: left;
+}
+
+.search-bar__activation-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.search-bar__activation-close svg {
+  width: 18px;
+  height: 18px;
 }
 
 .search-bar__eyebrow {
@@ -443,7 +463,7 @@ body {
   line-height: 1.5;
 }
 
-.search-bar__own-profile,
+.search-bar__agent-action,
 .search-bar__submit {
   display: inline-flex;
   min-height: 44px;
@@ -458,14 +478,52 @@ body {
   cursor: pointer;
 }
 
-.search-bar__own-profile {
+.search-bar__agent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 7px;
-  padding: 0 16px;
 }
 
-.search-bar__own-profile svg {
-  width: 16px;
-  height: 16px;
+.search-bar__agent-action {
+  padding: 0 13px;
+  border-color: var(--border);
+  background: var(--overlay-subtle);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.search-bar__agent-action--primary {
+  border-color: #0891b2;
+  background: #0891b2;
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .search-bar__activation {
+    padding: 14px 16px;
+  }
+
+  .search-bar__activation h2 {
+    padding-right: 34px;
+    font-size: 18px;
+  }
+
+  .search-bar__agent-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-bar__agent-action {
+    min-width: 0;
+    padding: 0 8px;
+    text-align: center;
+  }
+
+  .search-bar__agent-action--primary {
+    grid-column: 1 / -1;
+  }
 }
 
 .search-bar__submit {
@@ -478,12 +536,14 @@ body {
   opacity: 0.45;
 }
 
-.search-bar__own-profile:hover,
+.search-bar__agent-action:hover,
 .search-bar__submit:not(:disabled):hover {
   background: #0e7490;
+  color: #fff;
 }
 
-.search-bar__own-profile:focus-visible,
+.search-bar__activation-close:focus-visible,
+.search-bar__agent-action:focus-visible,
 .search-bar__submit:focus-visible {
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
