@@ -40,18 +40,11 @@ export function buildSitemapEntries(profileLogins, lastModified = new Date()) {
       changeFrequency: 'daily',
       priority: 0.9,
     },
-    ...logins.flatMap(login => [
-      {
-        url: `${siteUrl}/developer/${encodeURIComponent(login)}`,
-        changeFrequency: 'daily',
-        priority: 0.7,
-      },
-      {
-        url: `${siteUrl}/share/${encodeURIComponent(login)}`,
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      },
-    ]),
+    ...logins.map(login => ({
+      url: `${siteUrl}/developer/${encodeURIComponent(login)}`,
+      changeFrequency: 'daily',
+      priority: 0.7,
+    })),
   ];
 }
 
