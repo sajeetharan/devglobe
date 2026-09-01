@@ -900,7 +900,7 @@ export default function Home() {
         showAgentPrompt={agentProfileStatus === 'missing'}
         onOpenAgentProfile={() => setShowAiProfile(true)}
         onOpenAgentNetwork={handleOpenAgentNetwork}
-        showMissionPreview={false}
+        showMissionPreview
       />
       <QuickTour
         step={tourStep}
