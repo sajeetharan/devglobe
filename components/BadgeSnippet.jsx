@@ -8,15 +8,22 @@ const STAT_OPTIONS = [
   { value: 'cityRank', label: 'City Rank' },
   { value: 'score', label: 'Score' },
   { value: 'stars', label: 'Stars' },
+  { value: 'language', label: 'Top Language' },
+];
+
+const IMAGE_TYPE_OPTIONS = [
+  { value: 'svg', label: 'SVG' },
+  { value: 'png', label: 'PNG' },
 ];
 
 export default function BadgeSnippet({ login, siteUrl }) {
   const [stat, setStat] = useState('globalRank');
+  const [imageType, setImageType] = useState('svg');
   const [format, setFormat] = useState('markdown');
   const [copied, setCopied] = useState(false);
 
   const statQuery = stat === 'globalRank' ? '' : `?stat=${stat}`;
-  const badgeUrl = `${siteUrl}/api/badge/${encodeURIComponent(login)}.svg${statQuery}`;
+  const badgeUrl = `${siteUrl}/api/badge/${encodeURIComponent(login)}.${imageType}${statQuery}`;
   const profileUrl = `${siteUrl}/share/${encodeURIComponent(login)}`;
 
   const snippets = {
@@ -40,7 +47,7 @@ export default function BadgeSnippet({ login, siteUrl }) {
       <span className="badge-card__eyebrow">Embeddable badge</span>
       <h2 className="badge-card__title">Get your badge</h2>
       <p className="badge-card__subtitle">
-        Embed a live-updating rank badge in your GitHub README or personal site. It refreshes automatically as your DevGlobe stats update.
+        Embed a live-updating rank badge in your GitHub README or personal site. It refreshes automatically as your DevGlobe stats update. Unclaimed profiles render with a muted style and a hollow-circle mark so viewers can tell the data hasn&apos;t been verified by you yet — <a href="#claim">claim your profile</a> to switch it to the full-color badge.
       </p>
 
       <div className="badge-card__stats" role="tablist" aria-label="Badge stat">
@@ -52,6 +59,21 @@ export default function BadgeSnippet({ login, siteUrl }) {
             aria-selected={stat === option.value}
             className={`badge-card__stat${stat === option.value ? ' badge-card__stat--active' : ''}`}
             onClick={() => setStat(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="badge-card__format" role="tablist" aria-label="Image type">
+        {IMAGE_TYPE_OPTIONS.map(option => (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            aria-selected={imageType === option.value}
+            className={`badge-card__format-btn${imageType === option.value ? ' badge-card__format-btn--active' : ''}`}
+            onClick={() => setImageType(option.value)}
           >
             {option.label}
           </button>
