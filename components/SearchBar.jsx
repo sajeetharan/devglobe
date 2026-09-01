@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import SpecialTags from './SpecialTags.jsx';
 import { track, trackSearchAppearances } from '../lib/analytics.js';
 import { countryKey } from '../lib/country.js';
@@ -29,7 +29,7 @@ const SAMPLES_BY_MODE = {
   ],
 };
 
-export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, currentUsername = '', profileOpen = false, onOpenOwnProfile, onOpenActivity, showMissionPreview = true }) {
+export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, currentUsername = '', profileOpen = false, onOpenActivity, showAgentPrompt = false, onOpenAgentProfile, onOpenAgentNetwork, showMissionPreview = true }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('text');
   const [topN, setTopN] = useState(20);
@@ -38,9 +38,38 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const [visibleResults, setVisibleResults] = useState([]);
   const [singleResult, setSingleResult] = useState(null);
   const [searchError, setSearchError] = useState('');
+  const [agentPromptDismissed, setAgentPromptDismissed] = useState(false);
   const inputRef = useRef(null);
   const abortRef = useRef(null);
   const timerRef = useRef(null);
+  const agentPromptViewedRef = useRef('');
+  const agentPromptKey = currentUsername
+    ? `devglobe-agent-prompt-dismissed:v1:${currentUsername.toLowerCase()}`
+    : '';
+
+  useEffect(() => {
+    if (!agentPromptKey) {
+      setAgentPromptDismissed(false);
+      return;
+    }
+    try {
+      setAgentPromptDismissed(localStorage.getItem(agentPromptKey) === '1');
+    } catch {
+      setAgentPromptDismissed(false);
+    }
+  }, [agentPromptKey]);
+
+  useEffect(() => {
+    if (!showAgentPrompt || agentPromptDismissed || !agentPromptKey || agentPromptViewedRef.current === agentPromptKey) return;
+    agentPromptViewedRef.current = agentPromptKey;
+    track('agent_setup_viewed', { action: 'profile_tools_prompt', source: 'homepage_prompt' });
+  }, [agentPromptDismissed, agentPromptKey, showAgentPrompt]);
+
+  const dismissAgentPrompt = useCallback((source) => {
+    setAgentPromptDismissed(true);
+    try { localStorage.setItem(agentPromptKey, '1'); } catch { /* Dismissal remains active for this render. */ }
+    track('next_action_selected', { action: source, journey: 'agent_onboarding', source: 'homepage_prompt' });
+  }, [agentPromptKey]);
 
   const openSearchResult = useCallback((developer, source) => {
     track('personalized_profile_viewed', {
@@ -225,27 +254,54 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
   return (
     <div className="search-bar" id="search-bar">
-      {signedIn && !profileOpen && !query && resultCount === null && (
+      {signedIn && showAgentPrompt && !agentPromptDismissed && !profileOpen && !query && resultCount === null && (
         <div className="search-bar__activation">
-          <span className="search-bar__eyebrow">Your open-source snapshot</span>
-          <h2>Welcome back, @{currentUsername}</h2>
-          <p>Review your ranking, recent activity, and next step.</p>
           <button
             type="button"
-            className="search-bar__own-profile"
-            onClick={() => {
-              track('activation_started', { journey: 'username_profile', source: 'signed_in_cta' });
-              track('activation_action_selected', { action: 'open_own_profile', journey: 'username_profile', source: 'signed_in_cta' });
-              track('personalized_profile_viewed', { login: currentUsername, journey: 'username_profile', source: 'signed_in_cta' });
-              track('activation_completed', { login: currentUsername, journey: 'username_profile', outcome: 'profile_opened', source: 'signed_in_cta' });
-              onOpenOwnProfile?.();
-            }}
+            className="search-bar__activation-close"
+            aria-label="Dismiss agent setup prompt"
+            onClick={() => dismissAgentPrompt('close')}
           >
-            Open my profile
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M4 10h12M11 5l5 5-5 5" />
+              <path d="M5 5l10 10M15 5L5 15" />
             </svg>
           </button>
+          <span className="search-bar__eyebrow">Developer + agent network</span>
+          <h2>Put your AI tools on the map</h2>
+          <p>@{currentUsername}, link the tools you already use so developers and AI agents can discover your expertise.</p>
+          <div className="search-bar__agent-actions">
+            <button
+              type="button"
+              className="search-bar__agent-action search-bar__agent-action--primary"
+              onClick={() => {
+                dismissAgentPrompt('add_tools');
+                track('agent_setup_started', { source: 'homepage_prompt', client: 'developer_profile' });
+                onOpenAgentProfile?.();
+              }}
+            >
+              Add my AI tools
+            </button>
+          <button
+            type="button"
+              className="search-bar__agent-action"
+            onClick={() => {
+                dismissAgentPrompt('view_network');
+                onOpenAgentNetwork?.();
+            }}
+          >
+              View agent network
+          </button>
+            <a
+              className="search-bar__agent-action"
+              href="/agents"
+              onClick={() => {
+                dismissAgentPrompt('connect_agent');
+                track('agent_setup_started', { source: 'homepage_prompt', client: 'mcp' });
+              }}
+            >
+              Connect via MCP
+            </a>
+          </div>
         </div>
       )}
       <div className="search-bar__inner">

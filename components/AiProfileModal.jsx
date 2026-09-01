@@ -118,7 +118,7 @@ export default function AiProfileModal({ onClose, onSaved }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to save AI settings');
-      onSaved(data.profile.visibility === 'public' ? data.profile : null);
+      onSaved(data.profile.visibility === 'public' ? data.profile : null, data.profile);
       onClose();
     } catch (saveError) {
       setError(saveError.message);
