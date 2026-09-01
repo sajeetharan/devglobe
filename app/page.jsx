@@ -25,6 +25,7 @@ import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
 const PENDING_CLAIM_KEY = 'devglobe-pending-claim';
+const DISMISSED_CLAIM_NOTICE_KEY = 'devglobe-dismissed-claim-notice';
 const WEEKLY_DIGEST_DESTINATION_KEY = 'devglobe-weekly-digest-destination';
 // See #182: fetch a small, fast initial batch for quick Time-to-Interactive,
 // then progressively fetch the rest in the background instead of one huge payload.
@@ -319,6 +320,8 @@ export default function Home() {
     if (!pendingUsername) return;
 
     if (pendingUsername.toLowerCase() !== user.login.toLowerCase()) {
+      const noticeId = `${pendingUsername.toLowerCase()}:${user.login.toLowerCase()}`;
+      if (localStorage.getItem(DISMISSED_CLAIM_NOTICE_KEY) === noticeId) return;
       setVerificationUsername(pendingUsername);
       setShowAddMe(true);
       return;
@@ -765,8 +768,13 @@ export default function Home() {
   }, []);
 
   const handleCloseAddMe = useCallback(() => {
+    if (verificationUsername && user?.login) {
+      const noticeId = `${verificationUsername.toLowerCase()}:${user.login.toLowerCase()}`;
+      try { localStorage.setItem(DISMISSED_CLAIM_NOTICE_KEY, noticeId); } catch { /* Dismiss for this session when storage is unavailable. */ }
+    }
     setShowAddMe(false);
-  }, []);
+    setVerificationUsername('');
+  }, [user?.login, verificationUsername]);
 
   const handleHome = useCallback(() => {
     hasActiveSearchRef.current = false;
