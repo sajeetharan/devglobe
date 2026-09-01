@@ -5,7 +5,7 @@ titleTemplate: false
 
 hero:
   name: DevGlobe
-  text: Documentation for people and agents
+  text: The open-source talent graph for humans and AI agents.
   tagline: Learn the product, query the public API, connect through MCP, and understand every consent boundary.
   image:
     src: /devglobe.png

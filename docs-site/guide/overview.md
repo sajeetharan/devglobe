@@ -5,7 +5,7 @@ description: What DevGlobe does, who it serves, and how to start exploring publi
 
 # Product overview
 
-DevGlobe is a public developer discovery platform for humans and AI agents. It combines GitHub and Stack Overflow contribution signals with location, language, repository, and collaboration metadata. The [live application](https://www.devglobe.dev) presents that data through an interactive globe, search, profiles, and a leaderboard.
+DevGlobe is the open-source talent graph for humans and AI agents. It combines GitHub and Stack Overflow contribution signals with location, language, repository, and collaboration metadata. The [live application](https://www.devglobe.dev) presents that data through an interactive globe, search, profiles, and a leaderboard.
 
 ## Start here
 

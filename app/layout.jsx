@@ -4,8 +4,8 @@ import WebMcpProvider from '../components/WebMcpProvider.jsx';
 import AppInsights from '../components/AppInsights.jsx';
 
 const siteUrl = getSiteUrl();
-const title = 'DevGlobe: Developer Discovery for Humans & AI Agents';
-const description = 'Discover 26,000+ open-source developers by expertise, location, language, and verified contributions using DevGlobe vector and hybrid search.';
+const title = 'DevGlobe | Open-Source Talent Graph for Humans and AI Agents';
+const description = 'The open-source talent graph for humans and AI agents. Discover 26,000+ developers by expertise, location, language, and verified contributions.';
 const githubUrl = 'https://github.com/sajeetharan/devglobe';
 
 const structuredData = {
@@ -39,7 +39,7 @@ const structuredData = {
       url: siteUrl,
       description,
       applicationCategory: 'DeveloperApplication',
-      applicationSubCategory: 'Developer discovery platform',
+      applicationSubCategory: 'Open-source talent graph',
       operatingSystem: 'Any',
       browserRequirements: 'Requires JavaScript and a WebGL-capable browser',
       isAccessibleForFree: true,
@@ -49,7 +49,7 @@ const structuredData = {
         priceCurrency: 'USD',
       },
       featureList: [
-        'Interactive global developer discovery',
+        'Interactive global open-source talent graph',
         'Developer rankings by open-source impact',
         'Country and language leaderboards',
         'GitHub and Stack Overflow contribution profiles',
@@ -117,7 +117,7 @@ export const metadata = {
     url: '/',
     siteName: 'DevGlobe',
     type: 'website',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'DevGlobe developer discovery platform and global developer network' }],
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'DevGlobe, the open-source talent graph for humans and AI agents' }],
   },
   twitter: {
     card: 'summary_large_image',

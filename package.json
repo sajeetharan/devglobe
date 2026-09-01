@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "packageManager": "npm@11.14.1",
   "type": "module",
-  "description": "Interactive 3D globe visualization of top GitHub developers",
+  "description": "The open-source talent graph for humans and AI agents.",
   "engines": {
     "node": ">=22.0.0"
   },

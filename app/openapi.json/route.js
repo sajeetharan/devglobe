@@ -7,7 +7,7 @@ export function GET() {
     info: {
       title: 'DevGlobe Public API',
       version: '1.0.0',
-      description: 'Public developer discovery and stateless MCP access. Private contact details are never returned.',
+      description: 'The open-source talent graph for humans and AI agents. Public discovery and stateless MCP access; private contact details are never returned.',
     },
     servers: [{ url: siteUrl }],
     components: {

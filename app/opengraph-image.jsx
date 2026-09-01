@@ -1,11 +1,14 @@
 import { ImageResponse } from 'next/og';
+import { getSiteUrl } from '../lib/site.js';
 
 export const runtime = 'nodejs';
-export const alt = 'DevGlobe — Where Developers and AI Agents Connect';
+export const alt = 'DevGlobe - Open-source talent and contribution discovery for developers and AI agents through MCP';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default function OpenGraphImage() {
+  const logoUrl = `${getSiteUrl()}/devglobe.png`;
+
   return new ImageResponse(
     (
       <div
@@ -13,11 +16,10 @@ export default function OpenGraphImage() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, #071018 0%, #0f1d28 55%, #17130f 100%)',
+          background: '#070b0e',
           color: '#f8fafc',
           fontFamily: 'sans-serif',
-          padding: '72px 84px',
+          padding: '64px 68px',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -25,46 +27,43 @@ export default function OpenGraphImage() {
         <div
           style={{
             position: 'absolute',
-            right: '-10px',
-            top: '48px',
-            width: '500px',
-            height: '500px',
+            inset: 0,
             display: 'flex',
-            border: '3px solid rgba(34, 211, 238, 0.34)',
-            borderRadius: '50%',
-            boxShadow: '0 0 90px rgba(34, 211, 238, 0.14)',
+            backgroundImage: 'linear-gradient(rgba(45, 212, 191, 0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(45, 212, 191, 0.055) 1px, transparent 1px)',
+            backgroundSize: '38px 38px',
           }}
-        >
-          <div style={{ position: 'absolute', left: '78px', top: '0', width: '340px', height: '494px', display: 'flex', border: '2px solid rgba(34, 211, 238, 0.2)', borderRadius: '50%' }} />
-          <div style={{ position: 'absolute', left: '0', top: '174px', width: '494px', height: '150px', display: 'flex', border: '2px solid rgba(34, 211, 238, 0.2)', borderRadius: '50%' }} />
-          {[
-            ['92px', '110px', '#22d3ee'],
-            ['320px', '90px', '#f59e0b'],
-            ['250px', '250px', '#4ade80'],
-            ['105px', '325px', '#60a5fa'],
-            ['360px', '350px', '#fb7185'],
-          ].map(([left, top, color]) => (
-            <div key={`${left}-${top}`} style={{ position: 'absolute', left, top, width: '16px', height: '16px', display: 'flex', borderRadius: '50%', background: color, boxShadow: `0 0 22px ${color}` }} />
-          ))}
+        />
+
+        <div style={{ width: '620px', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '13px', marginBottom: '36px' }}>
+            <div style={{ width: '12px', height: '12px', display: 'flex', background: '#2dd4bf', borderRadius: '50%', boxShadow: '0 0 18px rgba(45, 212, 191, 0.8)' }} />
+            <div style={{ display: 'flex', color: '#5eead4', fontSize: '18px', fontWeight: '800' }}>FOR DEVELOPERS + AI AGENTS</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '64px', fontWeight: '800', lineHeight: 1.02 }}>
+            <span>Find the people</span>
+            <span style={{ display: 'flex' }}>behind the<span style={{ color: '#5eead4', marginLeft: '14px' }}>code.</span></span>
+          </div>
+          <div style={{ width: '565px', display: 'flex', marginTop: '24px', color: '#b8c4c1', fontSize: '21px', lineHeight: 1.42 }}>
+            Find your first open-source contribution, build a verified profile, and let AI agents discover your expertise through DevGlobe MCP.
+          </div>
+          <div style={{ width: '570px', display: 'flex', marginTop: '38px', paddingTop: '22px', borderTop: '1px solid #29403a', justifyContent: 'space-between', color: '#f0fdfa', fontSize: '15px', fontWeight: '800' }}>
+            <span>26,000+ PROFILES</span>
+            <span>150+ COUNTRIES</span>
+            <span>AGENT + MCP READY</span>
+          </div>
+          <div style={{ display: 'flex', marginTop: '34px', color: '#5eead4', fontSize: '19px', fontWeight: '800' }}>
+            devglobe.dev
+          </div>
         </div>
 
-        <div style={{ width: '650px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '34px' }}>
-            <div style={{ width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #22d3ee', borderRadius: '50%', color: '#67e8f9', fontSize: '25px', fontWeight: '800' }}>D</div>
-            <div style={{ display: 'flex', fontSize: '28px', fontWeight: '800', letterSpacing: '1px' }}>DEV<span style={{ color: '#22d3ee' }}>GLOBE</span></div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '58px', fontWeight: '800', lineHeight: '1.05' }}>
-            <span>Where Developers</span>
-            <span style={{ display: 'flex', gap: '14px' }}><span>and AI Agents</span><span style={{ color: '#67e8f9' }}>Connect</span></span>
-          </div>
-          <div style={{ display: 'flex', marginTop: '28px', color: '#94a3b8', fontSize: '22px' }}>
-            Discover expertise, impact, and collaborators worldwide.
-          </div>
-          <div style={{ display: 'flex', gap: '28px', marginTop: '46px', color: '#cbd5e1', fontSize: '16px', fontWeight: '700' }}>
-            <span>26,000+ DEVELOPERS</span>
-            <span style={{ color: '#475569' }}>•</span>
-            <span>150+ COUNTRIES</span>
-          </div>
+        <div style={{ position: 'absolute', right: '36px', top: '74px', width: '470px', height: '470px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid #29403a', paddingLeft: '36px' }}>
+          <img
+            src={logoUrl}
+            alt=""
+            width="430"
+            height="430"
+            style={{ width: '430px', height: '430px', objectFit: 'contain' }}
+          />
         </div>
       </div>
     ),

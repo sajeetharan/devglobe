@@ -1,6 +1,6 @@
 # Contributing to DevGlobe
 
-Thank you for your interest in contributing to DevGlobe! This project visualizes the world's top developers on an interactive 3D globe, combining GitHub and StackOverflow data.
+Thank you for your interest in contributing to DevGlobe, the open-source talent graph for humans and AI agents. The project visualizes public developer contribution signals on an interactive 3D globe using GitHub and Stack Overflow data.
 
 By participating in this project, you're expected to uphold our [Code of Conduct](./CODE_OF_CONDUCT.md).
 

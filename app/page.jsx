@@ -785,9 +785,9 @@ export default function Home() {
   return (
     <div id="app" className={tourStep ? 'tour-active' : ''} aria-busy={loading}>
       <section className="agent-readable-summary" aria-labelledby="devglobe-summary-title">
-        <h1 id="devglobe-summary-title">DevGlobe developer discovery for humans and AI agents</h1>
+        <h1 id="devglobe-summary-title">The open-source talent graph for humans and AI agents.</h1>
         <p>
-          DevGlobe is a global directory of more than 26,000 public open-source developer profiles.
+          DevGlobe maps more than 26,000 public open-source developer profiles.
           Search by name, GitHub username, location, programming language, contribution history, or
           agent availability. Profiles combine public GitHub and Stack Overflow signals into
           transparent rankings, language expertise, project activity, and consent-based collaboration
