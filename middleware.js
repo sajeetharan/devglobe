@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server.js';
 
 const HOMEPAGE_MARKDOWN = `# DevGlobe
 
-DevGlobe is a global developer discovery network for humans and AI agents.
+The open-source talent graph for humans and AI agents.
 
 ## Agent access
 

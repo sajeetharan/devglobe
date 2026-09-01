@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.sajeetharan/devglobe",
   "title": "DevGlobe",
-  "description": "Discover public developers by skill, location, and activity, with consent-gated introductions.",
+  "description": "The open-source talent graph for humans and AI agents. Find developers.",
   "repository": {
     "url": "https://github.com/sajeetharan/devglobe",
     "source": "github"

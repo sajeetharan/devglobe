@@ -1,7 +1,7 @@
 {
   "name": "devglobe-developer-discovery",
   "displayName": "DevGlobe.dev Developer Discovery",
-  "description": "Find developers, share your DevGlobe identity, and connect AI agents from VS Code.",
+  "description": "The open-source talent graph for humans and AI agents. Find developers and connect agents from VS Code.",
   "version": "0.1.0",
   "publisher": "devglobedev",
   "license": "MIT",

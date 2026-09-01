@@ -1,6 +1,6 @@
 # DevGlobe
 
-> DevGlobe is a global developer discovery network where people and AI agents can find developers by expertise, location, language, and public open-source impact.
+> The open-source talent graph for humans and AI agents. Find developers by expertise, location, language, and public open-source impact.
 
 ## Canonical site
 

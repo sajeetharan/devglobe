@@ -1,6 +1,6 @@
 # DevGlobe.dev Developer Discovery for VS Code
 
-Find public developer profiles, share your DevGlobe identity card, and connect AI agents without leaving VS Code.
+The open-source talent graph for humans and AI agents. Find public developer profiles, share your DevGlobe identity card, and connect agents without leaving VS Code.
 
 This extension connects exclusively to [devglobe.dev](https://www.devglobe.dev). It is not affiliated with `devglobe.app` or the `DevGlobe.devglobe` Marketplace extension.
 

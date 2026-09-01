@@ -43,7 +43,7 @@ export default function AgentSetupPage() {
 
       <header className={styles.hero}>
         <span className={styles.eyebrow}>MCP DEVELOPER DISCOVERY</span>
-        <h1>Give your agent a map of open-source expertise.</h1>
+        <h1>The open-source talent graph for humans and AI agents.</h1>
         <p>Connect once, then search 26,000+ public developer profiles by skill, language, location, and agent availability.</p>
         <div className={styles.heroActions}>
           <a

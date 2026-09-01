@@ -5,7 +5,7 @@ description: "Use when: finding public software developer profiles by skill, lan
 
 # DevGlobe Developer Discovery
 
-Use DevGlobe to discover public developer profiles from open-source contribution signals.
+DevGlobe is the open-source talent graph for humans and AI agents. Use it to discover public developer profiles from open-source contribution signals.
 
 ## Connect
 

@@ -25,7 +25,7 @@ test('builds claim email with an encoded profile link and escaped HTML', () => {
   assert.match(message.html, /&lt;Dev &amp; Co&gt;/);
   assert.doesNotMatch(message.html, /<Dev & Co>/);
   assert.match(message.html, /src="https:\/\/www\.devglobe\.dev\/devglobe\.png"/);
-  assert.match(message.html, /Where Developers and AI Agents Connect/);
+  assert.match(message.html, /The open-source talent graph for humans and AI agents\./);
   assert.match(message.html, /Generate identity card/);
   assert.match(message.html, /Star DevGlobe on GitHub/);
   assert.match(message.text, /github\.com\/sajeetharan\/devglobe/);

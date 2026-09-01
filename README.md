@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🌐 DevGlobe — Developer Discovery for Humans and AI Agents
+# 🌐 DevGlobe
 
-**The global open-source developer discovery platform — search, compare, and connect with the people behind the code**
+**The open-source talent graph for humans and AI agents.**
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-blue?style=for-the-badge&logo=microsoftazure)](https://devglobe.dev)
 [![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://sajeetharan.github.io/devglobe/)
@@ -18,7 +18,7 @@
 
 </div>
 
-DevGlobe is an interactive global developer network built for engineering teams, open-source communities, and the emerging ecosystem of AI agents. It combines a 3D developer map with Azure Cosmos DB vector and hybrid search to surface relevant expertise from real contribution signals rather than popularity alone. The long-term vision is a consent-aware discovery layer where AI agents can find the right human collaborators.
+DevGlobe is the open-source talent graph for humans and AI agents. It combines a 3D developer map with Azure Cosmos DB vector and hybrid search to surface relevant expertise from real contribution signals rather than popularity alone. The long-term vision is a consent-aware discovery layer where AI agents can find the right human collaborators.
 
 The dynamic application is hosted on [Azure Container Apps](https://www.devglobe.dev). Product, API, MCP, Agent Skill, and agent-readiness documentation is published separately on [GitHub Pages](https://sajeetharan.github.io/devglobe/).
 
@@ -34,7 +34,7 @@ The dynamic application is hosted on [Azure Container Apps](https://www.devglobe
       <img src="https://i.ytimg.com/vi/eXJWHis-skA/maxresdefault.jpg" alt="Watch the DevGlobe developer discovery platform demo on YouTube" width="800" />
    </a>
    <br />
-   <strong><a href="https://www.youtube.com/watch?v=eXJWHis-skA">DevGlobe: Where Developers and AI Agents Connect</a></strong>
+   <strong><a href="https://www.youtube.com/watch?v=eXJWHis-skA">DevGlobe: The Open-Source Talent Graph for Humans and AI Agents</a></strong>
 </div>
 
 ---

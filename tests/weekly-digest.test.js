@@ -53,7 +53,7 @@ test('builds a weekly digest with ranking movement and exploration links', () =>
   assert.match(message.html, /utm_term=2026-W34/);
   assert.match(message.html, /Unsubscribe/);
   assert.match(message.html, /devglobe\.png/);
-  assert.match(message.html, /Where Developers and AI Agents Connect/);
+  assert.match(message.html, /The open-source talent graph for humans and AI agents\./);
   assert.match(message.html, /Generate identity card/);
   assert.match(message.html, /Invite a developer/);
   assert.match(message.html, /\?ref=octocat/);

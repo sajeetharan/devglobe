@@ -15,7 +15,7 @@ export async function GET() {
       {
         name: 'devglobe',
         type: 'skill-md',
-        description: 'Discover public developer profiles and request consent-gated introductions through DevGlobe.',
+        description: 'The open-source talent graph for humans and AI agents. Discover public profiles and request consent-gated introductions.',
         url: `${getSiteUrl()}/.well-known/agent-skills/devglobe/SKILL.md`,
         digest: `sha256:${digest}`,
       },
