@@ -3,7 +3,7 @@ import { getSiteUrl } from '../../../../lib/site.js';
 export function GET() {
   const siteUrl = getSiteUrl();
   return Response.json({
-    serverInfo: { name: 'devglobe', version: '1.5.0' },
+    serverInfo: { name: 'devglobe', version: '1.5.1' },
     description: 'The open-source talent graph for humans and AI agents. Search public profiles and request consent-gated introductions.',
     homepage: `${siteUrl}/agents`,
     repository: {
