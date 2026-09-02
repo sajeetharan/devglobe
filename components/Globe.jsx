@@ -284,6 +284,7 @@ const Globe = forwardRef(function Globe({
   onSelectCountry,
   onClearCountry,
   agentNetworkVisible = false,
+  onAgentNetworkVisibleChange,
   agentRelationshipGraph = { nodes: [], developers: [], links: [] },
   tooltipDisabled = false,
   trendingLogins = [],
@@ -900,8 +901,9 @@ const Globe = forwardRef(function Globe({
         </button>
         {!controlsCollapsed && (
           <>
-            {!hexModeActive && (
-              <div className="globe-color-mode">
+            <div className="globe-color-mode">
+              {!hexModeActive && (
+                <>
                 <div className="globe-color-mode__toggle" role="group" aria-label="Globe color mode">
                   <button
                     type="button"
@@ -933,8 +935,19 @@ const Globe = forwardRef(function Globe({
                     ))}
                   </select>
                 )}
-              </div>
-            )}
+                </>
+              )}
+              <button
+                type="button"
+                role="switch"
+                className={`globe-agent-toggle${agentNetworkVisible ? ' globe-agent-toggle--active' : ''}`}
+                aria-checked={agentNetworkVisible}
+                onClick={() => onAgentNetworkVisibleChange?.(!agentNetworkVisible)}
+              >
+                <span aria-hidden="true" />
+                Agents
+              </button>
+            </div>
             <div className="globe-legend">
               {hexModeActive ? (
                 <>
