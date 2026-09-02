@@ -11,6 +11,7 @@ export default function ReturnBriefing({ login, onOpenContributions, onOpenWeekl
   const [result, setResult] = useState(EMPTY_RESULT);
   const [status, setStatus] = useState('loading');
   const [expanded, setExpanded] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +64,8 @@ export default function ReturnBriefing({ login, onOpenContributions, onOpenWeekl
       ? 'Your return tools are still available.'
       : 'Follow developers to receive meaningful updates here.');
 
+  if (dismissed) return null;
+
   return (
     <aside className={`return-briefing${expanded ? ' return-briefing--expanded' : ''}`} aria-labelledby="return-briefing-title">
       <div className="return-briefing__heading">
@@ -70,7 +73,18 @@ export default function ReturnBriefing({ login, onOpenContributions, onOpenWeekl
           <span>YOUR DEVGlobe</span>
           <h2 id="return-briefing-title">Welcome back</h2>
         </div>
-        {result.unreadCount > 0 && <strong aria-label={`${result.unreadCount} unread followed updates`}>{result.unreadCount} new</strong>}
+        <div className="return-briefing__heading-actions">
+          {result.unreadCount > 0 && <strong aria-label={`${result.unreadCount} unread followed updates`}>{result.unreadCount} new</strong>}
+          <button
+            type="button"
+            className="return-briefing__close"
+            onClick={() => setDismissed(true)}
+            aria-label="Close welcome back"
+            title="Close welcome back"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
       </div>
 
       <p className="return-briefing__summary">{updateLabel}</p>
