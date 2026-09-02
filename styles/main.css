@@ -231,6 +231,129 @@ body {
   background: color-mix(in srgb, #f97316 22%, transparent);
 }
 
+.return-briefing {
+  position: fixed;
+  top: 112px;
+  right: 24px;
+  z-index: 96;
+  display: grid;
+  width: min(340px, calc(100vw - 48px));
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel-92);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-strong);
+}
+
+.return-briefing__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.return-briefing__heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.return-briefing__heading span {
+  color: #22d3ee;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.return-briefing__heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.return-briefing__heading strong {
+  padding: 3px 7px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #22d3ee 16%, transparent);
+  color: #22d3ee;
+  font-size: 10px;
+}
+
+.return-briefing__summary {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.return-briefing__updates {
+  display: grid;
+  max-height: 210px;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.return-briefing__updates li {
+  display: grid;
+  gap: 3px;
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.return-briefing__updates small {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.return-briefing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.return-briefing__actions button,
+.return-briefing__actions a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--overlay-subtle);
+  color: var(--text-primary);
+  font: 700 10px var(--font);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.return-briefing__actions button:hover,
+.return-briefing__actions a:hover {
+  border-color: #22d3ee;
+}
+
+@media (max-width: 1448px) {
+  .return-briefing {
+    top: auto;
+    bottom: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .return-briefing {
+    right: 12px;
+    bottom: 76px;
+    left: 12px;
+    width: auto;
+  }
+
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

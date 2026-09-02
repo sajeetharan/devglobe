@@ -332,3 +332,26 @@ test('accepts bounded agent onboarding events without prompt or identity data', 
     });
   }
 });
+
+test('accepts bounded return briefing telemetry without identity or feed content', () => {
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'return_briefing_viewed',
+    properties: { journey: 'personalized_return', login: 'octocat' },
+  }), {
+    eventName: 'return_briefing_viewed',
+    targetLogin: null,
+    properties: { journey: 'personalized_return' },
+  });
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'return_briefing_action_selected',
+    properties: { action: 'find_contribution', journey: 'personalized_return', summary: 'private feed content' },
+  }), {
+    eventName: 'return_briefing_action_selected',
+    targetLogin: null,
+    properties: { action: 'find_contribution', journey: 'personalized_return' },
+  });
+  assert.equal(normalizeEngagementEvent({
+    eventName: 'return_briefing_action_selected',
+    properties: { action: 'private-arbitrary-value' },
+  }).properties.action, 'unknown');
+});

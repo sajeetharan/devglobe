@@ -17,6 +17,7 @@ import ContributionOpportunitiesModal from '../components/ContributionOpportunit
 import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
+import ReturnBriefing from '../components/ReturnBriefing.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import { acquisitionAttributionProperties, socialAttributionProperties } from '../lib/share-attribution.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
@@ -67,6 +68,7 @@ export default function Home() {
   const [showContributions, setShowContributions] = useState(false);
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
+  const [userMenuRequest, setUserMenuRequest] = useState(0);
   const [agentProfileStatus, setAgentProfileStatus] = useState('idle');
   const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
   const [agentRelationshipGraph, setAgentRelationshipGraph] = useState({ nodes: [], developers: [], links: [] });
@@ -872,6 +874,7 @@ export default function Home() {
         onOpenProfile={handleOpenOwnProfile}
         onGenerateCard={handleGenerateOwnCard}
         completionVersion={completionVersion}
+        userMenuRequest={userMenuRequest}
         claimStatus={claimStatus}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={handleToggleSidebar}
@@ -880,7 +883,15 @@ export default function Home() {
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
-      <PlatformActivityBanner />
+      {user && claimStatus === 'claimed' ? (
+        <ReturnBriefing
+          login={user.login}
+          onOpenContributions={() => setShowContributions(true)}
+          onOpenWeeklyUpdates={() => setUserMenuRequest(request => request + 1)}
+        />
+      ) : (
+        <PlatformActivityBanner />
+      )}
       <SearchBar
         developers={developers}
         onResults={handleSearch}
