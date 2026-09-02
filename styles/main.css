@@ -1291,6 +1291,43 @@ body {
   color: #fff;
 }
 
+.globe-agent-toggle {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-panel-85);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.globe-agent-toggle > span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.globe-agent-toggle:hover,
+.globe-agent-toggle:focus-visible {
+  color: var(--text-primary);
+}
+
+.globe-agent-toggle--active {
+  border-color: #22d3ee;
+  color: #22d3ee;
+}
+
+.globe-agent-toggle--active > span {
+  background: #22d3ee;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.7);
+}
+
 .globe-color-mode__filter {
   background: var(--bg-panel-85);
   backdrop-filter: blur(8px);

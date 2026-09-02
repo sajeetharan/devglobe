@@ -68,7 +68,7 @@ export default function Home() {
   const [similarLogin, setSimilarLogin] = useState('');
   const [completionVersion, setCompletionVersion] = useState(0);
   const [agentProfileStatus, setAgentProfileStatus] = useState('idle');
-  const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(true);
+  const [agentGlobeLayerVisible, setAgentGlobeLayerVisible] = useState(false);
   const [agentRelationshipGraph, setAgentRelationshipGraph] = useState({ nodes: [], developers: [], links: [] });
   const [trending, setTrending] = useState(null);
   const [trendingError, setTrendingError] = useState('');
@@ -934,6 +934,7 @@ export default function Home() {
           onSelectCountry={handleSelectCountry}
           onClearCountry={handleClearCountry}
           agentNetworkVisible={agentGlobeLayerVisible}
+          onAgentNetworkVisibleChange={setAgentGlobeLayerVisible}
           agentRelationshipGraph={agentRelationshipGraph}
           tooltipDisabled={Boolean(selectedDev || compareDevs.length === 2)}
           trendingLogins={trending?.gainers?.slice(0, 10).map(entry => entry.login) || []}
