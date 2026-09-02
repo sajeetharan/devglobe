@@ -6,7 +6,7 @@ import { developerInviteUrl } from '../lib/share-attribution.js';
 import ProfileCompletionChecklist from './ProfileCompletionChecklist.jsx';
 import ProfileInsights from './ProfileInsights.jsx';
 
-export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, claimStatus }) {
+export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, openRequest = 0, claimStatus }) {
   const [open, setOpen] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState('idle');
   const [digestPreference, setDigestPreference] = useState(null);
@@ -23,6 +23,10 @@ export default function UserMenu({ user, onLogout, onClaim, onEditAiProfile, onO
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (openRequest > 0) setOpen(true);
+  }, [openRequest]);
 
   useEffect(() => {
     const status = new URLSearchParams(window.location.search).get('email_verification');
