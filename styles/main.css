@@ -254,9 +254,15 @@ body {
   gap: 12px;
 }
 
-.return-briefing__heading > div {
+.return-briefing__heading > div:first-child {
   display: grid;
   gap: 2px;
+}
+
+.return-briefing__heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .return-briefing__heading span {
@@ -277,6 +283,31 @@ body {
   background: color-mix(in srgb, #22d3ee 16%, transparent);
   color: #22d3ee;
   font-size: 10px;
+}
+
+.return-briefing__close {
+  display: inline-grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font: 400 24px/1 var(--font);
+  cursor: pointer;
+}
+
+.return-briefing__close:hover {
+  background: var(--overlay-subtle);
+  color: var(--text-primary);
+}
+
+.return-briefing__close:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
 }
 
 .return-briefing__summary {
