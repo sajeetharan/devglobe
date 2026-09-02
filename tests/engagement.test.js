@@ -355,3 +355,13 @@ test('accepts bounded return briefing telemetry without identity or feed content
     properties: { action: 'private-arbitrary-value' },
   }).properties.action, 'unknown');
 });
+
+test('accepts bounded Discord and GitHub Discussions acquisition sources', () => {
+  for (const source of ['discord', 'github_discussions']) {
+    const event = normalizeEngagementEvent({
+      eventName: 'site_visited',
+      properties: { source, channel: 'community', campaign: 'developer_spotlight' },
+    });
+    assert.deepEqual(event.properties, { source, channel: 'community', campaign: 'developer_spotlight' });
+  }
+});

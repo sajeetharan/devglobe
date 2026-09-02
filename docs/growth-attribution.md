@@ -8,7 +8,7 @@ Every distributed URL uses lowercase values from this bounded vocabulary. Do not
 
 | Field | Allowed values |
 | --- | --- |
-| `utm_source` | `copy_link`, `facebook`, `linkedin`, `manual_outreach`, `native_share`, `reddit`, `share_page`, `weekly_digest`, `weekly_spotlight`, `x` |
+| `utm_source` | `copy_link`, `discord`, `facebook`, `github_discussions`, `linkedin`, `manual_outreach`, `native_share`, `reddit`, `share_page`, `weekly_digest`, `weekly_spotlight`, `x` |
 | `utm_medium` | `community`, `email`, `referral`, `social` |
 | `utm_campaign` | `agents`, `community`, `country_leaderboard`, `developer_activation`, `developer_invite`, `developer_spotlight`, `identity_card`, `india_top_50`, `product`, `rank_movement`, `weekly_impact` |
 | `utm_content` | A public GitHub login for profile stories, or `contribution_opportunity`, `introduction_request`, or `rank_movement` for the weekly digest |
@@ -58,3 +58,14 @@ Measure the seven-day shared-link landing-to-profile conversion as unique sessio
 Weekly impact emails use `utm_source=weekly_digest`, `utm_medium=email`, and `utm_campaign=weekly_impact`. An arrival records the privacy-safe `weekly_digest_returned` event with only the update type, journey, and source. The product adoption workbook compares seven-day return sessions with provider-accepted messages and reports progress toward the 20% return-rate target.
 
 Only contacts with a verified email and explicit weekly-update consent are eligible. A subscriber's first run records a private comparison baseline without sending email. The job suppresses generic email when an established subscriber has no rank movement, fresh contribution opportunity, or pending introduction request. Delivery logs contain aggregate counts and provider outcomes only; they exclude logins, email addresses, message content, and provider response bodies.
+
+## Community campaigns
+
+Generate a review-only five-channel bundle for a claimed developer:
+
+```powershell
+npm run community-campaign -- --login=octocat --type=developer_spotlight --output=artifacts/community-octocat.json
+npm run community-campaign -- --login=octocat --type=country_leaderboard --output=artifacts/community-country-octocat.json
+```
+
+Each bundle contains tailored copy and one bounded URL for LinkedIn, X, Reddit, Discord, and GitHub Discussions. An operator must review and publish every asset manually. The generator reads public profile/ranking fields only, requires a claimed profile, and never stores contact details in output. The product adoption workbook reports arrivals, profile opens, claims, and conversion rates by source, channel, and campaign; cohorts below three arrival sessions are suppressed.
