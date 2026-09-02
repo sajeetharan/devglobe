@@ -205,6 +205,23 @@
       "name": "acquisition"
     },
     {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents | where timestamp >= ago(30d) and name in ('site_visited','referral_profile_opened','profile_viewed','claim_completed') | extend Source=tostring(customDimensions.source), Channel=tostring(customDimensions.channel), Campaign=tostring(customDimensions.campaign) | where Source in ('linkedin','x','reddit','discord','github_discussions') and Campaign in ('developer_spotlight','country_leaderboard') | summarize Arrivals=dcountif(session_Id,name=='site_visited'), ProfileOpens=dcountif(session_Id,name in ('referral_profile_opened','profile_viewed')), Claims=dcountif(session_Id,name=='claim_completed') by Source,Channel,Campaign | where Arrivals>=3 | extend ProfileOpenRate=round(100.0*ProfileOpens/Arrivals,1), ClaimRate=round(100.0*Claims/Arrivals,1) | order by Arrivals desc",
+        "size": 0,
+        "title": "Community campaign performance by channel",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "40",
+      "name": "community-campaign-performance"
+    },
+    {
       "type": 1,
       "content": {
         "json": "## Conversion funnels\nStages are ordered within the same Application Insights session. Counts are directional product signals, not identity-level attribution."

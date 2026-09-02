@@ -195,3 +195,18 @@ test('normalizes canonical developer logins', () => {
   assert.equal(normalizeDeveloperLogin('OctoCat'), 'octocat');
   assert.throws(() => normalizeDeveloperLogin('../private'), /valid developer login/);
 });
+
+test('uses bounded community attribution for Discord and GitHub Discussions stories', () => {
+  for (const channel of ['discord', 'github_discussions']) {
+    const story = buildDeveloperStory({
+      siteUrl: 'https://www.devglobe.dev',
+      developer: { login: 'octocat', name: 'Octo Cat', topLanguage: 'TypeScript', globalRank: 12 },
+      type: DEVELOPER_STORY_TYPES.SPOTLIGHT,
+      channel,
+    });
+    const url = new URL(story.url);
+    assert.equal(url.searchParams.get('utm_source'), channel);
+    assert.equal(url.searchParams.get('utm_medium'), 'community');
+    assert.equal(url.searchParams.get('utm_campaign'), 'developer_spotlight');
+  }
+});
