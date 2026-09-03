@@ -33,6 +33,8 @@ The Container App and Function App require their existing Cosmos, GitHub, and Az
 
 The `repository-agent-ingest` timer uses the Function App's `GITHUB_TOKEN` to scan a bounded batch of stale developer profiles. It examines filenames from up to eight recent public, non-fork, non-archived owner repositories and stores the resulting tool IDs and evidence on the existing developer document. It never reads or stores repository file contents. Each profile is refreshed after seven days, and GitHub rate-limit responses stop the current batch.
 
+The `maintainer-outreach` timer creates up to ten deduplicated review-only drafts each day through the protected Container App endpoint. It never sends outreach. Operators explicitly approve and record manual sends with `npm run outreach:review`. The `maintainer-outreach-report` timer emails aggregate weekly outcomes to `GROWTH_REPORT_EMAIL`; its Function App settings are `MAINTAINER_OUTREACH_URL`, `MAINTAINER_OUTREACH_REPORT_URL`, and the shared `CRON_SECRET`.
+
 Repository evidence is observational. It does not imply that a developer personally uses a tool or consents to agent contact; only a public, self-declared AI profile controls contact availability.
 
 ## Frontend configuration
