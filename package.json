@@ -33,10 +33,13 @@
     "setup-impact-history-container": "node scripts/setup-impact-history-container.js",
     "setup-introductions-container": "node scripts/setup-introductions-container.js",
     "setup-contacts-container": "node scripts/setup-contacts-container.js",
+    "setup-maintainer-outreach-container": "node scripts/setup-maintainer-outreach-container.js",
     "create-agent-key": "node scripts/create-agent-key.js",
     "review-nominations": "node scripts/review-nominations.js",
     "send-nomination-email": "node scripts/send-nomination-approval-email.js",
     "activation-campaign": "node scripts/generate-activation-campaign.js",
+    "outreach:queue": "node scripts/run-maintainer-outreach.js",
+    "outreach:review": "node scripts/review-maintainer-outreach.js",
     "seed-emulator": "node scripts/seed-emulator.js"
   },
   "dependencies": {
