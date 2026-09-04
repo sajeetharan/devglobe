@@ -421,6 +421,17 @@ body {
   box-shadow: none;
 }
 
+.btn--repository {
+  border: 1px solid color-mix(in srgb, #68d391 52%, var(--border));
+  background: color-mix(in srgb, #68d391 10%, transparent);
+  color: var(--text-primary);
+}
+
+.btn--repository:hover {
+  background: color-mix(in srgb, #68d391 18%, transparent);
+  border-color: #68d391;
+}
+
 .btn--hacktoberfest {
   border: 1px solid color-mix(in srgb, #f97316 55%, var(--border));
   background: color-mix(in srgb, #f97316 12%, transparent);

@@ -29,6 +29,12 @@ export function buildSitemapEntries(profileLogins, lastModified = new Date()) {
       priority: 0.9,
     },
     {
+      url: `${siteUrl}/repository-match`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: `${siteUrl}/countries`,
       lastModified,
       changeFrequency: 'daily',

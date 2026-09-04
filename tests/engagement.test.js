@@ -333,6 +333,24 @@ test('accepts bounded agent onboarding events without prompt or identity data', 
   }
 });
 
+test('accepts repository report events without storing repository names or prompts', () => {
+  for (const eventName of ['repository_match_generated', 'repository_match_mcp_prompt_copied', 'repository_match_opened', 'repository_match_profile_opened', 'repository_match_shared', 'repository_match_submitted']) {
+    assert.deepEqual(normalizeEngagementEvent({
+      eventName,
+      properties: {
+        journey: 'repository_match_report',
+        channel: 'copy_link',
+        repository: 'private/repository',
+        prompt: 'private prompt text',
+      },
+    }), {
+      eventName,
+      targetLogin: null,
+      properties: { journey: 'repository_match_report', channel: 'copy_link' },
+    });
+  }
+});
+
 test('accepts bounded return briefing telemetry without identity or feed content', () => {
   assert.deepEqual(normalizeEngagementEvent({
     eventName: 'return_briefing_viewed',
