@@ -850,6 +850,7 @@ export default function Home() {
           consent-gated: the developer decides whether to accept before any contact can proceed.
         </p>
         <nav aria-label="Agent and developer resources">
+          <a href="/repository-match">Repository match report</a>
           <a href="/agents">Agent setup</a>
           <a href="/docs/mcp-server">MCP documentation</a>
           <a href="/openapi.json">OpenAPI description</a>
