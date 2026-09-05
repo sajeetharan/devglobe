@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --bg-primary: #0a0e17;
   --bg-secondary: #111827;
   --bg-card: #1a2234;
@@ -14,9 +15,20 @@
   --mission-link: #22d3ee;
   --mission-match: #4ade80;
   --border: #1e293b;
+  --focus-ring: #7dd3fc;
+  --danger: #f87171;
+  --radius-sm: 4px;
   --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  --control-height: 40px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font: 'Manrope', sans-serif;
 
   /* Panel/overlay backgrounds (previously hardcoded rgba values) */
   --bg-header: rgba(10, 14, 23, 0.85);
@@ -34,6 +46,7 @@
 
 /* Light theme overrides */
 :root[data-theme='light'] {
+  color-scheme: light;
   --bg-primary: #f4f6fb;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
@@ -44,7 +57,9 @@
   --mission-accent: #9a3412;
   --mission-link: #0e7490;
   --mission-match: #15803d;
-  --border: #dde3ee;
+  --border: #d8e0ec;
+  --focus-ring: #0369a1;
+  --danger: #b91c1c;
   --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
 
   --bg-header: rgba(255, 255, 255, 0.85);
@@ -64,6 +79,39 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  background: var(--bg-primary);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--accent-blue) 20%, transparent);
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+:where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent-blue) 35%, transparent);
+  color: var(--text-primary);
 }
 
 body {
@@ -100,6 +148,12 @@ body {
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .header__logo {
@@ -113,10 +167,13 @@ body {
   font-size: 18px;
   font-weight: 700;
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
+  letter-spacing: 0;
   white-space: nowrap;
+}
+
+.header__brand:hover .header__title {
+  color: var(--focus-ring);
 }
 
 .header__actions {
@@ -390,9 +447,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 32px;
+  min-height: var(--control-height);
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 12px;
   font-family: var(--font);
   font-weight: 500;
@@ -400,7 +457,7 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
   white-space: nowrap;
 }
 
@@ -433,8 +490,8 @@ body {
 }
 
 .btn--tour {
-  width: 32px;
-  height: 32px;
+  width: var(--control-height);
+  height: var(--control-height);
   padding: 0;
   background: var(--overlay-subtle);
   border: 1px solid var(--border);
@@ -500,8 +557,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--control-height);
+  height: var(--control-height);
   padding: 0;
   border-radius: 8px;
   background: var(--overlay-subtle);
@@ -526,10 +583,10 @@ body {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--control-height);
+  height: var(--control-height);
   padding: 0;
-  border-radius: 50%;
+  border-radius: var(--radius);
   background: var(--overlay-subtle);
   border: 1px solid var(--border);
   color: var(--text-secondary);
