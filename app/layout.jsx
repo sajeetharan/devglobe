@@ -1,4 +1,8 @@
 import '../styles/main.css';
+import '@fontsource/manrope/400.css';
+import '@fontsource/manrope/500.css';
+import '@fontsource/manrope/600.css';
+import '@fontsource/manrope/700.css';
 import { getSiteUrl } from '../lib/site.js';
 import WebMcpProvider from '../components/WebMcpProvider.jsx';
 import AppInsights from '../components/AppInsights.jsx';
@@ -127,13 +131,19 @@ export const metadata = {
   },
 };
 
+export const viewport = {
+  colorScheme: 'dark light',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0a0e17' },
+    { media: '(prefers-color-scheme: light)', color: '#f4f6fb' },
+  ],
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
         <link rel="icon" href="/devglobe.png" type="image/png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <script
           // Runs before paint to avoid a flash of the wrong theme on load.
           dangerouslySetInnerHTML={{

@@ -9,10 +9,10 @@ const marketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=devg
 export default function Header({ onHome, theme, onToggleTheme, user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, userMenuRequest, claimStatus, sidebarOpen, onToggleSidebar, activityOpen, onOpenActivity, onAddMe, onStartTour }) {
   return (
     <header className="header">
-      <div className="header__brand" onClick={onHome} style={{ cursor: 'pointer' }}>
-        <img src="/devglobe.png" alt="DevGlobe" className="header__logo" />
+      <button type="button" className="header__brand" onClick={onHome} aria-label="Go to DevGlobe home">
+        <img src="/devglobe.png" alt="" width="36" height="36" className="header__logo" />
         <h1 className="header__title">DevGlobe</h1>
-      </div>
+      </button>
       <div className="header__actions">
         <button type="button" onClick={onStartTour} className="btn btn--tour" aria-label="Start quick tour" title="Quick tour">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -54,7 +54,7 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
           aria-expanded={sidebarOpen}
           title={sidebarOpen ? 'Close leaderboard' : 'Open leaderboard'}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="8" y1="6" x2="21" y2="6" />
             <line x1="8" y1="12" x2="21" y2="12" />
             <line x1="8" y1="18" x2="21" y2="18" />
@@ -71,11 +71,11 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
           title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
         >
           {theme === 'light' ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="5" />
               <line x1="12" y1="1" x2="12" y2="3" />
               <line x1="12" y1="21" x2="12" y2="23" />
