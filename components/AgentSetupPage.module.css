@@ -1,14 +1,14 @@
 .page {
-  --agent-ink: #132019;
-  --agent-muted: #58665e;
-  --agent-line: #ccd8d0;
-  --agent-green: #087a4b;
+  --agent-ink: var(--text-primary);
+  --agent-muted: var(--text-secondary);
+  --agent-line: var(--border);
+  --agent-green: var(--accent-blue);
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    linear-gradient(rgba(19, 32, 25, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(19, 32, 25, 0.045) 1px, transparent 1px),
-    #f4f7f4;
+    linear-gradient(color-mix(in srgb, var(--accent-blue) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-blue) 4%, transparent) 1px, transparent 1px),
+    var(--bg-primary);
   background-size: 32px 32px;
   color: var(--agent-ink);
   font-family: var(--font);
@@ -45,6 +45,7 @@
 .brand img { width: 34px; height: 34px; object-fit: contain; }
 .navLinks { display: flex; gap: 24px; }
 .navLinks a, .resources a { color: var(--agent-ink); font-size: 13px; font-weight: 700; }
+.page a:focus-visible, .page button:focus-visible { outline-color: var(--focus-ring); outline-offset: 3px; }
 
 .hero {
   padding: 92px 0 72px;
@@ -105,7 +106,7 @@
   margin-top: 42px;
   padding: 14px 16px;
   border: 1px solid var(--agent-line);
-  background: #fff;
+  background: var(--bg-card);
 }
 
 .endpoint span { color: var(--agent-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -130,7 +131,7 @@
   display: inline-flex;
   padding: 4px;
   border: 1px solid var(--agent-line);
-  background: #e7ede9;
+  background: var(--bg-secondary);
 }
 
 .clientPicker button {
@@ -145,18 +146,18 @@
   font-weight: 700;
 }
 
-.clientPicker .activeClient { background: #fff; color: var(--agent-ink); box-shadow: 0 1px 4px rgba(19, 32, 25, 0.12); }
-.configPanel { max-width: 820px; margin-top: 18px; border: 1px solid #26362d; background: #101a14; color: #d9ebe0; }
-.configMeta { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #304239; color: #91a69a; font-size: 12px; }
-.configMeta button { color: #6ce0a5; }
+.clientPicker .activeClient { background: var(--bg-card); color: var(--agent-ink); box-shadow: var(--shadow); }
+.configPanel { max-width: 820px; margin-top: 18px; border: 1px solid var(--agent-line); background: var(--bg-secondary); color: var(--agent-ink); }
+.configMeta { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--agent-line); color: var(--agent-muted); font-size: 12px; }
+.configMeta button { color: var(--mission-link); }
 .configPanel pre { min-height: 180px; margin: 0; overflow-x: auto; padding: 22px; font-size: 14px; line-height: 1.65; }
 .setupAction { display: flex; max-width: 820px; align-items: center; gap: 16px; margin-top: 14px; }
 .setupAction a, .setupAction button { display: inline-flex; min-height: 44px; align-items: center; padding: 0 18px; border: 0; background: var(--agent-green); color: #fff; cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; }
 .setupAction span { color: var(--agent-muted); font-size: 13px; line-height: 1.45; }
-.copyError { color: #b42318; font-size: 13px; }
+.copyError { color: var(--danger); font-size: 13px; }
 
 .workflows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--agent-line); border-left: 1px solid var(--agent-line); }
-.workflows article { min-height: 170px; padding: 24px; border-right: 1px solid var(--agent-line); border-bottom: 1px solid var(--agent-line); background: rgba(255, 255, 255, 0.62); }
+.workflows article { min-height: 170px; padding: 24px; border-right: 1px solid var(--agent-line); border-bottom: 1px solid var(--agent-line); background: var(--bg-panel-70); }
 .workflows article > span { color: var(--agent-green); font-family: monospace; font-size: 11px; }
 .workflows p { min-height: 64px; margin: 18px 0; font-size: 16px; line-height: 1.5; }
 .workflows button { padding: 0; }

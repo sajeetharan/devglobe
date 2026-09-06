@@ -26,6 +26,15 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
             <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm-2 5c-2.97 0-6 1.49-6 3v1h12v-1c0-1.51-3.03-3-6-3zm-4.9 3c.4-1 2.2-2 4.9-2s4.5 1 4.9 2H1.1zM12.5 4h-1a.5.5 0 0 0 0 1h1v1a.5.5 0 0 0 1 0V5h1a.5.5 0 0 0 0-1h-1V3a.5.5 0 0 0-1 0v1z"></path>
           </svg><span className="btn__label">Add Me To Globe</span>
         </button>
+        <a href="/repository-match" className="btn btn--repository" aria-label="Build a repository match report" title="Repository match report">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 3v12M18 9v12" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="6" r="3" />
+            <path d="M9 18h3a6 6 0 0 0 6-6V9" />
+          </svg>
+          <span className="btn__label">Repo Match</span>
+        </a>
         <a href="/hacktoberfest" className="btn btn--hacktoberfest" aria-label="Open Hacktoberfest 2026 Matchmaker" title="Hacktoberfest 2026 Matchmaker">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="3" y="5" width="18" height="16" rx="2" />

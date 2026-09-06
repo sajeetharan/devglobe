@@ -8,6 +8,7 @@ test('includes every existing indexable acquisition route', () => {
 
   assert.ok(paths.includes('/countries'));
   assert.ok(paths.includes('/leaderboard'));
+  assert.ok(paths.includes('/repository-match'));
   assert.ok(paths.includes('/developer/octocat'));
   assert.ok(!paths.includes('/share/octocat'));
   assert.ok(paths.includes('/developer/octo%20cat'));

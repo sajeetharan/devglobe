@@ -24,6 +24,8 @@ Use the semantic custom properties in `styles/main.css`. Do not introduce raw co
 
 Color must not be the only indicator of status. Maintain at least 4.5:1 contrast for body text and 3:1 for large text and controls.
 
+All navigation destinations use the same canvas, surfaces, text, borders, focus ring, and primary blue action. A feature may use one semantic accent for its subject, such as Hacktoberfest orange, but that accent must not replace the shared page palette.
+
 ### Typography
 
 - Use Manrope for product UI, headings, and body copy.
