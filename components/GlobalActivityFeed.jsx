@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import TodayMission from './TodayMission.jsx';
 import { useGlobalActivityFeed } from './useGlobalActivityFeed.js';
 
@@ -9,6 +9,15 @@ const ACTIVITY_SOURCES = [
   { id: 'devglobe', label: 'DevGlobe Activity' },
   { id: 'github', label: 'GitHub Activity' },
 ];
+
+const ACTIVITY_VIEWS = ['today', 'completed', 'community'];
+const ACTIVITY_VIEW_SET = new Set(ACTIVITY_VIEWS);
+
+function activityViewFromUrl() {
+  if (typeof window === 'undefined') return 'today';
+  const view = new URL(window.location.href).searchParams.get('activity');
+  return ACTIVITY_VIEW_SET.has(view) ? view : 'today';
+}
 
 function activitySource(activity) {
   return activity.documentType === 'platform-activity' || activity.documentType === 'fallback-activity'
@@ -26,7 +35,10 @@ function relativeTime(timestamp) {
 }
 
 export default function GlobalActivityFeed({ active, onOpenContributions, onCreateCard }) {
+  const [selectedView, setSelectedView] = useState('today');
+  const [completedCount, setCompletedCount] = useState(null);
   const [selectedSource, setSelectedSource] = useState('devglobe');
+  const viewTabsRef = useRef([]);
   const {
     activities,
     loading,
@@ -48,15 +60,61 @@ export default function GlobalActivityFeed({ active, onOpenContributions, onCrea
   );
   const visibleNewCount = visibleActivities.filter(activity => newActivityIds.has(activity.id)).length;
 
+  useEffect(() => {
+    const syncView = () => setSelectedView(activityViewFromUrl());
+    syncView();
+    window.addEventListener('popstate', syncView);
+    return () => window.removeEventListener('popstate', syncView);
+  }, []);
+
+  const selectView = useCallback(view => {
+    setSelectedView(view);
+    const url = new URL(window.location.href);
+    url.searchParams.set('activity', view);
+    window.history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  }, []);
+
+  const handleViewKeyDown = useCallback((event, index) => {
+    let nextIndex;
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % ACTIVITY_VIEWS.length;
+    else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + ACTIVITY_VIEWS.length) % ACTIVITY_VIEWS.length;
+    else if (event.key === 'Home') nextIndex = 0;
+    else if (event.key === 'End') nextIndex = ACTIVITY_VIEWS.length - 1;
+    else return;
+    event.preventDefault();
+    const nextView = ACTIVITY_VIEWS[nextIndex];
+    selectView(nextView);
+    viewTabsRef.current[nextIndex]?.focus();
+  }, [selectView]);
+
   return (
     <div className="global-activity">
-      <TodayMission active={active} onOpenContributions={onOpenContributions} />
-      <div className="global-activity__sources" role="tablist" aria-label="Activity source">
+      <div className="global-activity__views" role="tablist" aria-label="Activity sections">
+        <button ref={node => { viewTabsRef.current[0] = node; }} id="activity-tab-today" type="button" role="tab" tabIndex={selectedView === 'today' ? 0 : -1} aria-selected={selectedView === 'today'} aria-controls="activity-today" className={selectedView === 'today' ? 'global-activity__view global-activity__view--active' : 'global-activity__view'} onClick={() => selectView('today')} onKeyDown={event => handleViewKeyDown(event, 0)}>Today</button>
+        <button ref={node => { viewTabsRef.current[1] = node; }} id="activity-tab-completed" type="button" role="tab" tabIndex={selectedView === 'completed' ? 0 : -1} aria-selected={selectedView === 'completed'} aria-controls="activity-completed" className={selectedView === 'completed' ? 'global-activity__view global-activity__view--active' : 'global-activity__view'} onClick={() => selectView('completed')} onKeyDown={event => handleViewKeyDown(event, 1)}>
+          <span>Completed</span>
+          {completedCount !== null && <strong>{completedCount}</strong>}
+        </button>
+        <button ref={node => { viewTabsRef.current[2] = node; }} id="activity-tab-community" type="button" role="tab" tabIndex={selectedView === 'community' ? 0 : -1} aria-selected={selectedView === 'community'} aria-controls="activity-community" className={selectedView === 'community' ? 'global-activity__view global-activity__view--active' : 'global-activity__view'} onClick={() => selectView('community')} onKeyDown={event => handleViewKeyDown(event, 2)}>Community</button>
+      </div>
+
+      {selectedView !== 'community' && (
+        <div id={`activity-${selectedView}`} role="tabpanel" aria-labelledby={`activity-tab-${selectedView}`} className="global-activity__panel">
+          <TodayMission
+            active={active}
+            view={selectedView}
+            onOpenContributions={onOpenContributions}
+            onCompletedCountChange={setCompletedCount}
+          />
+        </div>
+      )}
+
+      {selectedView === 'community' && <div id="activity-community" role="tabpanel" aria-labelledby="activity-tab-community" className="global-activity__community">
+        <div className="global-activity__sources" role="group" aria-label="Community activity source">
         {ACTIVITY_SOURCES.map(source => (
           <button
             type="button"
-            role="tab"
-            aria-selected={selectedSource === source.id}
+            aria-pressed={selectedSource === source.id}
             className={selectedSource === source.id ? 'global-activity__source global-activity__source--active' : 'global-activity__source'}
             onClick={() => setSelectedSource(source.id)}
             key={source.id}
@@ -73,7 +131,7 @@ export default function GlobalActivityFeed({ active, onOpenContributions, onCrea
         <span>{selectedSource === 'github' ? 'Best-effort GitHub events' : 'Activity on DevGlobe'}</span>
       </div>
 
-      {loading && <p className="global-activity__message">Loading activities...</p>}
+      {loading && <p className="global-activity__message" role="status">Loading activities…</p>}
       {!loading && error && (
         <div className="global-activity__message">
           <span>{error}</span>
@@ -119,7 +177,7 @@ export default function GlobalActivityFeed({ active, onOpenContributions, onCrea
 
       {nextCursor && (
         <button className="global-activity__more" type="button" onClick={loadMore} disabled={loadingMore}>
-          {loadingMore ? 'Loading...' : 'Load earlier activity'}
+          {loadingMore ? 'Loading…' : 'Load earlier activity'}
         </button>
       )}
       {lastUpdated && (
@@ -127,6 +185,7 @@ export default function GlobalActivityFeed({ active, onOpenContributions, onCrea
           Checked {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </time>
       )}
+      </div>}
     </div>
   );
 }
