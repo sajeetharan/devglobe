@@ -25,7 +25,7 @@ function relativeTime(timestamp) {
   return `${hours}h ago`;
 }
 
-export default function GlobalActivityFeed({ active, onOpenContributions }) {
+export default function GlobalActivityFeed({ active, onOpenContributions, onCreateCard }) {
   const [selectedSource, setSelectedSource] = useState('devglobe');
   const {
     activities,
@@ -100,7 +100,7 @@ export default function GlobalActivityFeed({ active, onOpenContributions }) {
                 <span>{activity.description}</span>
                 <span className="global-activity__actions">
                   <Link href={activity.url}>View card</Link>
-                  <Link href="/?utm_source=activity_feed&utm_medium=referral&utm_campaign=identity_card">Create yours</Link>
+                  <button type="button" onClick={onCreateCard}>Create yours</button>
                 </span>
               </div>
             ) : selectedSource === 'github' ? (

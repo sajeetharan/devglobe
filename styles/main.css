@@ -4269,14 +4269,22 @@ body {
   margin-top: 5px;
 }
 
-.global-activity__actions a {
+.global-activity__actions a,
+.global-activity__actions button {
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #22d3ee;
+  cursor: pointer;
+  font: inherit;
   font-weight: 700;
   text-decoration: none;
 }
 
-.global-activity__actions a:hover { text-decoration: underline; }
-.global-activity__actions a:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+.global-activity__actions a:hover,
+.global-activity__actions button:hover { text-decoration: underline; }
+.global-activity__actions a:focus-visible,
+.global-activity__actions button:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
 
 .global-activity__item time {
   align-self: center;
