@@ -491,11 +491,11 @@ export default function Home() {
     setFiltered(rankedResults);
   }, [developers]);
 
-  const recordPlatformActivity = useCallback((type, targetLogin) => {
+  const recordPlatformActivity = useCallback((type, targetLogin, targetName) => {
     fetch('/api/activities/platform', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, targetLogin }),
+      body: JSON.stringify({ type, targetLogin, targetName }),
     }).catch(() => {});
   }, []);
 
@@ -952,7 +952,7 @@ export default function Home() {
             key={`${selectedDev.login}-${cardRequest}`}
             dev={selectedDev}
             onClose={handleCloseDetail}
-            onCardGenerated={targetLogin => recordPlatformActivity('generated_card', targetLogin)}
+            onCardGenerated={(targetLogin, targetName) => recordPlatformActivity('generated_card', targetLogin, targetName)}
             onReadmeGenerated={targetLogin => recordPlatformActivity('generated_readme', targetLogin)}
             onOpenSimilar={handleOpenSimilar}
             onOpenContributions={() => setShowContributions(true)}

@@ -95,7 +95,15 @@ export default function GlobalActivityFeed({ active, onOpenContributions }) {
               <img src={activity.avatarUrl || `https://github.com/${encodeURIComponent(activity.login)}.png?size=64`} alt="" loading="lazy" />
               <span>@{activity.login}</span>
             </Link>
-            {selectedSource === 'github' ? (
+            {activity.type === 'generated_card' ? (
+              <div className="global-activity__event global-activity__event--card">
+                <span>{activity.description}</span>
+                <span className="global-activity__actions">
+                  <Link href={activity.url}>View card</Link>
+                  <Link href="/?utm_source=activity_feed&utm_medium=referral&utm_campaign=identity_card">Create yours</Link>
+                </span>
+              </div>
+            ) : selectedSource === 'github' ? (
               <a className="global-activity__event" href={activity.url} target="_blank" rel="noopener noreferrer">
                 {activity.description}
               </a>

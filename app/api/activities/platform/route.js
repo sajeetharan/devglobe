@@ -22,6 +22,7 @@ export async function POST(request) {
       login: session.login,
       avatarUrl: session?.avatarUrl,
       targetLogin: body.targetLogin,
+      targetName: body.targetName,
     });
     await saveActivities([activity]);
     return NextResponse.json({ activity }, { status: 201 });

@@ -39,7 +39,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
     if (cardGenerationRecordedRef.current) return;
     cardGenerationRecordedRef.current = true;
     track('card_generated', { login: dev.login });
-    onCardGenerated?.(dev.login);
+    onCardGenerated?.(dev.login, dev.name);
   };
 
   const handleGenerateCard = () => {
