@@ -40,12 +40,15 @@ test('creates platform card activity for the actor and target', () => {
     type: 'generated_card',
     login: 'octocat',
     targetLogin: 'hubot',
+    targetName: 'Hubot',
     now: new Date('2026-08-13T12:00:00Z'),
   });
 
   assert.equal(activity.login, 'octocat');
-  assert.equal(activity.description, "revealed @hubot's open-source identity with a DevGlobe card - try it yourself");
-  assert.equal(activity.url, '/developer/hubot');
+  assert.equal(activity.description, 'created a DevGlobe card for Hubot (@hubot)');
+  assert.equal(activity.targetLogin, 'hubot');
+  assert.equal(activity.targetName, 'Hubot');
+  assert.equal(activity.url, '/share/hubot');
   assert.equal(activity.documentType, 'platform-activity');
 });
 
@@ -56,13 +59,15 @@ test('invites viewers to create a card from self-generated activity', () => {
     now: new Date('2026-08-13T12:00:00Z'),
   });
 
-  assert.equal(activity.description, 'revealed their open-source identity with a DevGlobe card - create yours');
-  assert.equal(activity.url, '/developer/octocat');
+  assert.equal(activity.description, 'created a DevGlobe card for @octocat');
+  assert.equal(activity.targetName, '@octocat');
+  assert.equal(activity.url, '/share/octocat');
 });
 
 test('refreshes legacy card activity wording for the live feed', () => {
   const selfActivity = normalizePlatformActivity({
     type: 'generated_card',
+    login: 'octocat',
     description: 'had their developer card generated',
   });
   const targetActivity = normalizePlatformActivity({
@@ -70,8 +75,10 @@ test('refreshes legacy card activity wording for the live feed', () => {
     description: "generated @hubot's developer card",
   });
 
-  assert.equal(selfActivity.description, 'revealed their open-source identity with a DevGlobe card - create yours');
-  assert.equal(targetActivity.description, "revealed @hubot's open-source identity with a DevGlobe card - try it yourself");
+  assert.equal(selfActivity.description, 'created a DevGlobe card for @octocat');
+  assert.equal(selfActivity.url, '/share/octocat');
+  assert.equal(targetActivity.description, 'created a DevGlobe card for @hubot');
+  assert.equal(targetActivity.url, '/share/hubot');
 });
 
 test('creates platform README activity for the actor and target', () => {
@@ -112,4 +119,5 @@ test('creates stable fallback activities within an hourly window', () => {
 
   assert.deepEqual(first, second);
   assert.ok(first.every(activity => activity.fallback));
+  assert.ok(first.filter(activity => activity.type === 'generated_card').every(activity => activity.url.startsWith('/share/')));
 });

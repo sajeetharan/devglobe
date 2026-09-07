@@ -4260,6 +4260,24 @@ body {
 
 .global-activity__event:hover { color: #22d3ee; }
 
+.global-activity__event--card:hover { color: var(--text-secondary); }
+
+.global-activity__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 5px;
+}
+
+.global-activity__actions a {
+  color: #22d3ee;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.global-activity__actions a:hover { text-decoration: underline; }
+.global-activity__actions a:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
 .global-activity__item time {
   align-self: center;
   color: var(--text-muted);
