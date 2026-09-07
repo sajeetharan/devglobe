@@ -27,6 +27,7 @@ The MCP server exposes `devglobe://project` for source, issue, and contribution 
 
 When the client supports MCP prompts, prefer these discoverable workflows over recreating the sequence:
 
+- `quick-start`: Run an anonymous example search immediately with no arguments.
 - `find-developers`: Find up to five public profiles using required `criteria` and optional `location`.
 - `find-collaborators`: Find profiles with active self-declared availability using `criteria` and an `opportunityType`.
 - `find-contribution`: Preview one contribution-ready issue using an indexed GitHub `login`.

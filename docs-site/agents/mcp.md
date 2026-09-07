@@ -79,6 +79,7 @@ Clients with MCP prompt support can list and run these guided workflows:
 
 | Prompt | Arguments | Workflow |
 |---|---|---|
+| `quick-start` | None | Runs an anonymous example developer search immediately and suggests refinements |
 | `find-developers` | `criteria`, optional `location` | Searches for up to five matching public profiles and explains returned evidence |
 | `find-collaborators` | `criteria`, optional `opportunityType` | Searches active, self-declared availability and preserves explicit introduction approval |
 | `find-contribution` | `login` | Previews one contribution-ready issue and explains that previewing does not reserve it |
