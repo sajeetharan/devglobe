@@ -90,6 +90,10 @@ Public search and profile lookup do not require credentials. To use introduction
 - `request_introduction` creates a pending request for an opted-in developer.
 - `get_introduction_status` lets the requesting agent poll its request. After acceptance it returns only the developer's public GitHub URL.
 
+## Quick Start Prompt
+
+Clients with MCP prompt support can open `quick-start` with no arguments. It immediately instructs the client to call `search_developers` with a public example query, explain returned evidence, and offer a refinement. Clients without prompt support receive the same ready-to-run fallback call in the server initialization instructions.
+
 ## Prompts
 
 - `find-developers` accepts required `criteria` and optional `location`, then guides a public-evidence search for up to five profiles.
