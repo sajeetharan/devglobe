@@ -20,6 +20,18 @@ export function GET() {
         },
       },
       schemas: {
+        SearchMatch: {
+          type: 'object',
+          required: ['score', 'label', 'reasons', 'signals', 'method', 'disclaimer'],
+          properties: {
+            score: { type: 'integer', minimum: 0, maximum: 100, description: 'Ordinal discovery relevance, not a probability or suitability rating.' },
+            label: { type: 'string', enum: ['Strong match', 'Good match', 'Related match'] },
+            reasons: { type: 'array', maxItems: 3, items: { type: 'string' } },
+            signals: { type: 'array', items: { type: 'string', enum: ['text', 'semantic'] } },
+            method: { type: 'string', enum: ['text', 'semantic', 'hybrid'] },
+            disclaimer: { type: 'string' },
+          },
+        },
         Error: {
           type: 'object',
           required: ['error', 'code', 'hint'],
@@ -50,12 +62,34 @@ export function GET() {
           summary: 'Search public developer profiles',
           parameters: [
             { name: 'q', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'mode', in: 'query', schema: { type: 'string', enum: ['text', 'vector', 'hybrid'], default: 'hybrid' } },
             { name: 'top', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 20, default: 10 } },
           ],
           security: [],
           'x-required-scope': 'developers:read',
           responses: {
-            200: { description: 'Public developer search results' },
+            200: {
+              description: 'Public developer search results with explainable ordinal match signals',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      query: { type: 'string' },
+                      mode: { type: 'string' },
+                      count: { type: 'integer' },
+                      results: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: { match: { $ref: '#/components/schemas/SearchMatch' } },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             400: { $ref: '#/components/responses/BadRequest' },
           },
         },

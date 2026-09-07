@@ -6,6 +6,7 @@ import { track, trackSearchAppearances } from '../lib/analytics.js';
 import { countryKey } from '../lib/country.js';
 import { findExactLoginResult, normalizeTextSearchQuery } from '../lib/developer-search.js';
 import { publicApiUrl } from '../lib/public-api.js';
+import { attachSearchMatches } from '../lib/search-match.js';
 import MissionPreview from './MissionPreview.jsx';
 
 const SAMPLES_BY_MODE = {
@@ -142,6 +143,10 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           if (!controller.signal.aborted) setSearching(false);
         }
       }
+
+      results = results.every(result => result.match)
+        ? results
+        : attachSearchMatches(results, textQuery, 'text');
 
       onResults(results);
       setResultCount(results.length);
@@ -433,6 +438,16 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
                         @{developer.login}
                         {developer.globalRank ? ` · Global #${developer.globalRank}` : ''}
                       </span>
+                      {developer.match && (
+                        <span
+                          className="search-bar__match"
+                          title={developer.match.disclaimer}
+                          aria-label={`${developer.match.score} match score. ${developer.match.reasons[0]}. ${developer.match.disclaimer}`}
+                        >
+                          <b>{developer.match.score} match</b>
+                          <span>{developer.match.reasons[0]}</span>
+                        </span>
+                      )}
                     </span>
                     <span className="search-bar__view-profile">View profile</span>
                   </button>

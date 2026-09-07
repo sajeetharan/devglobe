@@ -9715,6 +9715,34 @@ body {
   font-size: 10px;
 }
 
+.search-bar__card-identity .search-bar__match {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  color: var(--text-secondary);
+}
+
+.search-bar__match b {
+  flex: 0 0 auto;
+  padding: 2px 5px;
+  border: 1px solid color-mix(in srgb, var(--accent-github) 45%, var(--border));
+  border-radius: var(--radius-sm);
+  color: var(--accent-github);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.search-bar__card-identity .search-bar__match span {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .search-bar__card-actions {
   display: flex;
   flex-direction: column;
