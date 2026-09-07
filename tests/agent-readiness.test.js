@@ -46,6 +46,8 @@ test('serves a valid API catalog and OpenAPI description', async () => {
     'introductions:write',
   ]);
   assert.equal(openApi.components.schemas.Error.required.includes('hint'), true);
+  assert.equal(openApi.components.schemas.SearchMatch.properties.score.maximum, 100);
+  assert.deepEqual(openApi.components.schemas.SearchMatch.properties.method.enum, ['text', 'semantic', 'hybrid']);
 });
 
 test('describes the MCP server tools and authentication boundary', async () => {

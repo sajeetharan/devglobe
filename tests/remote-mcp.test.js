@@ -274,10 +274,18 @@ test('MCP logs only allow-listed prompt names', async () => {
 });
 
 test('remote MCP performs anonymous public developer discovery', async () => {
+  const match = {
+    score: 91,
+    label: 'Strong match',
+    reasons: ['Primary language matches JavaScript'],
+    signals: ['text'],
+    method: 'text',
+    disclaimer: 'Discovery relevance only.',
+  };
   const fetchImpl = async url => {
     const parsed = new URL(url);
     if (parsed.pathname === '/api/search') {
-      return Response.json({ results: [{ login: 'open-dev' }] });
+      return Response.json({ results: [{ login: 'open-dev', match }] });
     }
     return Response.json({
       login: 'open-dev',
@@ -299,7 +307,8 @@ test('remote MCP performs anonymous public developer discovery', async () => {
   assert.deepEqual(developers.map(developer => developer.login), ['open-dev']);
   assert.equal(response.result.structuredContent.resultCount, 1);
   assert.equal(response.result.structuredContent.results[0].profileUrl, 'http://localhost:3000/developer/open-dev');
-  assert.match(response.result.structuredContent.results[0].whyMatched[0], /React/);
+  assert.deepEqual(response.result.structuredContent.results[0].whyMatched, match.reasons);
+  assert.deepEqual(response.result.structuredContent.results[0].match, match);
   assert.equal(response.result.structuredContent.results[0].availableForAgents, true);
 });
 

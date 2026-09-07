@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { apiError } from '../../../lib/api-error.js';
+import { attachSearchMatches } from '../../../lib/search-match.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
@@ -56,7 +57,8 @@ async function getEmbedding(text) {
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q');
-  const mode = searchParams.get('mode') || 'hybrid';
+  const requestedMode = searchParams.get('mode') || 'hybrid';
+  const mode = ['text', 'vector', 'hybrid'].includes(requestedMode) ? requestedMode : 'hybrid';
   const top = searchParams.get('top') || '10';
 
   if (!q) {
@@ -72,7 +74,7 @@ export async function GET(request) {
     // Fallback: search sample data locally (text mode only)
     const data = await getSampleData();
     const limit = Math.min(parseInt(top), 50);
-    const results = searchSampleData(data, q, limit);
+    const results = attachSearchMatches(searchSampleData(data, q, limit), q, 'text');
     return NextResponse.json({ query: q, mode: 'text', count: results.length, results });
   }
 
@@ -166,11 +168,18 @@ export async function GET(request) {
       const k = 60;
       const rrf = new Map();
       const allMap = new Map();
-      vectorRes.resources.forEach((r, i) => { rrf.set(r.login, (rrf.get(r.login) || 0) + 1 / (k + i + 1)); allMap.set(r.login, r); });
-      textRes.resources.forEach((r, i) => { rrf.set(r.login, (rrf.get(r.login) || 0) + 1 / (k + i + 1)); allMap.set(r.login, r); });
+      vectorRes.resources.forEach((r, i) => {
+        rrf.set(r.login, (rrf.get(r.login) || 0) + 1 / (k + i + 1));
+        allMap.set(r.login, { ...allMap.get(r.login), ...r, _searchVectorRank: i });
+      });
+      textRes.resources.forEach((r, i) => {
+        rrf.set(r.login, (rrf.get(r.login) || 0) + 1 / (k + i + 1));
+        allMap.set(r.login, { ...allMap.get(r.login), ...r, _searchTextRank: i });
+      });
       results = [...rrf.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([login]) => allMap.get(login));
     }
 
+    results = attachSearchMatches(results, q, mode);
     return NextResponse.json({ query: q, mode, count: results.length, results });
   } catch (err) {
     console.error('Search error:', err.message);
