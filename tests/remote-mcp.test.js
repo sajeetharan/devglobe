@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleMcpOptions, handleRemoteMcpRequest } from '../lib/remote-mcp.js';
-import { createMcpCallerHash, recordMcpMetric } from '../lib/mcp-observability.js';
+import { createMcpCallerHash, describeMcpRequest, recordMcpMetric } from '../lib/mcp-observability.js';
 
 const MCP_HEADERS = {
   Accept: 'application/json, text/event-stream',
@@ -228,9 +228,20 @@ test('MCP classifies malformed and unknown requests with bounded error codes', a
   await handleRemoteMcpRequest(mcpRequest({
     jsonrpc: '2.0', id: 18, method: 'unknown/method', params: {},
   }), { metricRecorder: metric => metrics.push(metric) });
+  await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 19, method: 'tools/call', params: { name: 'private_tool', arguments: {} },
+  }), { metricRecorder: metric => metrics.push(metric) });
 
   assert.equal(metrics[0].errorCode, 'invalid_request');
   assert.equal(metrics[1].errorCode, 'not_found');
+  assert.equal(metrics[2].errorCode, 'not_found');
+  assert.equal(metrics[2].tool, null);
+});
+
+test('MCP telemetry distinguishes bounded handshake methods', () => {
+  for (const method of ['notifications/initialized', 'ping', 'resources/templates/list']) {
+    assert.equal(describeMcpRequest({ jsonrpc: '2.0', method }, 'test-agent').method, method);
+  }
 });
 
 test('MCP logs only allow-listed prompt names', async () => {
