@@ -541,6 +541,18 @@ export default function Home() {
     if (developer) handleGenerateCard(developer);
   }, [developers, handleGenerateCard, user]);
 
+  const handleCreateCardFromActivity = useCallback(() => {
+    track('next_action_selected', { action: 'create_card', journey: 'activity_feed' });
+    const developer = resolveIdentityCardDeveloper(null, user, developers);
+    if (developer) {
+      handleGenerateCard(developer);
+      return;
+    }
+    setSidebarOpen(false);
+    setTourStep('search');
+    requestAnimationFrame(() => document.querySelector('#search-bar input')?.focus());
+  }, [developers, handleGenerateCard, user]);
+
   const handleOpenCardFeature = useCallback(() => {
     const developer = resolveIdentityCardDeveloper(selectedDev, user, developers);
     if (developer) {
@@ -943,6 +955,7 @@ export default function Home() {
           totalDeveloperCount={datasetCount}
           datasetLoading={datasetLoading && !searchActive}
           onOpenContributions={() => setShowContributions(true)}
+          onCreateCard={handleCreateCardFromActivity}
         />
         {sidebarOpen && (
           <div className="sidebar-backdrop" onClick={handleCloseSidebar} />
