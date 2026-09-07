@@ -34,6 +34,7 @@ const BACKGROUND_BATCH_SIZE = 1000;
 const BACKGROUND_UI_FLUSH_SIZE = 5000;
 const PENDING_README_KEY = 'devglobe-pending-readme';
 const PENDING_HOME_README_KEY = 'devglobe-pending-home-readme';
+const TOUR_COMPLETE_KEY = 'devglobe-tour-complete';
 let cachedDeveloperDataset = null;
 
 export default function Home() {
@@ -75,8 +76,15 @@ export default function Home() {
   const [trending, setTrending] = useState(null);
   const [trendingError, setTrendingError] = useState('');
   const [tourStep, setTourStep] = useState(null);
-  const [tourMatch, setTourMatch] = useState(null);
   const globeRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(TOUR_COMPLETE_KEY) !== '1') setTourStep('search');
+    } catch {
+      setTourStep('search');
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -580,40 +588,17 @@ export default function Home() {
 
   const completeTour = useCallback(() => {
     setTourStep(null);
-    setTourMatch(null);
-    try { localStorage.setItem('devglobe-tour-complete', '1'); } catch { /* ignore persistence failures */ }
+    try { localStorage.setItem(TOUR_COMPLETE_KEY, '1'); } catch { /* ignore persistence failures */ }
   }, []);
 
-  const handleTourSearchState = useCallback(({ results }) => {
-    if (!tourStep) return;
-    if (results.length === 0) {
-      setTourMatch(null);
-      setTourStep('missing');
-    } else if (results.length === 1) {
-      setTourMatch(results[0]);
-      setTourStep('found');
-    } else {
-      setTourMatch(null);
-      setTourStep('refine');
-    }
-  }, [tourStep]);
+  const handleTourSearchState = useCallback(() => {
+    if (tourStep) completeTour();
+  }, [completeTour, tourStep]);
 
   const handleTourFocusSearch = useCallback(() => {
     setTourStep('search');
     requestAnimationFrame(() => document.querySelector('#search-bar input')?.focus());
   }, []);
-
-  const handleTourAddMe = useCallback(() => {
-    setTourMatch(null);
-    setTourStep('support');
-    setShowAddMe(true);
-  }, []);
-
-  const handleTourGenerateCard = useCallback((developer) => {
-    setTourMatch(null);
-    setTourStep('support');
-    handleGenerateCard(developer);
-  }, [handleGenerateCard]);
 
   const handleResetFilter = useCallback(() => {
     hasActiveSearchRef.current = false;
@@ -884,15 +869,15 @@ export default function Home() {
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
-      {user && claimStatus === 'claimed' ? (
-        <ReturnBriefing
-          login={user.login}
-          onOpenContributions={() => setShowContributions(true)}
-          onOpenWeeklyUpdates={() => setUserMenuRequest(request => request + 1)}
-        />
-      ) : (
-        <PlatformActivityBanner />
-      )}
+      {!tourStep && (user && claimStatus === 'claimed' ? (
+          <ReturnBriefing
+            login={user.login}
+            onOpenContributions={() => setShowContributions(true)}
+            onOpenWeeklyUpdates={() => setUserMenuRequest(request => request + 1)}
+          />
+        ) : (
+          <PlatformActivityBanner />
+        ))}
       <SearchBar
         developers={developers}
         onResults={handleSearch}
@@ -909,32 +894,16 @@ export default function Home() {
         currentUsername={user?.login || ''}
         profileOpen={Boolean(selectedDev)}
         onOpenActivity={handleOpenActivity}
-        showAgentPrompt={agentProfileStatus === 'missing'}
+        showAgentPrompt={agentProfileStatus === 'missing' && !tourStep}
         onOpenAgentProfile={() => setShowAiProfile(true)}
         onOpenAgentNetwork={handleOpenAgentNetwork}
-        showMissionPreview
+        showMissionPreview={false}
       />
       <QuickTour
         step={tourStep}
-        matchedDeveloper={tourMatch}
         onFocusSearch={handleTourFocusSearch}
-        onAddMe={handleTourAddMe}
-        onGenerateCard={handleTourGenerateCard}
         onClose={completeTour}
       />
-      <a
-        className="product-hunt-badge"
-        href="https://www.producthunt.com/products/devglobe-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-devglobe-2"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <img
-          alt="DevGlobe - Discover top open source devs on an interactive 3D globe | Product Hunt"
-          width="250"
-          height="54"
-          src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1216204&amp;theme=light&amp;t=1785998968385"
-        />
-      </a>
       <main className="main">
         <Globe
           ref={globeRef}
