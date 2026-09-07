@@ -28,6 +28,18 @@ Azure Functions serves:
 
 Azure Blob Storage serves `developers.json` directly to browsers. Azure Container Apps serves the frontend, OAuth, private account mutations, nominations, cards, share metadata, and MCP endpoint.
 
+## Live developer presence
+
+The `/space` globe shows only developers who explicitly enable presence in the DevGlobe VS Code extension. The extension exchanges its GitHub authentication for a scoped DevGlobe token and sends a bounded heartbeat every 30 seconds. Heartbeats include active language when enabled, editor, platform, session start, and last-seen time. They never include source code, file paths, repository names, branches, or keystrokes. Coordinates are copied from the developer's existing public profile rather than collected from the device.
+
+Provision the TTL-enabled Cosmos container before deployment:
+
+```powershell
+npm run setup-live-presence-container
+```
+
+Set `COSMOS_LIVE_PRESENCE_CONTAINER` only when using a name other than `live-presence`. Each heartbeat has a 90-second item TTL. `GET /api/sse/developers` sends an `init` snapshot, `update` events with `upsert` or `delete`, and 20-second connection heartbeats. Container Apps ingress and any intermediary proxy must leave streaming responses unbuffered and allow connections longer than 20 seconds.
+
 ## Azure resources
 
 The deployment uses these resources in `devglobe-rg`:
@@ -84,5 +96,6 @@ Confirm all of the following after deployment:
 - `/api/developer?id=sajeetharan` returns the public profile.
 - `/api/search?q=typescript&mode=text` returns bounded results.
 - Blob `developers.json` returns `Content-Encoding: gzip` and a long-lived cache header.
+- `/api/sse/developers` returns `text/event-stream`, an `init` event, and periodic heartbeat events.
 - The activity timer writes directly to the activity container.
 - `repository-agent-ingest` logs bounded updates and persists `repositoryAgentSignals.scannedAt`, `toolIds`, and filename evidence without repository contents.

@@ -568,6 +568,17 @@ body {
   border-color: #68d391;
 }
 
+.btn--live {
+  border: 1px solid color-mix(in srgb, #3b82f6 58%, var(--border));
+  background: color-mix(in srgb, #3b82f6 12%, transparent);
+  color: var(--text-primary);
+}
+
+.btn--live:hover {
+  border-color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 20%, transparent);
+}
+
 .btn--hacktoberfest {
   border: 1px solid color-mix(in srgb, #f97316 55%, var(--border));
   background: color-mix(in srgb, #f97316 12%, transparent);
@@ -10002,7 +10013,8 @@ body {
   }
 
   .header__actions .btn--join,
-  .header__actions .btn--activity {
+  .header__actions .btn--activity,
+  .header__actions .btn--live {
     display: none;
   }
 

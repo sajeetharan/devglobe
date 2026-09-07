@@ -6,6 +6,8 @@ const {
   mcpConfiguration,
   normalizeLogin,
   normalizeResults,
+  presenceTokenUrl,
+  presenceUrl,
   profileUrl,
   resolveBaseUrl,
   searchUrl,
@@ -59,4 +61,9 @@ test('normalizes public search results and drops invalid records', () => {
   }]);
   assert.throws(() => normalizeResults({}), /unexpected search response/);
   assert.throws(() => normalizeLogin('not valid!'), /valid GitHub login/);
+});
+
+test('builds same-origin live presence endpoints without attribution parameters', () => {
+  assert.equal(presenceTokenUrl('https://www.devglobe.dev'), 'https://www.devglobe.dev/api/presence/token');
+  assert.equal(presenceUrl('http://localhost:3000'), 'http://localhost:3000/api/presence');
 });

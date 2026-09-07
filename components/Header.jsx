@@ -37,6 +37,13 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
           </svg>
           <span className="btn__label">Repo Match</span>
         </a>
+        <a href="/space" className="btn btn--live" aria-label="See developers coding now" title="Live developer globe">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="2" />
+            <path d="M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7" />
+          </svg>
+          <span className="btn__label">Live now</span>
+        </a>
         <button
           type="button"
           className={`btn btn--activity${activityOpen ? ' btn--active' : ''}`}
@@ -100,6 +107,10 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
             <span className="btn__label">More</span>
           </summary>
           <nav className="header-more__menu" aria-label="More DevGlobe links">
+            <a href="/space">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2" /><path d="M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7" /></svg>
+              <span><strong>Live globe</strong><small>See who is coding right now</small></span>
+            </a>
             <a href="/hacktoberfest">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18" /></svg>
               <span><strong>Hacktoberfest</strong><small>Find a contribution-ready issue</small></span>

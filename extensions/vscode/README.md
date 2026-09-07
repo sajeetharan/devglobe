@@ -15,12 +15,16 @@ Install [DevGlobe.dev Developer Discovery from the VS Code Marketplace](https://
 - `DevGlobe.dev: Copy My Identity Card Link`
 - `DevGlobe.dev: Copy MCP Configuration`
 - `DevGlobe.dev: Open Agent Setup`
+- `DevGlobe.dev: Start Sharing Coding Presence`
+- `DevGlobe.dev: Stop Sharing Coding Presence`
 
 Set `devglobedev.githubLogin` in VS Code settings to enable personal profile and card commands. `devglobedev.baseUrl` defaults to `https://www.devglobe.dev`.
 
+Live presence is off by default. Starting it uses VS Code's GitHub authentication, then sends a heartbeat every 30 seconds while the extension is running. Set `devglobedev.presence.shareActiveLanguage` to `false` to hide the active language.
+
 ## Privacy
 
-The extension makes a public API request only when you run a search command. It does not read source code, files, repositories, branches, keystrokes, or editor activity. It emits no custom telemetry and stores no credentials.
+The extension makes a public API request when you run a search command. If you explicitly enable live presence, it sends the active language, editor name, operating system, and session timestamps. It does not send source code, file paths, repository names, branches, or keystrokes. Globe coordinates come from your existing public DevGlobe profile, not device geolocation. The DevGlobe presence token is stored in VS Code SecretStorage.
 
 ## Development
 

@@ -60,6 +60,16 @@
         "command": "devglobedev.openAgentSetup",
         "title": "Open Agent Setup",
         "category": "DevGlobe.dev"
+      },
+      {
+        "command": "devglobedev.startPresence",
+        "title": "Start Sharing Coding Presence",
+        "category": "DevGlobe.dev"
+      },
+      {
+        "command": "devglobedev.stopPresence",
+        "title": "Stop Sharing Coding Presence",
+        "category": "DevGlobe.dev"
       }
     ],
     "configuration": {
@@ -74,6 +84,16 @@
           "type": "string",
           "default": "https://www.devglobe.dev",
           "description": "DevGlobe web origin. HTTPS is required except for localhost development."
+        },
+        "devglobedev.presence.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Share an opt-in coding heartbeat on the DevGlobe live globe. No file paths, repository names, or source code are sent."
+        },
+        "devglobedev.presence.shareActiveLanguage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include the active editor language in coding presence heartbeats."
         }
       }
     }

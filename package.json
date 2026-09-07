@@ -28,6 +28,7 @@
     "rescore-developers": "node scripts/rescore-developers.js",
     "populate-special-tags": "node scripts/populate-special-tags.js",
     "setup-activity-container": "node scripts/setup-activity-container.js",
+    "setup-live-presence-container": "node scripts/setup-live-presence-container.js",
     "setup-saved-search-container": "node scripts/setup-saved-search-container.js",
     "setup-watchlist-container": "node scripts/setup-watchlist-container.js",
     "setup-impact-history-container": "node scripts/setup-impact-history-container.js",
