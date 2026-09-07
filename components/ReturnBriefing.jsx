@@ -6,12 +6,19 @@ import { track } from '../lib/analytics.js';
 import { formatRelativeTime } from '../lib/format.js';
 
 const EMPTY_RESULT = { events: [], unreadCount: 0 };
+const DISMISSAL_KEY_PREFIX = 'devglobe-return-briefing-dismissed:v1:';
 
 export default function ReturnBriefing({ login, onOpenContributions, onOpenWeeklyUpdates }) {
   const [result, setResult] = useState(EMPTY_RESULT);
   const [status, setStatus] = useState('loading');
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setDismissed(localStorage.getItem(`${DISMISSAL_KEY_PREFIX}${login.toLowerCase()}`) === '1');
+    } catch { /* The briefing remains dismissible for this render. */ }
+  }, [login]);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,7 +85,10 @@ export default function ReturnBriefing({ login, onOpenContributions, onOpenWeekl
           <button
             type="button"
             className="return-briefing__close"
-            onClick={() => setDismissed(true)}
+            onClick={() => {
+              setDismissed(true);
+              try { localStorage.setItem(`${DISMISSAL_KEY_PREFIX}${login.toLowerCase()}`, '1'); } catch { /* Ignore persistence failures. */ }
+            }}
             aria-label="Close welcome back"
             title="Close welcome back"
           >
