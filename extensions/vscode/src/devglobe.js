@@ -57,6 +57,14 @@ function agentSetupUrl(baseUrl) {
   return buildUrl(baseUrl, '/agents');
 }
 
+function presenceTokenUrl(baseUrl) {
+  return new URL('/api/presence/token', `${resolveBaseUrl(baseUrl)}/`).toString();
+}
+
+function presenceUrl(baseUrl) {
+  return new URL('/api/presence', `${resolveBaseUrl(baseUrl)}/`).toString();
+}
+
 function mcpConfiguration(baseUrl) {
   return JSON.stringify({
     servers: {
@@ -103,6 +111,8 @@ module.exports = {
   mcpConfiguration,
   normalizeLogin,
   normalizeResults,
+  presenceTokenUrl,
+  presenceUrl,
   profileUrl,
   resolveBaseUrl,
   searchUrl,

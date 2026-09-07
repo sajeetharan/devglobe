@@ -46,6 +46,12 @@ export function buildSitemapEntries(profileLogins, lastModified = new Date()) {
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    {
+      url: `${siteUrl}/space`,
+      lastModified,
+      changeFrequency: 'always',
+      priority: 0.8,
+    },
     ...logins.map(login => ({
       url: `${siteUrl}/developer/${encodeURIComponent(login)}`,
       changeFrequency: 'daily',

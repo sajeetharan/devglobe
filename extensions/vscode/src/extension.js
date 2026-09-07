@@ -5,6 +5,8 @@ const {
   mcpConfiguration,
   normalizeLogin,
   normalizeResults,
+  presenceTokenUrl,
+  presenceUrl,
   profileUrl,
   resolveBaseUrl,
   searchUrl,
@@ -15,7 +17,132 @@ function configuration() {
   return {
     baseUrl: resolveBaseUrl(settings.get('baseUrl', 'https://www.devglobe.dev')),
     githubLogin: settings.get('githubLogin', ''),
+    presenceEnabled: settings.get('presence.enabled', false),
+    shareActiveLanguage: settings.get('presence.shareActiveLanguage', true),
   };
+}
+
+const PRESENCE_TOKEN_KEY = 'devglobedev.livePresenceToken';
+const HEARTBEAT_INTERVAL_MS = 30000;
+
+function platformName() {
+  return { darwin: 'macOS', linux: 'Linux', win32: 'Windows' }[process.platform] || 'Unknown';
+}
+
+function activeLanguage() {
+  return vscode.window.activeTextEditor?.document?.languageId || 'Unknown';
+}
+
+function createPresenceController(context) {
+  const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 20);
+  status.command = 'devglobedev.stopPresence';
+  status.text = '$(radio-tower) DevGlobe live';
+  status.tooltip = 'Coding presence is visible on DevGlobe. Click to stop sharing.';
+  context.subscriptions.push(status);
+
+  let timer = null;
+  let starting = null;
+  let sessionStartedAt = null;
+  let sending = false;
+
+  async function exchangeToken(interactive) {
+    const githubSession = await vscode.authentication.getSession('github', ['read:user'], {
+      createIfNone: interactive,
+    });
+    if (!githubSession) return null;
+
+    const response = await fetch(presenceTokenUrl(configuration().baseUrl), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${githubSession.accessToken}` },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error(`DevGlobe presence sign-in failed with HTTP ${response.status}.`);
+    const payload = await response.json();
+    if (typeof payload.token !== 'string' || !payload.token) throw new Error('DevGlobe returned an invalid presence token.');
+    await context.secrets.store(PRESENCE_TOKEN_KEY, payload.token);
+    return payload.token;
+  }
+
+  async function token(interactive = false) {
+    return await context.secrets.get(PRESENCE_TOKEN_KEY) || exchangeToken(interactive);
+  }
+
+  async function heartbeat(interactive = false) {
+    if (sending || !configuration().presenceEnabled) return false;
+    sending = true;
+    try {
+      let bearer = await token(interactive);
+      if (!bearer) return false;
+      const send = () => fetch(presenceUrl(configuration().baseUrl), {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activeLanguage: configuration().shareActiveLanguage ? activeLanguage() : 'Hidden',
+          editor: 'VS Code',
+          platform: platformName(),
+          sessionStartedAt,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      let response = await send();
+      if (response.status === 401) {
+        await context.secrets.delete(PRESENCE_TOKEN_KEY);
+        bearer = await exchangeToken(interactive);
+        if (!bearer) return false;
+        response = await send();
+      }
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || `DevGlobe presence failed with HTTP ${response.status}.`);
+      }
+      status.show();
+      return true;
+    } finally {
+      sending = false;
+    }
+  }
+
+  async function start(interactive = false) {
+    if (timer) return true;
+    if (starting) return starting;
+    starting = (async () => {
+      sessionStartedAt = new Date().toISOString();
+      const online = await heartbeat(interactive);
+      if (!online || !configuration().presenceEnabled) return false;
+      timer = setInterval(() => heartbeat(false).catch(() => {}), HEARTBEAT_INTERVAL_MS);
+      return true;
+    })();
+    try {
+      return await starting;
+    } finally {
+      starting = null;
+    }
+  }
+
+  async function stop(notifyServer = true) {
+    if (timer) clearInterval(timer);
+    timer = null;
+    status.hide();
+    if (!notifyServer) return;
+    const bearer = await context.secrets.get(PRESENCE_TOKEN_KEY);
+    if (!bearer) return;
+    await fetch(presenceUrl(configuration().baseUrl), {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${bearer}` },
+      signal: AbortSignal.timeout(10000),
+    }).catch(() => {});
+  }
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(() => heartbeat(false).catch(() => {})),
+    vscode.workspace.onDidChangeConfiguration(event => {
+      if (!event.affectsConfiguration('devglobedev.presence')) return;
+      if (configuration().presenceEnabled) start(true).catch(() => {});
+      else stop().catch(() => {});
+    }),
+    { dispose: () => stop(false) },
+  );
+  return { start, stop };
 }
 
 async function openExternal(url) {
@@ -109,6 +236,7 @@ function registerCommand(context, name, handler) {
 }
 
 function activate(context) {
+  const presence = createPresenceController(context);
   registerCommand(context, 'devglobedev.searchDevelopers', searchDevelopers);
   registerCommand(context, 'devglobedev.openMyProfile', async () => {
     const login = await configuredLogin();
@@ -129,6 +257,18 @@ function activate(context) {
   registerCommand(context, 'devglobedev.openAgentSetup', async () => {
     await openExternal(agentSetupUrl(configuration().baseUrl));
   });
+  registerCommand(context, 'devglobedev.startPresence', async () => {
+    await vscode.workspace.getConfiguration('devglobedev').update('presence.enabled', true, vscode.ConfigurationTarget.Global);
+    const online = await presence.start(true);
+    if (!online) throw new Error('GitHub authentication is required to share coding presence.');
+    await vscode.window.showInformationMessage('Your coding presence is now visible on DevGlobe.');
+  });
+  registerCommand(context, 'devglobedev.stopPresence', async () => {
+    await vscode.workspace.getConfiguration('devglobedev').update('presence.enabled', false, vscode.ConfigurationTarget.Global);
+    await presence.stop();
+    await vscode.window.showInformationMessage('Your DevGlobe coding presence is offline.');
+  });
+  if (configuration().presenceEnabled) presence.start(false).catch(() => {});
 }
 
 function deactivate() {}

@@ -1,0 +1,210 @@
+.page {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 62% 42%, rgba(37, 99, 235, 0.12), transparent 34%),
+    var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.header {
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  display: grid;
+  width: 100%;
+  height: 64px;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.brand,
+.directory {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.brand {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+}
+
+.brand img { width: 28px; height: 28px; }
+.directory { justify-self: end; color: var(--text-secondary); font-size: 13px; font-weight: 600; }
+.directory:hover { color: var(--text-primary); }
+
+.title { display: flex; align-items: center; gap: 14px; }
+.title h1 { margin: 0; font-size: 15px; line-height: 1; letter-spacing: 0; }
+
+.connection {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.connection i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.connection[data-state='live'] i {
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.connection[data-state='unavailable'] i { background: #ef4444; }
+
+.stage { position: absolute; inset: 0; }
+.stage :global(.live-globe-canvas) { width: 100%; height: 100%; }
+
+.activity,
+.filters,
+.selected {
+  position: fixed;
+  z-index: 10;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(16px);
+}
+
+.activity {
+  top: 88px;
+  bottom: 24px;
+  left: 24px;
+  display: flex;
+  width: min(320px, calc(100vw - 48px));
+  flex-direction: column;
+  border-radius: 8px;
+}
+
+.panelHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panelHeading h2 { margin: 0; font-size: 13px; letter-spacing: 0; }
+.panelHeading span { color: var(--text-secondary); font-size: 12px; }
+.activityList { min-height: 0; overflow-y: auto; }
+
+.activityRow {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.activityRow:hover,
+.activityRow:focus-visible { background: color-mix(in srgb, var(--accent-blue) 10%, transparent); outline: none; }
+.activityRow img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.activityRow > span { min-width: 0; }
+.activityRow strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.activityRow small { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: var(--text-secondary); font-size: 11px; }
+.activityRow small i { width: 6px; height: 6px; border-radius: 50%; }
+.activityRow time { color: var(--text-muted); font-size: 10px; }
+.empty { margin: 0; padding: 22px 16px; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+
+.filters {
+  top: 88px;
+  right: 24px;
+  display: grid;
+  width: 220px;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.filters label { display: grid; gap: 6px; }
+.filters label > span { color: var(--text-secondary); font-size: 11px; font-weight: 600; }
+.filters select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 30px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.filters select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+.selected {
+  right: 24px;
+  bottom: 24px;
+  display: grid;
+  width: min(380px, calc(100vw - 48px));
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.selected > img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.selected > div { min-width: 0; }
+.selected strong,
+.selected span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.selected strong { font-size: 13px; }
+.selected span,
+.selected small { color: var(--text-secondary); font-size: 11px; }
+.selected p { margin: 5px 0 2px; font-size: 11px; }
+.selected > a { color: var(--accent-blue); font-size: 11px; font-weight: 700; text-decoration: none; }
+.close {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 19px;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .header { height: 58px; grid-template-columns: auto 1fr auto; gap: 10px; padding: 0 14px; }
+  .brand span { display: none; }
+  .title { justify-content: center; gap: 8px; }
+  .title h1 { max-width: 42vw; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+  .directory { font-size: 11px; }
+  .filters { top: 70px; right: 12px; left: 12px; width: auto; grid-template-columns: 1fr 1fr; gap: 8px; padding: 9px; }
+  .filters label > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .activity { top: auto; right: 0; bottom: 0; left: 0; width: 100%; height: 170px; border-width: 1px 0 0; border-radius: 0; }
+  .panelHeading { padding: 9px 14px; }
+  .activityRow { padding: 8px 14px; }
+  .activityRow img { width: 30px; height: 30px; }
+  .selected { right: 12px; bottom: 182px; width: calc(100vw - 24px); grid-template-columns: 42px minmax(0, 1fr); }
+  .selected > img { width: 42px; height: 42px; }
+  .selected > a { grid-column: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page * { scroll-behavior: auto !important; }
+}
