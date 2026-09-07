@@ -20,6 +20,8 @@ DevGlobe periodically scans filenames in a bounded set of recent public owner re
 
 Repository detection does not prove personal tool usage and does not grant contact permission. Agent introductions remain available only for claimed developers who publish an AI profile and explicitly accept verified-agent requests.
 
+Claimed-profile readiness treats tools, opportunity preferences, and agent contact consent as separate choices. Choosing no opportunities or no agent contact is a valid completed choice; DevGlobe never requires opt-in. These declarations become stale after 90 days and the owner checklist asks the developer to review them again.
+
 DevGlobe publishes protected-resource metadata without listing an authorization server. The current agent credentials are static bearer tokens, not OAuth grants. Adding RFC 8414 authorization-server metadata requires an OAuth 2.1 issuer with authorization and token endpoints; those endpoints must not be advertised until DevGlobe can issue and validate scoped grants.
 
 ## DNS-AID deployment

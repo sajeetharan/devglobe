@@ -157,10 +157,12 @@
 .copyError { color: var(--danger); font-size: 13px; }
 
 .workflows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--agent-line); border-left: 1px solid var(--agent-line); }
-.workflows article { min-height: 170px; padding: 24px; border-right: 1px solid var(--agent-line); border-bottom: 1px solid var(--agent-line); background: var(--bg-panel-70); }
+.workflows article { display: grid; min-height: 190px; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; align-content: start; padding: 24px; border-right: 1px solid var(--agent-line); border-bottom: 1px solid var(--agent-line); background: var(--bg-panel-70); }
 .workflows article > span { color: var(--agent-green); font-family: monospace; font-size: 11px; }
-.workflows p { min-height: 64px; margin: 18px 0; font-size: 16px; line-height: 1.5; }
-.workflows button { padding: 0; }
+.workflows h3 { margin: 0; font-size: 17px; letter-spacing: 0; }
+.workflows small { display: inline-block; margin-top: 5px; color: var(--agent-green); font-size: 11px; font-weight: 800; }
+.workflows p { min-height: 44px; margin: 14px 0 0; color: var(--agent-muted); font-size: 14px; line-height: 1.5; }
+.workflows button { grid-column: 2; justify-self: start; padding: 0; }
 
 .boundary { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 64px; padding: 72px 0; }
 .boundary h2 { max-width: 420px; margin: 12px 0 0; font-size: 34px; line-height: 1.15; letter-spacing: 0; }

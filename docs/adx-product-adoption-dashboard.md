@@ -82,6 +82,10 @@ Import `dashboards/devglobe-product-adoption-dashboard.json` from **Azure Data E
 - **Active session**: a privacy-safe browser session with at least one intentional event in the period.
 - **Engaged session**: an active session with at least two distinct event types.
 - **Value session**: a session containing card generation, profile sharing, profile claim, mission completion, or a next-action selection.
+- **Successful discovery**: an ordered session with a search submission, a later profile open, and a later value outcome. Outcomes include card generation, profile sharing or claim, mission completion, repository matching, and a profile next action.
+- **Campaign success rate**: attributed arrival sessions with a later value outcome divided by attributed arrival sessions. Campaign cohorts below three privacy hashes are suppressed.
+- **Agent setup activation**: setup-page sessions progressing from view to setup/configuration copy and then workflow copy. Browser setup metrics are not joined to MCP callers.
+- **MCP time to value**: elapsed time from initialization to the first successful tool result for one daily rotating caller hash. The initial target is under two minutes.
 - **Returning browser**: the same opaque browser identifier observed in a later 7- or 30-day window. The durable HttpOnly identifier and engagement events expire after 180 days. This is directional browser retention, not authenticated-user identity.
 - **Profiles reached**: distinct public developer logins referenced by tracked events.
 

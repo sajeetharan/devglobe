@@ -339,6 +339,29 @@ Events
 | project Journey, Sessions, Completed, ConversionRate
 | order by Sessions desc`);
 addTile(funnelsPageId, 'Journey Conversion', 'table', journeyConversion, { x: 6, y, width: 12, height: 5 }, table());
+y += 5;
+const successfulDiscovery = addQuery(`${events}
+let E=Events | where EventTime between (ago(90d) .. now());
+let Searches=E | where EventName == "search_submitted" | summarize Search=min(EventTime), Privacy=take_any(PrivacyHash) by Week=startofweek(EventTime), SessionHash;
+let Profiles=Searches | join kind=leftouter (E | where EventName == "profile_viewed" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=minif(ProfileEvent, ProfileEvent >= Search) by Week, SessionHash;
+let Outcomes=Profiles | join kind=leftouter (E | where EventName in ("card_generated", "mission_completed", "next_action_selected", "profile_claimed", "profile_shared", "repository_match_generated") | project SessionHash, OutcomeEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=take_any(Profile), Outcome=minif(OutcomeEvent, OutcomeEvent >= Profile) by Week, SessionHash;
+Outcomes
+| summarize SearchSessions=count(), SuccessfulSessions=countif(isnotnull(Profile) and isnotnull(Outcome)), PrivacyCohorts=dcount(Privacy) by Week
+| extend SuccessRate=iff(PrivacyCohorts < 3, real(null), round(100.0 * SuccessfulSessions / SearchSessions, 1))
+| project Week, SearchSessions=iff(PrivacyCohorts < 3, long(null), SearchSessions), SuccessfulSessions=iff(PrivacyCohorts < 3, long(null), SuccessfulSessions), SuccessRate
+| order by Week asc`);
+addTile(funnelsPageId, 'Weekly Successful Discovery', 'line', successfulDiscovery, { x: 0, y, width: 9, height: 6 }, chart('Week', ['SearchSessions', 'SuccessfulSessions'], { hideLegend: false }));
+const campaignOutcomes = addQuery(`${events}
+let E=Events | where EventTime between (ago(30d) .. now());
+let Arrivals=E | where EventName == "site_visited" and isnotempty(Source) and isnotempty(Campaign) | summarize Arrived=min(EventTime), Source=take_any(Source), Campaign=take_any(Campaign), Privacy=take_any(PrivacyHash) by SessionHash;
+let Outcomes=Arrivals | join kind=leftouter (E | where EventName in ("card_generated", "mission_completed", "next_action_selected", "profile_claimed", "profile_shared", "repository_match_generated") | project SessionHash, OutcomeEvent=EventTime) on SessionHash | summarize Arrived=take_any(Arrived), Privacy=take_any(Privacy), Outcome=minif(OutcomeEvent, OutcomeEvent >= Arrived) by Source, Campaign, SessionHash;
+Outcomes
+| summarize Sessions=count(), SuccessfulSessions=countif(isnotnull(Outcome)), PrivacyCohorts=dcount(Privacy) by Source, Campaign
+| where PrivacyCohorts >= 3
+| extend SuccessRate=round(100.0 * SuccessfulSessions / Sessions, 1)
+| project Source, Campaign, Sessions, SuccessfulSessions, SuccessRate
+| order by SuccessfulSessions desc`);
+addTile(funnelsPageId, 'Campaign to Value Conversion', 'table', campaignOutcomes, { x: 9, y, width: 9, height: 6 }, table());
 
 const dashboard = {
   $schema: 'https://dataexplorer.azure.com/static/d/schema/75/dashboard.json',

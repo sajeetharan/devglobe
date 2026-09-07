@@ -1,5 +1,15 @@
 # Azure Backend
 
+## Production OAuth verification
+
+Before measuring claim or retention funnels, verify that the deployed GitHub OAuth client ID and secret are still recognized. Supply the production values through your shell or secret manager, then run:
+
+```powershell
+npm run verify:github-oauth
+```
+
+The check exchanges a deliberately invalid authorization code. `bad_verification_code` confirms that GitHub recognized the client credentials; `incorrect_client_credentials` fails the command. The command never prints either credential. After rotating the Azure Container Apps secret, create a new revision and repeat this check before testing an interactive sign-in.
+
 DevGlobe runs the Next.js application on Azure Container Apps, with Azure Functions handling high-volume public reads and scheduled work.
 
 ## Traffic split

@@ -331,6 +331,18 @@ test('accepts bounded agent onboarding events without prompt or identity data', 
       properties: { source: 'vscode' },
     });
   }
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'agent_workflow_copied',
+    properties: { action: 'weekly-developer-scout', journey: 'recurring_agent_workflow', source: 'vscode', prompt: 'private prompt text' },
+  }).properties, {
+    action: 'weekly-developer-scout',
+    journey: 'recurring_agent_workflow',
+    source: 'vscode',
+  });
+  assert.equal(normalizeEngagementEvent({
+    eventName: 'agent_workflow_copied',
+    properties: { action: 'private-workflow' },
+  }).properties.action, 'unknown');
 });
 
 test('accepts repository report events without storing repository names or prompts', () => {
@@ -372,4 +384,13 @@ test('accepts bounded return briefing telemetry without identity or feed content
     eventName: 'return_briefing_action_selected',
     properties: { action: 'private-arbitrary-value' },
   }).properties.action, 'unknown');
+});
+
+test('accepts bounded community campaign sources', () => {
+  for (const source of ['discord', 'github_discussions']) {
+    assert.equal(normalizeEngagementEvent({
+      eventName: 'site_visited',
+      properties: { source, channel: 'community', campaign: 'developer_spotlight' },
+    }).properties.source, source);
+  }
 });
