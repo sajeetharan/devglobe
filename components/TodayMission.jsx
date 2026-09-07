@@ -3,13 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { track } from '../lib/analytics.js';
 
-export default function TodayMission({ active, onOpenContributions }) {
+const COMPLETED_PAGE_SIZE = 10;
+
+export default function TodayMission({ active, onOpenContributions, view = 'today', onCompletedCountChange }) {
   const [mission, setMission] = useState(null);
   const [completedMissions, setCompletedMissions] = useState([]);
+  const [visibleCompletedCount, setVisibleCompletedCount] = useState(COMPLETED_PAGE_SIZE);
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
   const [claimLogin, setClaimLogin] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const retryTimerRef = useRef(null);
   const requestVersionRef = useRef(0);
 
@@ -36,6 +40,7 @@ export default function TodayMission({ active, onOpenContributions }) {
       if (!response.ok) throw new Error(data.error || 'Unable to load today’s mission');
       setMission(data.mission);
       setCompletedMissions(Array.isArray(data.completedMissions) ? data.completedMissions : []);
+      setHistoryLoaded(true);
       setStatus(data.unavailable ? 'unavailable' : data.mission ? 'ready' : 'empty');
       if (data.unavailable) {
         track('mission_unavailable', { journey: 'daily_mission' });
@@ -72,6 +77,14 @@ export default function TodayMission({ active, onOpenContributions }) {
     };
   }, [active]);
 
+  useEffect(() => {
+    if (historyLoaded) onCompletedCountChange?.(completedMissions.length);
+  }, [completedMissions.length, historyLoaded, onCompletedCountChange]);
+
+  useEffect(() => {
+    if (view === 'completed') setVisibleCompletedCount(COMPLETED_PAGE_SIZE);
+  }, [view]);
+
   async function update(action) {
     const requestVersion = ++requestVersionRef.current;
     clearTimeout(retryTimerRef.current);
@@ -104,6 +117,80 @@ export default function TodayMission({ active, onOpenContributions }) {
     } finally {
       setUpdating(false);
     }
+  }
+
+  if (view === 'completed') {
+    const visibleCompletedMissions = completedMissions.slice(0, visibleCompletedCount);
+    const showHistory = !['loading', 'signed-out', 'claim-required', 'error'].includes(status);
+
+    return (
+      <section className="today-mission today-mission--completed" aria-labelledby="completed-missions-title" aria-busy={status === 'loading' || updating}>
+        <div className="today-mission__heading">
+          <div>
+            <span>DEVGLOBE MISSIONS</span>
+            <h2 id="completed-missions-title">Completed missions</h2>
+          </div>
+          {showHistory && <strong className="today-mission__count">{completedMissions.length}</strong>}
+        </div>
+
+        {status === 'loading' && <p className="today-mission__state" role="status">Loading completed missions…</p>}
+        {status === 'signed-out' && (
+          <div className="today-mission__state">
+            <span>{message}</span>
+            <a href="/api/auth/github">Sign in with GitHub</a>
+          </div>
+        )}
+        {status === 'claim-required' && (
+          <div className="today-mission__state">
+            <span>{message}</span>
+            <a href={claimLogin ? `/developer/${encodeURIComponent(claimLogin)}` : '/'}>Claim your profile</a>
+          </div>
+        )}
+        {status === 'error' && (
+          <div className="today-mission__state" role="alert">
+            <span>{message}</span>
+            <button type="button" onClick={load}>Try again</button>
+          </div>
+        )}
+        {showHistory && completedMissions.length === 0 && (
+          <div className="today-mission__history-empty">
+            <strong>No completed DevGlobe missions yet</strong>
+            <span>Accept today’s mission, contribute on GitHub, then verify completion here.</span>
+          </div>
+        )}
+        {showHistory && completedMissions.length > 0 && (
+          <div className="today-mission__history">
+            <ul>
+              {visibleCompletedMissions.map(completed => (
+                <li key={completed.id}>
+                  <div>
+                    <a href={completed.opportunity?.url} target="_blank" rel="noopener noreferrer">
+                      {completed.opportunity?.title || 'Completed issue'}
+                    </a>
+                    <span>{completed.opportunity?.repository || 'GitHub'} · {new Date(completed.completedAt).toLocaleDateString()}</span>
+                  </div>
+                  <span className="today-mission__history-actions">
+                    <a href={completed.opportunity?.url} target="_blank" rel="noopener noreferrer">View issue</a>
+                    {completed.completionEvidence?.url && (
+                      <a href={completed.completionEvidence.url} target="_blank" rel="noopener noreferrer">View merged PR</a>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {visibleCompletedCount < completedMissions.length && (
+              <button
+                className="today-mission__history-more"
+                type="button"
+                onClick={() => setVisibleCompletedCount(count => count + COMPLETED_PAGE_SIZE)}
+              >
+                Load more
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+    );
   }
 
   return (
@@ -166,29 +253,6 @@ export default function TodayMission({ active, onOpenContributions }) {
         </div>
       )}
 
-      {completedMissions.length > 0 && (
-        <section className="today-mission__history" aria-labelledby="completed-missions-title">
-          <div className="today-mission__history-heading">
-            <h3 id="completed-missions-title">Completed missions</h3>
-            <span>{completedMissions.length}</span>
-          </div>
-          <ul>
-            {completedMissions.map(completed => (
-              <li key={completed.id}>
-                <div>
-                  <a href={completed.opportunity?.url} target="_blank" rel="noopener noreferrer">
-                    {completed.opportunity?.title || 'Completed issue'}
-                  </a>
-                  <span>{completed.opportunity?.repository || 'GitHub'} · {new Date(completed.completedAt).toLocaleDateString()}</span>
-                </div>
-                {completed.completionEvidence?.url && (
-                  <a href={completed.completionEvidence.url} target="_blank" rel="noopener noreferrer">View PR</a>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </section>
   );
 }
