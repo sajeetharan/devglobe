@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildCommunityCampaignAssets,
   buildOutreachMessage,
   buildWeeklySpotlight,
   selectActivationCandidates,
@@ -31,4 +32,14 @@ test('builds a weekly spotlight from public contribution signals', () => {
   assert.doesNotMatch(spotlight, /Claimed/);
   assert.match(spotlight, /utm_source=weekly_spotlight/);
   assert.match(spotlight, /utm_campaign=developer_spotlight/);
+});
+
+test('builds review-only community assets with bounded attribution', () => {
+  const assets = buildCommunityCampaignAssets(developers[2], 'https://example.com');
+
+  assert.deepEqual(assets.map(asset => asset.channel), ['linkedin', 'x', 'reddit', 'discord', 'github_discussions']);
+  assert.ok(assets.every(asset => asset.campaign === 'developer_spotlight'));
+  assert.ok(assets.every(asset => asset.profileUrl.includes('/share/higher')));
+  assert.ok(assets.every(asset => asset.profileUrl.includes('utm_campaign=developer_spotlight')));
+  assert.ok(assets.every(asset => asset.body.includes('create your own')));
 });

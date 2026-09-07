@@ -17,5 +17,8 @@ test('keeps remote client setup accurate and provides practical first prompts', 
   assert.equal(claude.setupUrl, 'https://claude.ai/customize/connectors');
   assert.match(cursor.config, /"mcpServers"/);
   assert.ok(AGENT_WORKFLOWS.length >= 3);
-  assert.ok(AGENT_WORKFLOWS.every(workflow => !workflow.includes(DEVGLOBE_MCP_ENDPOINT)));
+  assert.equal(new Set(AGENT_WORKFLOWS.map(workflow => workflow.id)).size, AGENT_WORKFLOWS.length);
+  assert.ok(AGENT_WORKFLOWS.every(workflow => workflow.title && workflow.cadence && workflow.outcome));
+  assert.ok(AGENT_WORKFLOWS.every(workflow => workflow.prompt.includes('DevGlobe')));
+  assert.ok(AGENT_WORKFLOWS.every(workflow => !workflow.prompt.includes(DEVGLOBE_MCP_ENDPOINT)));
 });

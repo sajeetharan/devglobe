@@ -8,7 +8,7 @@ Every distributed URL uses lowercase values from this bounded vocabulary. Do not
 
 | Field | Allowed values |
 | --- | --- |
-| `utm_source` | `copy_link`, `facebook`, `linkedin`, `manual_outreach`, `native_share`, `reddit`, `share_page`, `weekly_digest`, `weekly_spotlight`, `x` |
+| `utm_source` | `copy_link`, `discord`, `facebook`, `github_discussions`, `linkedin`, `manual_outreach`, `native_share`, `reddit`, `share_page`, `weekly_digest`, `weekly_spotlight`, `x` |
 | `utm_medium` | `community`, `email`, `referral`, `social` |
 | `utm_campaign` | `agents`, `community`, `country_leaderboard`, `developer_activation`, `developer_invite`, `developer_spotlight`, `identity_card`, `india_top_50`, `product`, `rank_movement`, `weekly_impact` |
 | `utm_content` | A public GitHub login for profile stories, or `contribution_opportunity`, `introduction_request`, or `rank_movement` for the weekly digest |
@@ -46,6 +46,8 @@ union actions, arrivals
 ```
 
 Compare referral arrivals, profile views, card generations, shares, and claims seven days after each distribution change. The weekly spotlight workflow produces a review-only artifact every Monday; publishing remains a human decision.
+
+The product adoption dashboard also reports **Campaign to Value Conversion** and **Weekly Successful Discovery**. Successful discovery requires an ordered search, profile open, and later value outcome in the same privacy-safe session. This is the north-star product outcome; raw profile views alone do not count.
 
 ## Social developer stories
 

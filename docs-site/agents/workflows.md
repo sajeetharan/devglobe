@@ -7,6 +7,17 @@ description: Reusable DevGlobe MCP workflows for evidence-based developer discov
 
 These recipes keep discovery grounded in public evidence and leave contact decisions with the user and developer.
 
+The setup page provides four copyable recurring recipes with stable telemetry identifiers. Copying records only the selected client and recipe identifier; prompt text and developer identities are not collected.
+
+| Recipe | Cadence | Outcome |
+|---|---|---|
+| Weekly developer scout | Weekly | A reviewed shortlist grounded in public evidence |
+| Repository contributor match | Per repository | Relevant contributors with transparent match reasons |
+| Contribution opportunity finder | Weekly | One contribution-ready public issue to review |
+| Consent-gated introduction | When needed | A request created only after explicit approval |
+
+Agents should return canonical DevGlobe profile links in every discovery result. Those links let a person inspect evidence and continue the workflow without relying on copied agent output.
+
 Clients with MCP prompt support can select these workflows directly from the DevGlobe server:
 
 | Prompt | Use it for |

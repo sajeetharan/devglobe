@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { writeFile } from 'node:fs/promises';
 import { getCosmosContainer } from '../lib/cosmos.js';
 import {
+  buildCommunityCampaignAssets,
   buildOutreachMessage,
   buildWeeklySpotlight,
   selectActivationCandidates,
@@ -42,6 +43,7 @@ const output = {
   delivery: 'manual_review_only',
   candidateCount: candidates.length,
   weeklySpotlight: buildWeeklySpotlight(candidates),
+  communityAssets: candidates.flatMap(developer => buildCommunityCampaignAssets(developer)),
   outreach: candidates.map(developer => ({
     login: developer.login,
     profileUrl: `https://www.devglobe.dev/developer/${encodeURIComponent(developer.login)}`,

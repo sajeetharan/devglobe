@@ -35,6 +35,7 @@
     "setup-contacts-container": "node scripts/setup-contacts-container.js",
     "setup-maintainer-outreach-container": "node scripts/setup-maintainer-outreach-container.js",
     "create-agent-key": "node scripts/create-agent-key.js",
+    "verify:github-oauth": "node scripts/verify-github-oauth.js",
     "review-nominations": "node scripts/review-nominations.js",
     "send-nomination-email": "node scripts/send-nomination-approval-email.js",
     "activation-campaign": "node scripts/generate-activation-campaign.js",

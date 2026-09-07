@@ -205,6 +205,23 @@
       "name": "acquisition"
     },
     {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let P=pageViews | where timestamp >= ago(180d) and isempty(operation_SyntheticSource) | where url !startswith 'http://localhost' and url !startswith 'https://localhost' | extend Browser=iff(isempty(user_Id), session_Id, user_Id), Route=tostring(parse_url(url).Path), Source=extract(@'[?&]utm_source=([^&]+)', 1, url); let ProductionSessions=P | distinct session_Id; let E=customEvents | where timestamp >= ago(180d) and isempty(operation_SyntheticSource) | join kind=inner ProductionSessions on session_Id | extend Browser=iff(isempty(user_Id), session_Id, user_Id), Journey=tostring(customDimensions.journey); let Arrivals=P | where timestamp>=ago(30d) and isnotempty(Source) | summarize Arrived=min(timestamp), Source=take_any(Source) by Browser; let Outcomes=Arrivals | join kind=leftouter (E | where name in ('card_generated','mission_completed','next_action_selected','profile_shared','claim_completed','repository_match_generated') | project Browser,OutcomeEvent=timestamp) on Browser | summarize Arrived=take_any(Arrived),Outcome=minif(OutcomeEvent,OutcomeEvent>=Arrived) by Source,Browser; Outcomes | summarize Sessions=count(),SuccessfulSessions=countif(isnotnull(Outcome)) by Source | where Sessions>=3 | extend SuccessRate=round(100.0*SuccessfulSessions/Sessions,1) | order by SuccessfulSessions desc",
+        "size": 0,
+        "title": "Campaign to value conversion",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "30",
+      "name": "campaign-value"
+    },
+    {
       "type": 1,
       "content": {
         "json": "## Conversion funnels\nStages are ordered within the same Application Insights session. Counts are directional product signals, not identity-level attribution."
@@ -304,6 +321,23 @@
         "json": "## MCP adoption and reliability\nPrivacy-safe usage of the public DevGlobe MCP endpoint. Client values are bounded families; prompts, tool arguments, tokens, and raw user agents are never collected."
       },
       "name": "mcp-heading"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let E=customEvents | where timestamp>=ago(30d) and name in ('agent_setup_viewed','agent_setup_started','agent_config_copied','agent_onboarding_completed','agent_workflow_copied') and isnotempty(session_Id); let S=E | summarize Viewed=minif(timestamp,name=='agent_setup_viewed'),Started=minif(timestamp,name=='agent_setup_started'),Configured=minif(timestamp,name=='agent_config_copied'),Workflow=minif(timestamp,name in ('agent_onboarding_completed','agent_workflow_copied')) by session_Id; union (S | summarize Sessions=countif(isnotnull(Viewed)) | extend StepOrder=1,Stage='Viewed setup'), (S | summarize Sessions=countif(isnotnull(Viewed) and Started>=Viewed) | extend StepOrder=2,Stage='Started setup'), (S | summarize Sessions=countif(isnotnull(Viewed) and Configured>=Viewed) | extend StepOrder=3,Stage='Copied configuration'), (S | summarize Sessions=countif(isnotnull(Viewed) and Workflow>=Viewed) | extend StepOrder=4,Stage='Copied first workflow') | extend Sessions=iff(Sessions<3,long(null),Sessions) | order by StepOrder asc | project Stage,Sessions",
+        "size": 0,
+        "title": "Browser agent setup activation",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart"
+      },
+      "customWidth": "40",
+      "name": "agent-setup-funnel"
     },
     {
       "type": 3,
@@ -419,6 +453,23 @@
       },
       "customWidth": "60",
       "name": "mcp-conversion"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let M=workspace('c97b958c-a52f-45b5-bcc1-d7eb355850ff').ContainerAppConsoleLogs_CL | where TimeGenerated >= ago(30d) and Log_s has 'devglobe_mcp' | extend Metric=parse_json(Log_s) | where tostring(Metric.event) == 'devglobe_mcp' | extend Timestamp=TimeGenerated, Method=tostring(Metric.method), Tool=iff(isempty(tostring(Metric.tool)), 'none', tostring(Metric.tool)), Resource=iff(isempty(tostring(Metric.resource)), 'none', tostring(Metric.resource)), Prompt=iff(isempty(tostring(Metric.prompt)), 'none', tostring(Metric.prompt)), Client=iff(isempty(tostring(Metric.client)), 'unknown', tostring(Metric.client)), Outcome=tostring(Metric.outcome), DurationMs=todouble(Metric.durationMs), ResultCount=todouble(Metric.resultCount), CallerHash=tostring(Metric.callerHash), ErrorCode=tostring(Metric.errorCode); M | where isnotempty(CallerHash) | summarize Initialized=minif(Timestamp,Method=='initialize'),FirstResult=minif(Timestamp,Method=='tools/call' and Outcome=='success') by CallerHash | where isnotnull(Initialized) and FirstResult>=Initialized | extend Minutes=round(datetime_diff('second',FirstResult,Initialized)/60.0,2) | summarize CallerDays=count(),MedianMinutes=round(percentile(Minutes,50),2),P90Minutes=round(percentile(Minutes,90),2),UnderTwoMinutes=countif(Minutes<=2.0) | extend UnderTwoMinuteRate=round(100.0*UnderTwoMinutes/CallerDays,1)",
+        "size": 0,
+        "title": "MCP time to first successful result",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "tiles"
+      },
+      "customWidth": "40",
+      "name": "mcp-time-to-value"
     },
     {
       "type": 3,

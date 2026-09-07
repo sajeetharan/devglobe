@@ -28,6 +28,11 @@ export default function AgentSetupPage() {
     }
   }
 
+  async function copyWorkflow(workflow) {
+    await copy(workflow.prompt, workflow.id, 'agent_onboarding_completed', selected.id);
+    track('agent_workflow_copied', { action: workflow.id, journey: 'recurring_agent_workflow', source: selected.id });
+  }
+
   return (
     <main className={styles.page}>
       <nav className={styles.nav} aria-label="Agent setup navigation">
@@ -130,11 +135,15 @@ export default function AgentSetupPage() {
         </div>
         <div className={styles.workflows}>
           {AGENT_WORKFLOWS.map((workflow, index) => (
-            <article key={workflow}>
+            <article key={workflow.id}>
               <span>0{index + 1}</span>
-              <p>{workflow}</p>
-              <button type="button" onClick={() => copy(workflow, `workflow_${index + 1}`, 'agent_onboarding_completed', selected.id)}>
-                {copied === `workflow_${index + 1}` ? 'Copied' : 'Copy prompt'}
+              <div>
+                <h3>{workflow.title}</h3>
+                <small>{workflow.cadence}</small>
+                <p>{workflow.outcome}</p>
+              </div>
+              <button type="button" onClick={() => copyWorkflow(workflow)}>
+                {copied === workflow.id ? 'Copied' : 'Copy workflow'}
               </button>
             </article>
           ))}
