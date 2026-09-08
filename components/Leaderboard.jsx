@@ -11,6 +11,7 @@ import GlobalActivityFeed from './GlobalActivityFeed.jsx';
 import AgentNetworkPanel from './AgentNetworkPanel.jsx';
 import TrendingPanel from './TrendingPanel.jsx';
 import LocalPanel from './LocalPanel.jsx';
+import LivePresencePanel from './LivePresencePanel.jsx';
 
 const ITEM_HEIGHT = 62;
 const BUFFER = 10;
@@ -39,6 +40,14 @@ export default function Leaderboard({
   datasetLoading = false,
   onOpenContributions,
   onCreateCard,
+  liveDevelopers = [],
+  liveConnection = 'idle',
+  liveLanguage = '',
+  livePlatform = '',
+  liveLanguages = [],
+  livePlatforms = [],
+  onLiveLanguageChange,
+  onLivePlatformChange,
 }) {
   const listRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -144,6 +153,15 @@ export default function Leaderboard({
     <aside className={`sidebar${open ? ' open' : ''}${activeView === 'activity' ? ' sidebar--activity' : ''}`} id="sidebar">
       <div className="sidebar__drag-handle" onClick={onClose} aria-hidden="true" />
       <div className="sidebar__tabs" role="tablist" aria-label="Developer views">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeView === 'live'}
+          className={activeView === 'live' ? 'sidebar__tab sidebar__tab--active' : 'sidebar__tab'}
+          onClick={() => onViewChange?.('live')}
+        >
+          Live
+        </button>
         <button
           type="button"
           role="tab"
@@ -342,6 +360,19 @@ export default function Leaderboard({
         </>
       )}
       {activeView === 'activity' && <GlobalActivityFeed active onOpenContributions={onOpenContributions} onCreateCard={onCreateCard} />}
+      {activeView === 'live' && (
+        <LivePresencePanel
+          developers={liveDevelopers}
+          connection={liveConnection}
+          language={liveLanguage}
+          platform={livePlatform}
+          languages={liveLanguages}
+          platforms={livePlatforms}
+          onLanguageChange={onLiveLanguageChange}
+          onPlatformChange={onLivePlatformChange}
+          onSelectLogin={onSelectDevByLogin}
+        />
+      )}
       {activeView === 'agents' && (
         <AgentNetworkPanel
           globeLayerVisible={agentGlobeLayerVisible}

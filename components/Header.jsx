@@ -6,7 +6,7 @@ import UserMenu from './UserMenu.jsx';
 
 const marketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
 
-export default function Header({ onHome, theme, onToggleTheme, user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, userMenuRequest, claimStatus, sidebarOpen, onToggleSidebar, activityOpen, onOpenActivity, onAddMe, onStartTour }) {
+export default function Header({ onHome, theme, onToggleTheme, user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, userMenuRequest, claimStatus, sidebarOpen, onToggleSidebar, liveOpen, onOpenLive, activityOpen, onOpenActivity, onAddMe, onStartTour }) {
   return (
     <header className="header">
       <button type="button" className="header__brand" onClick={onHome} aria-label="Go to DevGlobe home">
@@ -37,13 +37,20 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
           </svg>
           <span className="btn__label">Repo Match</span>
         </a>
-        <a href="/space" className="btn btn--live" aria-label="See developers coding now" title="Live developer globe">
+        <button
+          type="button"
+          className={`btn btn--live${liveOpen ? ' btn--active' : ''}`}
+          onClick={onOpenLive}
+          aria-label={liveOpen ? 'Close live developer view' : 'See developers coding now'}
+          aria-expanded={liveOpen}
+          title="Show live developers on this globe"
+        >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="2" />
             <path d="M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7" />
           </svg>
           <span className="btn__label">Live now</span>
-        </a>
+        </button>
         <button
           type="button"
           className={`btn btn--activity${activityOpen ? ' btn--active' : ''}`}

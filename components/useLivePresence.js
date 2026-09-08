@@ -2,11 +2,17 @@
 
 import { useEffect, useState } from 'react';
 
-export function useLivePresence() {
+export function useLivePresence(enabled = true) {
   const [developers, setDevelopers] = useState([]);
-  const [connection, setConnection] = useState('connecting');
+  const [connection, setConnection] = useState(enabled ? 'connecting' : 'idle');
 
   useEffect(() => {
+    if (!enabled) {
+      setConnection('idle');
+      return undefined;
+    }
+
+    setConnection('connecting');
     const source = new EventSource('/api/sse/developers');
     let initialized = false;
     const initialTimer = setTimeout(() => {
@@ -47,7 +53,7 @@ export function useLivePresence() {
       clearTimeout(initialTimer);
       source.close();
     };
-  }, []);
+  }, [enabled]);
 
   return { developers, connection };
 }
