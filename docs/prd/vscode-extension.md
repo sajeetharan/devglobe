@@ -1,13 +1,11 @@
 # DevGlobe VS Code Extension
 
 **Issue:** [#44](https://github.com/sajeetharan/devglobe/issues/44)  
-**Status:** Phase 1 implementation
+**Status:** Live presence implementation ready for rollout
 
 ## Summary
 
-Publish a lightweight VS Code extension that brings DevGlobe developer discovery and identity actions into the editor. The first release uses existing public APIs and requires no background access to source code or developer activity.
-
-Authenticated coding-activity heartbeats remain a second phase. DevGlobe does not currently issue scoped developer tokens, and the existing server-side ingestion secret must never be distributed to editor clients.
+Publish a lightweight VS Code extension that lets developers opt in to the live globe, builds private coding aggregates, and brings DevGlobe discovery and identity actions into the editor. The extension exchanges VS Code's GitHub authentication for a scoped presence token and never receives a server-side ingestion secret.
 
 ## Problem
 
@@ -18,13 +16,12 @@ Developers currently need to leave their editor to discover collaborators, open 
 - Make public developer discovery available from the Command Palette.
 - Give developers fast access to their profile and shareable identity card.
 - Make the DevGlobe MCP endpoint easy to configure in compatible AI clients.
-- Attribute extension traffic without collecting custom telemetry.
+- Measure the install and activation funnel with privacy-safe, first-party events.
 - Establish a marketplace distribution surface that can be expanded safely.
 
 ## Non-goals
 
 - Reading source code, file contents, keystrokes, branches, or repository remotes.
-- Tracking coding time or sending background heartbeats in Phase 1.
 - Storing GitHub OAuth cookies or server-side ingestion secrets.
 - Recreating the globe or the complete web application inside VS Code.
 - Contacting developers automatically.
@@ -40,6 +37,9 @@ The extension contributes these commands:
 | `DevGlobe: Copy My Identity Card Link` | Copies the configured developer's share page. |
 | `DevGlobe: Copy MCP Configuration` | Copies a VS Code-compatible Streamable HTTP server configuration. |
 | `DevGlobe: Open Agent Setup` | Opens the DevGlobe agent setup hub. |
+| `DevGlobe: Go Live on the Developer Globe` | Authenticates with GitHub and starts the opt-in heartbeat. |
+| `DevGlobe: Stop Sharing Coding Presence` | Stops the heartbeat and removes current presence. |
+| `DevGlobe: View My Coding Stats` | Opens the authenticated, owner-only stats dashboard. |
 
 `devglobedev.githubLogin` stores the user's public GitHub login in VS Code settings. `devglobedev.baseUrl` defaults to `https://www.devglobe.dev` and supports local or staging environments. The `devglobedev.*` namespace avoids collisions with the unrelated `DevGlobe.devglobe` Marketplace extension.
 
@@ -51,15 +51,17 @@ The extension contributes these commands:
 - Links include `utm_source=vscode_extension&utm_medium=marketplace`.
 - MCP setup copies a configuration pointing to `/mcp`; it never handles agent credentials.
 - URL construction and response normalization are framework-independent and unit tested.
+- Presence uses a scoped token in VS Code `SecretStorage`, a 30-second heartbeat, and a 90-second server TTL.
+- Daily totals are derived server-side from consecutive valid heartbeats and retained for 400 days.
 
 ## Privacy and Security
 
-- No background network requests.
-- No custom telemetry or third-party trackers.
+- Background requests occur only after explicit live-presence opt-in.
+- First-party activation events contain bounded event properties and one-way identity hashes, not raw GitHub logins.
 - No source, workspace, repository, branch, file, or keystroke access.
 - Search responses are treated as untrusted data and normalized before display.
 - The configurable base URL must use HTTPS, except for localhost development.
-- Future authentication must use a revocable, narrowly scoped developer token stored with VS Code `SecretStorage`.
+- Authentication uses a narrowly scoped, expiring developer token stored with VS Code `SecretStorage`.
 
 ## Acceptance Criteria
 
@@ -70,6 +72,8 @@ The extension contributes these commands:
 - Invalid base URLs, empty queries, unavailable APIs, and malformed responses produce actionable errors.
 - Unit tests cover URL validation, attribution, MCP configuration, and result normalization.
 - The extension package contains marketplace metadata and local development instructions.
+- First run offers a clear Go Live action and explains the data boundary before authentication.
+- Canceling authentication leaves presence disabled.
 
 ## Measures
 
@@ -80,23 +84,13 @@ Use existing web analytics through attributed landing URLs:
 - Agent setup visits originating from the extension.
 - Downstream profile claims and shares attributed to those visits.
 
-Marketplace installs, active installs, ratings, and uninstall trends come from marketplace reporting. The extension itself emits no custom telemetry.
+Marketplace installs, active installs, ratings, and uninstall trends come from marketplace reporting. The extension includes no telemetry SDK; DevGlobe's server records bounded milestones from normal presence and stats requests.
 
-## Phase 2: Activity Reporting
-
-Activity reporting from #44 may proceed only after the backend supports:
-
-1. Browser-based authorization that issues a revocable developer token.
-2. Explicit scopes such as `activity:write` and `status:write`.
-3. Per-user rate limiting, token rotation, and revocation.
-4. A documented heartbeat schema with data minimization controls.
-5. Clear opt-in, pause, disconnect, and deletion behavior.
-
-After those prerequisites, the extension can add connection status, coding time, status updates, and opt-in heartbeats using `SecretStorage`.
+DevGlobe records first-party install-click, token, presence, sign-off, and stats-view milestones. Raw identities are replaced with HMAC hashes before storage, event properties are allow-listed, and repeated milestones are deduplicated in 30-minute windows.
 
 ## Rollout
 
 1. Validate the VSIX locally and with Extension Development Host.
-2. Publish an unlisted marketplace preview and verify VS Code forks.
-3. Measure attributed visits and claim conversion for two weeks.
-4. Publish publicly, then evaluate Phase 2 against its authentication prerequisites.
+2. Deploy the presence and coding-stats APIs before publishing extension version `0.2.0`.
+3. Publish an unlisted marketplace preview and verify GitHub authentication, presence expiry, and VS Code forks.
+4. Publish publicly and measure install-to-presence activation and stats return usage.

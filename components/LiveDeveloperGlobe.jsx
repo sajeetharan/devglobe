@@ -4,7 +4,10 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import GlobeGL from 'react-globe.gl';
 import { getLanguageColor } from '../lib/language-colors.js';
 
-const COUNTRY_URL = 'https://cdn.jsdelivr.net/gh/vasturiano/react-globe.gl@507cfce3934e66349522bc80351d7a054e46ab6d/example/datasets/ne_110m_admin_0_countries.geojson';
+const COUNTRY_URLS = [
+  'https://cdn.jsdelivr.net/gh/vasturiano/react-globe.gl@507cfce3934e66349522bc80351d7a054e46ab6d/example/datasets/ne_110m_admin_0_countries.geojson',
+  'https://raw.githubusercontent.com/vasturiano/react-globe.gl/507cfce3934e66349522bc80351d7a054e46ab6d/example/datasets/ne_110m_admin_0_countries.geojson',
+];
 const RENDERER_CONFIG = { alpha: true, antialias: true };
 const pointLat = developer => developer.lat;
 const pointLng = developer => developer.lng;
@@ -46,10 +49,22 @@ const LiveDeveloperGlobe = forwardRef(function LiveDeveloperGlobe({ developers, 
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(COUNTRY_URL, { signal: controller.signal })
-      .then(response => response.ok ? response.json() : null)
-      .then(data => { if (data?.features) setCountries(data.features); })
-      .catch(() => {});
+    async function loadCountries() {
+      for (const url of COUNTRY_URLS) {
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          if (!response.ok) continue;
+          const data = await response.json();
+          if (data?.features) {
+            setCountries(data.features);
+            return;
+          }
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+        }
+      }
+    }
+    loadCountries();
     return () => controller.abort();
   }, []);
 
@@ -70,6 +85,7 @@ const LiveDeveloperGlobe = forwardRef(function LiveDeveloperGlobe({ developers, 
         height={size.height}
         rendererConfig={RENDERER_CONFIG}
         backgroundColor="rgba(0,0,0,0)"
+        globeImageUrl="/globe-ocean.png"
         showAtmosphere
         atmosphereColor="#3b82f6"
         atmosphereAltitude={0.16}

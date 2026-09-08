@@ -5,6 +5,7 @@ import {
   diffLivePresence,
   isLivePresenceActive,
   normalizeLivePresence,
+  presenceRetryAfter,
 } from '../lib/live-presence.js';
 
 const now = new Date('2026-09-07T18:00:00.000Z');
@@ -48,6 +49,13 @@ test('expires presence after the heartbeat window', () => {
   const presence = { lastHeartbeat: now.toISOString() };
   assert.equal(isLivePresenceActive(presence, now.getTime() + 89_000), true);
   assert.equal(isLivePresenceActive(presence, now.getTime() + 90_000), false);
+});
+
+test('rate limits heartbeat bursts without delaying the normal interval', () => {
+  const presence = { lastHeartbeat: now.toISOString() };
+  assert.equal(presenceRetryAfter(presence, now.getTime() + 9_000), 1);
+  assert.equal(presenceRetryAfter(presence, now.getTime() + 10_000), 0);
+  assert.equal(presenceRetryAfter(null, now.getTime()), 0);
 });
 
 test('diffs changed and removed developers for SSE updates', () => {

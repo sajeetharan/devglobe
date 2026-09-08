@@ -36,9 +36,12 @@ Provision the TTL-enabled Cosmos container before deployment:
 
 ```powershell
 npm run setup-live-presence-container
+npm run setup-coding-stats-container
 ```
 
 Set `COSMOS_LIVE_PRESENCE_CONTAINER` only when using a name other than `live-presence`. Each heartbeat has a 90-second item TTL. `GET /api/sse/developers` sends an `init` snapshot, `update` events with `upsert` or `delete`, and 20-second connection heartbeats. Container Apps ingress and any intermediary proxy must leave streaming responses unbuffered and allow connections longer than 20 seconds.
+
+Set `COSMOS_CODING_STATS_CONTAINER` only when using a name other than `coding-stats`. The server derives owner-only daily totals from consecutive heartbeats, caps each interval at the presence TTL, and retains aggregate documents for 400 days. Aggregate writes are best-effort and never make live presence unavailable. The `/api/coding-stats` route requires the signed-in browser session and does not expose another developer's totals.
 
 ## Azure resources
 

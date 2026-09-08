@@ -394,3 +394,16 @@ test('accepts bounded community campaign sources', () => {
     }).properties.source, source);
   }
 });
+
+test('accepts the extension activation funnel without target identities', () => {
+  for (const eventName of ['extension_install_clicked', 'presence_token_issued', 'presence_started', 'presence_heartbeat_received', 'presence_stopped', 'coding_stats_viewed']) {
+    assert.deepEqual(normalizeEngagementEvent({
+      eventName,
+      properties: { source: 'vscode_extension', login: 'must-not-survive' },
+    }), {
+      eventName,
+      targetLogin: null,
+      properties: { source: 'vscode_extension' },
+    });
+  }
+});

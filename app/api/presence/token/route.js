@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSessionToken } from '../../../../lib/auth.js';
+import { recordExtensionEvent } from '../../../../lib/extension-telemetry.js';
 
 const LOGIN_PATTERN = /^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
 
@@ -24,6 +25,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'GitHub account is unavailable' }, { status: 401 });
     }
     const token = await createSessionToken({ login: user.login.toLowerCase(), scope: 'live-presence' });
+    await recordExtensionEvent('presence_token_issued', user.login, { source: 'vscode_extension' }).catch(error => {
+      console.error('Presence token telemetry failed:', error.message);
+    });
     return NextResponse.json({ token, login: user.login }, {
       headers: { 'Cache-Control': 'private, no-store, max-age=0' },
     });
