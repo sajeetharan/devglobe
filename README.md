@@ -25,7 +25,7 @@ The dynamic application is hosted on [Azure Container Apps](https://www.devglobe
 > [!IMPORTANT]
 > **Connect an AI agent to DevGlobe:** MCP-compatible agents can use the hosted endpoint at `https://www.devglobe.dev/mcp` to search public developer profiles without credentials. Verified agents can also request developer-approved introductions. See the [MCP setup guide](docs/mcp-server.md).
 >
-> **Use DevGlobe in VS Code:** Install [DevGlobe.dev Developer Discovery](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery) to search profiles, share identity cards, and copy MCP configuration from the Command Palette.
+> **Show up while you code:** Install [DevGlobe: Live Coding Globe](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery), choose **Go Live**, and appear on the globe while building private coding stats. The extension never reads source code, file paths, repositories, branches, or keystrokes.
 
 ## 🎬 Watch the DevGlobe Demo
 
@@ -47,7 +47,7 @@ The dynamic application is hosted on [Azure Container Apps](https://www.devglobe
 - **Leaderboard** — Filter by country, language, or sort by score/stars/commits
 - **Developer Profiles** — Click any pin to see detailed stats, top repos, and contribution breakdown
 - **Remote MCP Access** — Agents can discover developers and request consent-gated introductions through hosted tools
-- **VS Code Extension** — Search developers, open profiles, share identity cards, and configure MCP from the editor
+- **VS Code Extension** — Go live on the developer globe, build private coding stats, search developers, and configure MCP from the editor
 - **Mobile Responsive** — Bottom-sheet filters and full-width search on smaller screens
 
 ## 🚀 Quick Start
@@ -224,6 +224,8 @@ Required environment variables:
 | `EMAIL_FROM` | Sender on a domain verified by Resend |
 | `COSMOS_WATCHLIST_CONTAINER` | Optional private watchlist container name (default: `watchlists`) |
 | `COSMOS_IMPACT_HISTORY_CONTAINER` | Optional impact snapshot container name (default: `impact-history`) |
+| `COSMOS_LIVE_PRESENCE_CONTAINER` | Opt-in live heartbeat container (default: `live-presence`) |
+| `COSMOS_CODING_STATS_CONTAINER` | Private daily coding aggregates (default: `coding-stats`) |
 | `CRON_SECRET` | Bearer token shared by protected cron endpoints and Azure Timer Functions |
 | `EMAIL_PREFERENCE_SECRET` | HMAC secret for weekly-email unsubscribe links; defaults to `SESSION_SECRET` |
 
@@ -265,6 +267,19 @@ ACTIVITY_INGEST_SECRET=the-same-secret-configured-on-the-site
 ```
 
 The timer invokes the collector every minute, matching GitHub's advertised polling interval. GitHub's public Events API is best-effort and may delay or omit events; the 15-second browser refresh does not guarantee GitHub source delivery within that interval. A valid `GITHUB_TOKEN` is required for full three-page collection; anonymous fallback inspects one page only. The Cosmos activity container uses a 48-hour TTL while the API exposes only the latest 24 hours.
+
+### Live coding presence and private stats
+
+The `/space` globe receives an opt-in heartbeat from the DevGlobe VS Code extension every 30 seconds. Presence expires after 90 seconds. Daily coding totals, language time, and editor time are derived only from consecutive valid heartbeats and are visible only to the signed-in developer. DevGlobe does not collect source code, file paths, repositories, branches, or keystrokes for this feature.
+
+Provision both TTL-enabled containers before enabling the feature in production:
+
+```bash
+npm run setup-live-presence-container
+npm run setup-coding-stats-container
+```
+
+Publish `extensions/vscode` version `0.2.0` after the web deployment so the Marketplace commands target available `/space`, `/api/presence`, and `/coding-stats` routes.
 
 ### Impact history capture
 

@@ -25,7 +25,7 @@
 }
 
 .brand,
-.directory {
+.navigation a {
   color: var(--text-primary);
   text-decoration: none;
 }
@@ -39,8 +39,9 @@
 }
 
 .brand img { width: 28px; height: 28px; }
-.directory { justify-self: end; color: var(--text-secondary); font-size: 13px; font-weight: 600; }
-.directory:hover { color: var(--text-primary); }
+.navigation { display: flex; justify-self: end; gap: 16px; }
+.navigation a { color: var(--text-secondary); font-size: 13px; font-weight: 600; }
+.navigation a:hover { color: var(--text-primary); }
 
 .title { display: flex; align-items: center; gap: 14px; }
 .title h1 { margin: 0; font-size: 15px; line-height: 1; letter-spacing: 0; }
@@ -154,6 +155,12 @@
 
 .filters select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
+.join { display: grid; gap: 7px; padding-top: 12px; border-top: 1px solid var(--border); }
+.join strong { font-size: 12px; }
+.join span { color: var(--text-secondary); font-size: 10px; line-height: 1.5; }
+.join a { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; border: 1px solid var(--accent-blue); border-radius: 6px; color: var(--accent-blue); font-size: 11px; font-weight: 700; text-decoration: none; }
+.join a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
 .selected {
   right: 24px;
   bottom: 24px;
@@ -193,7 +200,8 @@
   .brand span { display: none; }
   .title { justify-content: center; gap: 8px; }
   .title h1 { max-width: 42vw; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-  .directory { font-size: 11px; }
+  .navigation { gap: 9px; }
+  .navigation a { font-size: 11px; }
   .filters { top: 70px; right: 12px; left: 12px; width: auto; grid-template-columns: 1fr 1fr; gap: 8px; padding: 9px; }
   .filters label > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .activity { top: auto; right: 0; bottom: 0; left: 0; width: 100%; height: 170px; border-width: 1px 0 0; border-radius: 0; }
@@ -203,6 +211,9 @@
   .selected { right: 12px; bottom: 182px; width: calc(100vw - 24px); grid-template-columns: 42px minmax(0, 1fr); }
   .selected > img { width: 42px; height: 42px; }
   .selected > a { grid-column: 2; }
+  .join { grid-column: 1 / -1; grid-template-columns: 1fr auto; align-items: center; }
+  .join span { grid-column: 1 / -1; }
+  .join a { grid-column: 2; grid-row: 1; min-height: 34px; padding: 0 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

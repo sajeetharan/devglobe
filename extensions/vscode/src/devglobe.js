@@ -57,6 +57,14 @@ function agentSetupUrl(baseUrl) {
   return buildUrl(baseUrl, '/agents');
 }
 
+function codingStatsUrl(baseUrl) {
+  return buildUrl(baseUrl, '/coding-stats');
+}
+
+function liveGlobeUrl(baseUrl) {
+  return buildUrl(baseUrl, '/space');
+}
+
 function presenceTokenUrl(baseUrl) {
   return new URL('/api/presence/token', `${resolveBaseUrl(baseUrl)}/`).toString();
 }
@@ -107,7 +115,9 @@ function normalizeResults(payload) {
 
 module.exports = {
   agentSetupUrl,
+  codingStatsUrl,
   identityCardUrl,
+  liveGlobeUrl,
   mcpConfiguration,
   normalizeLogin,
   normalizeResults,

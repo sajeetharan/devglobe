@@ -1,7 +1,9 @@
 const vscode = require('vscode');
 const {
   agentSetupUrl,
+  codingStatsUrl,
   identityCardUrl,
+  liveGlobeUrl,
   mcpConfiguration,
   normalizeLogin,
   normalizeResults,
@@ -23,6 +25,7 @@ function configuration() {
 }
 
 const PRESENCE_TOKEN_KEY = 'devglobedev.livePresenceToken';
+const ONBOARDING_KEY = 'devglobedev.goLiveOnboarding.v1';
 const HEARTBEAT_INTERVAL_MS = 30000;
 
 function platformName() {
@@ -235,7 +238,41 @@ function registerCommand(context, name, handler) {
   }));
 }
 
-function activate(context) {
+async function goLive(presence) {
+  const settings = vscode.workspace.getConfiguration('devglobedev');
+  await settings.update('presence.enabled', true, vscode.ConfigurationTarget.Global);
+  try {
+    const online = await presence.start(true);
+    if (!online) throw new Error('GitHub authentication is required to go live on DevGlobe.');
+  } catch (error) {
+    await settings.update('presence.enabled', false, vscode.ConfigurationTarget.Global);
+    await presence.stop(false);
+    throw error;
+  }
+
+  const action = await vscode.window.showInformationMessage(
+    'You are live on DevGlobe. Your private coding stats are now being counted.',
+    'View Live Globe',
+    'View My Stats',
+  );
+  if (action === 'View Live Globe') await openExternal(liveGlobeUrl(configuration().baseUrl));
+  if (action === 'View My Stats') await openExternal(codingStatsUrl(configuration().baseUrl));
+}
+
+async function offerGoLiveOnboarding(context) {
+  if (context.globalState.get(ONBOARDING_KEY)) return;
+  await context.globalState.update(ONBOARDING_KEY, true);
+  if (configuration().presenceEnabled) return;
+
+  const action = await vscode.window.showInformationMessage(
+    'Show up on the DevGlobe live globe while you code. Opt in to share only language, editor, OS, and session timing. Never code, files, or repositories.',
+    'Go Live',
+    'Not Now',
+  );
+  if (action === 'Go Live') await vscode.commands.executeCommand('devglobedev.startPresence');
+}
+
+async function activate(context) {
   const presence = createPresenceController(context);
   registerCommand(context, 'devglobedev.searchDevelopers', searchDevelopers);
   registerCommand(context, 'devglobedev.openMyProfile', async () => {
@@ -257,11 +294,11 @@ function activate(context) {
   registerCommand(context, 'devglobedev.openAgentSetup', async () => {
     await openExternal(agentSetupUrl(configuration().baseUrl));
   });
+  registerCommand(context, 'devglobedev.openCodingStats', async () => {
+    await openExternal(codingStatsUrl(configuration().baseUrl));
+  });
   registerCommand(context, 'devglobedev.startPresence', async () => {
-    await vscode.workspace.getConfiguration('devglobedev').update('presence.enabled', true, vscode.ConfigurationTarget.Global);
-    const online = await presence.start(true);
-    if (!online) throw new Error('GitHub authentication is required to share coding presence.');
-    await vscode.window.showInformationMessage('Your coding presence is now visible on DevGlobe.');
+    await goLive(presence);
   });
   registerCommand(context, 'devglobedev.stopPresence', async () => {
     await vscode.workspace.getConfiguration('devglobedev').update('presence.enabled', false, vscode.ConfigurationTarget.Global);
@@ -269,6 +306,7 @@ function activate(context) {
     await vscode.window.showInformationMessage('Your DevGlobe coding presence is offline.');
   });
   if (configuration().presenceEnabled) presence.start(false).catch(() => {});
+  await offerGoLiveOnboarding(context);
 }
 
 function deactivate() {}

@@ -3,11 +3,13 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useDeferredValue, useMemo, useRef, useState } from 'react';
+import { track } from '../lib/analytics.js';
 import { getLanguageColor } from '../lib/language-colors.js';
 import { useLivePresence } from './useLivePresence.js';
 import styles from './LiveDeveloperSpace.module.css';
 
 const LiveDeveloperGlobe = dynamic(() => import('./LiveDeveloperGlobe.jsx'), { ssr: false });
+const MARKETPLACE_URL = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
 
 function uniqueValues(developers, field) {
   return [...new Set(developers.map(developer => developer[field]).filter(Boolean))].sort();
@@ -53,7 +55,10 @@ export default function LiveDeveloperSpace() {
               : connection === 'unavailable' ? 'Unavailable' : 'Connecting'}
           </span>
         </div>
-        <Link href="/leaderboard" className={styles.directory}>Directory</Link>
+        <nav className={styles.navigation} aria-label="Live globe actions">
+          <Link href="/coding-stats">My stats</Link>
+          <Link href="/leaderboard">Directory</Link>
+        </nav>
       </header>
 
       <section className={styles.stage} aria-label="Live developer presence">
@@ -100,6 +105,11 @@ export default function LiveDeveloperSpace() {
             {platforms.map(value => <option key={value}>{value}</option>)}
           </select>
         </label>
+        <div className={styles.join}>
+          <strong>Share your presence</strong>
+          <span>Opt in from VS Code. No code, paths, repositories, branches, or keystrokes are sent.</span>
+          <a href={MARKETPLACE_URL} target="_blank" rel="noreferrer" onClick={() => track('extension_install_clicked', { source: 'live_globe' })}>Install extension</a>
+        </div>
       </aside>
 
       {selected ? (

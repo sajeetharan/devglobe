@@ -2,7 +2,9 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const {
   agentSetupUrl,
+  codingStatsUrl,
   identityCardUrl,
+  liveGlobeUrl,
   mcpConfiguration,
   normalizeLogin,
   normalizeResults,
@@ -20,7 +22,7 @@ test('validates production and local base URLs', () => {
   assert.throws(() => resolveBaseUrl('https://user@example.com'), /without credentials/);
 });
 
-test('builds attributed profile, card, setup, and search URLs', () => {
+test('builds attributed profile, card, setup, activation, and search URLs', () => {
   const profile = new URL(profileUrl('https://www.devglobe.dev', 'sajeetharan'));
   assert.equal(profile.pathname, '/developer/sajeetharan');
   assert.equal(profile.searchParams.get('utm_source'), 'vscode_extension');
@@ -28,6 +30,10 @@ test('builds attributed profile, card, setup, and search URLs', () => {
 
   assert.equal(new URL(identityCardUrl('https://www.devglobe.dev', '@sajeetharan')).pathname, '/share/sajeetharan');
   assert.equal(new URL(agentSetupUrl('https://www.devglobe.dev')).pathname, '/agents');
+  assert.equal(new URL(codingStatsUrl('https://www.devglobe.dev')).pathname, '/coding-stats');
+  const liveGlobe = new URL(liveGlobeUrl('https://www.devglobe.dev'));
+  assert.equal(liveGlobe.pathname, '/space');
+  assert.equal(liveGlobe.searchParams.get('utm_source'), 'vscode_extension');
 
   const search = new URL(searchUrl('https://www.devglobe.dev', 'TypeScript Canada'));
   assert.equal(search.pathname, '/api/search');
