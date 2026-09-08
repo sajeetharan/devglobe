@@ -39,6 +39,9 @@ const devLng = d => d.lng;
 const pointAltitude = d => 0.01 + (d.score / 100) * 0.06;
 const pointRadius = d => 0.3 + (d.score / 100) * 0.7;
 const pointColor = d => getScoreColor(d.score);
+const livePointAltitude = d => d.presenceState === 'live' ? 0.055 : 0.025;
+const livePointRadius = d => d.presenceState === 'live' ? 0.7 : 0.42;
+const livePointColor = d => getLanguageColor(d.activeLanguage) || '#3b82f6';
 const ringMaxRadius = d => d.maxR;
 const ringPropagationSpeed = d => d.propagationSpeed;
 const ringRepeatPeriod = d => d.repeatPeriod;
@@ -288,7 +291,11 @@ const Globe = forwardRef(function Globe({
   agentRelationshipGraph = { nodes: [], developers: [], links: [] },
   tooltipDisabled = false,
   trendingLogins = [],
+  liveMode = false,
+  liveDevelopers = [],
+  onSelectLiveDev,
 }, ref) {
+  const containerRef = useRef(null);
   const globeEl = useRef();
   const tooltipRef = useRef(null);
   const pointerDownPos = useRef(null);
@@ -306,7 +313,19 @@ const Globe = forwardRef(function Globe({
   );
   const [languageFilter, setLanguageFilter] = useState('');
   const [cameraAltitude, setCameraAltitude] = useState(null);
+  const [globeSize, setGlobeSize] = useState({ width: 1, height: 1 });
   const isLight = theme === 'light';
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setGlobeSize({ width: Math.max(1, width), height: Math.max(1, height) });
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const expandedLimit = window.innerWidth < 768 ? 1200 : 2500;
@@ -324,6 +343,10 @@ const Globe = forwardRef(function Globe({
   }, []);
 
   const geoDevs = useMemo(() => {
+    if (liveMode) {
+      return liveDevelopers.filter(developer => developer.lat != null && developer.lng != null);
+    }
+
     let list = developers.filter(d => d.lat != null && d.lng != null);
 
     if (selectedCountry) {
@@ -334,7 +357,7 @@ const Globe = forwardRef(function Globe({
     return list
       .sort((a, b) => b.score - a.score)
       .slice(0, pointLimit);
-  }, [developers, pointLimit, selectedCountry]);
+  }, [developers, liveDevelopers, liveMode, pointLimit, selectedCountry]);
 
   // Hexbin clustering (#30) draws aggregated bins, not one mesh per developer,
   // so it can safely use the full filtered dataset instead of the top-N
@@ -349,7 +372,7 @@ const Globe = forwardRef(function Globe({
     return list;
   }, [developers, selectedCountry]);
 
-  const featuredGeoDevs = geoDevs;
+  const featuredGeoDevs = liveMode ? [] : geoDevs;
 
   const agentNodeMarkers = useMemo(() => agentRelationshipGraph.nodes.map(node => ({
     ...node,
@@ -441,8 +464,8 @@ const Globe = forwardRef(function Globe({
   }, [hoverDev]);
 
   const arcsData = useMemo(() => (
-    agentNetworkVisible ? [...agentRelationshipGraph.links, ...collaborationArcs] : collaborationArcs
-  ), [agentNetworkVisible, agentRelationshipGraph.links, collaborationArcs]);
+    liveMode ? [] : agentNetworkVisible ? [...agentRelationshipGraph.links, ...collaborationArcs] : collaborationArcs
+  ), [agentNetworkVisible, agentRelationshipGraph.links, collaborationArcs, liveMode]);
 
   // Rose pulsing rings for the top trending gainers (#24) — layered on top of
   // whichever base ring set (score or agent-network) is currently active.
@@ -468,6 +491,20 @@ const Globe = forwardRef(function Globe({
 
   // Pulsing rings for top 10 developers + active hovered developer's collaborators
   const ringsData = useMemo(() => {
+    if (liveMode) {
+      return geoDevs
+        .filter(developer => developer.presenceState === 'live')
+        .map(developer => ({
+          lat: developer.lat,
+          lng: developer.lng,
+          maxR: 3,
+          propagationSpeed: 1.2,
+          repeatPeriod: 1800,
+          color: livePointColor(developer),
+          login: developer.login,
+        }));
+    }
+
     const base = geoDevs.slice(0, 10).map(d => ({
       lat: d.lat,
       lng: d.lng,
@@ -495,23 +532,24 @@ const Globe = forwardRef(function Globe({
     }
 
     return [...base, ...trendingRings];
-  }, [geoDevs, hoverDev, trendingRings]);
+  }, [geoDevs, hoverDev, liveMode, trendingRings]);
 
   const displayPointAltitude = useCallback(developer => {
-    return pointAltitude(developer);
-  }, []);
+    return liveMode ? livePointAltitude(developer) : pointAltitude(developer);
+  }, [liveMode]);
 
   const displayPointRadius = useCallback(developer => {
-    return pointRadius(developer);
-  }, []);
+    return liveMode ? livePointRadius(developer) : pointRadius(developer);
+  }, [liveMode]);
 
   const displayPointColor = useCallback(developer => {
+    if (liveMode) return livePointColor(developer);
     if (colorMode === 'language') {
       if (languageFilter && developer.topLanguage !== languageFilter) return 'rgba(100, 116, 139, 0.12)';
       return getLanguageColor(developer.topLanguage);
     }
     return pointColor(developer);
-  }, [colorMode, languageFilter]);
+  }, [colorMode, languageFilter, liveMode]);
 
   // Developers per country, keyed the same way the leaderboard filters
   const devCountByCountry = useMemo(() => {
@@ -590,7 +628,7 @@ const Globe = forwardRef(function Globe({
     if (zoomDebounceRef.current) clearTimeout(zoomDebounceRef.current);
   }, []);
 
-  const hexModeActive = cameraAltitude != null
+  const hexModeActive = !liveMode && cameraAltitude != null
     && (hexModeActiveRef.current
       ? cameraAltitude > HEX_EXIT_ALTITUDE  // already clustered: only drop out once well below the enter line
       : cameraAltitude > HEX_ENTER_ALTITUDE); // not yet clustered: need to cross the higher enter line
@@ -655,6 +693,27 @@ const Globe = forwardRef(function Globe({
     setHoverDev(point || null);
 
     if (point) {
+      if (liveMode) {
+        const safe = value => String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+        tooltip.innerHTML = `
+          <div class="tooltip__header">
+            <img class="tooltip__avatar" src="${safe(point.avatarUrl || '/devglobe.png')}" alt="">
+            <div>
+              <div class="tooltip__name">${safe(point.name || point.login)}</div>
+              <div class="tooltip__login">@${safe(point.login)}</div>
+            </div>
+          </div>
+          <div class="tooltip__score">${point.presenceState === 'live' ? 'Live now' : 'Recently coding'}</div>
+          <div class="tooltip__meta">
+            <span>${safe(point.activeLanguage || 'Language not shared')}</span>
+            <span>· ${safe(point.editor || point.platform || 'Editor not shared')}</span>
+          </div>
+        `;
+        tooltip.classList.add('visible');
+        setAutoRotate(false);
+        return;
+      }
+
       const collabs = point.collaborators?.slice(0, 5) || [];
       const collabHtml = collabs.length > 0 ? `
         <div class="tooltip__collaborators">
@@ -694,11 +753,13 @@ const Globe = forwardRef(function Globe({
       tooltip.classList.remove('visible');
       setAutoRotate(true);
     }
-  }, [setAutoRotate, tooltipDisabled]);
+  }, [liveMode, setAutoRotate, tooltipDisabled]);
 
   const handleClick = useCallback((point) => {
-    if (point) onSelectDev(point);
-  }, [onSelectDev]);
+    if (!point) return;
+    if (liveMode) onSelectLiveDev?.(point);
+    else onSelectDev(point);
+  }, [liveMode, onSelectDev, onSelectLiveDev]);
 
   // Click a hex cluster (#30) to zoom into that region, which drops the
   // camera below the hex exit altitude and dissolves the cluster back into
@@ -806,9 +867,11 @@ const Globe = forwardRef(function Globe({
 
   return (
     <>
-      <div id="globe-container" onPointerDown={handlePointerDown} onClick={handleContainerClick}>
+      <div ref={containerRef} id="globe-container" onPointerDown={handlePointerDown} onClick={handleContainerClick}>
         <GlobeGL
           ref={globeEl}
+          width={globeSize.width}
+          height={globeSize.height}
           globeImageUrl={isLight
             ? 'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg'
             : 'https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg'}
@@ -848,7 +911,7 @@ const Globe = forwardRef(function Globe({
           hexLabel={hexLabel}
           hexTransitionDuration={400}
           onHexClick={handleHexClick}
-          htmlElementsData={hexModeActive
+          htmlElementsData={liveMode ? [] : hexModeActive
             ? (agentNetworkVisible ? [...agentRelationshipGraph.developers, ...agentNodeMarkers] : [])
             : htmlMarkers}
           htmlLat={avatarLat}
@@ -863,7 +926,7 @@ const Globe = forwardRef(function Globe({
           ringPropagationSpeed={ringPropagationSpeed}
           ringRepeatPeriod={ringRepeatPeriod}
           ringColor={ringColor}
-          labelsData={hexModeActive ? [] : labelDevs}
+          labelsData={liveMode || hexModeActive ? [] : labelDevs}
           labelLat={devLat}
           labelLng={devLng}
           labelText={labelText}
@@ -900,7 +963,13 @@ const Globe = forwardRef(function Globe({
           {controlsCollapsed ? 'Map legend ▲' : 'Map legend ▼'}
         </button>
         {!controlsCollapsed && (
-          <>
+          liveMode ? (
+            <div className="globe-legend" aria-label="Live presence legend">
+              <span className="globe-legend__item"><span className="globe-legend__live-dot" />Live now</span>
+              <span className="globe-legend__item"><span className="globe-legend__recent-dot" />Recently coding</span>
+              <span className="globe-legend__item">Colors show active language</span>
+            </div>
+          ) : <>
             <div className="globe-color-mode">
               {!hexModeActive && (
                 <>

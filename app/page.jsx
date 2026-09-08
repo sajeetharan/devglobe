@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 import { track } from '../lib/analytics.js';
 import Header from '../components/Header.jsx';
 import SearchBar from '../components/SearchBar.jsx';
@@ -22,6 +22,7 @@ import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import { acquisitionAttributionProperties, socialAttributionProperties } from '../lib/share-attribution.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
+import { useLivePresence } from '../components/useLivePresence.js';
 import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
@@ -76,7 +77,19 @@ export default function Home() {
   const [trending, setTrending] = useState(null);
   const [trendingError, setTrendingError] = useState('');
   const [tourStep, setTourStep] = useState(null);
+  const [liveLanguage, setLiveLanguage] = useState('');
+  const [livePlatform, setLivePlatform] = useState('');
   const globeRef = useRef(null);
+  const liveViewActive = sidebarView === 'live';
+  const { developers: liveDevelopers, connection: liveConnection } = useLivePresence(liveViewActive);
+  const deferredLiveDevelopers = useDeferredValue(liveDevelopers);
+  const liveLanguages = useMemo(() => [...new Set(liveDevelopers.map(developer => developer.activeLanguage).filter(Boolean))].sort(), [liveDevelopers]);
+  const livePlatforms = useMemo(() => [...new Set(liveDevelopers.map(developer => developer.platform).filter(Boolean))].sort(), [liveDevelopers]);
+  const filteredLiveDevelopers = useMemo(() => deferredLiveDevelopers
+    .filter(developer => !liveLanguage || developer.activeLanguage === liveLanguage)
+    .filter(developer => !livePlatform || developer.platform === livePlatform)
+    .sort((left, right) => right.lastHeartbeat.localeCompare(left.lastHeartbeat)),
+  [deferredLiveDevelopers, liveLanguage, livePlatform]);
 
   useEffect(() => {
     try {
@@ -733,6 +746,28 @@ export default function Home() {
     setSidebarOpen(true);
   }, [sidebarView]);
 
+  const handleOpenLive = useCallback(() => {
+    if (sidebarView === 'live') {
+      setSidebarOpen(false);
+      setSidebarView('leaderboard');
+      return;
+    }
+    setSelectedCountry('');
+    setAgentGlobeLayerVisible(false);
+    setSidebarView('live');
+    setSidebarOpen(true);
+    track('live_globe_opened', { source: 'home_header', journey: 'live_presence' });
+  }, [sidebarView]);
+
+  const handleSidebarViewChange = useCallback((view) => {
+    if (view === 'live') {
+      setSelectedCountry('');
+      setAgentGlobeLayerVisible(false);
+      track('live_globe_opened', { source: 'home_sidebar', journey: 'live_presence' });
+    }
+    setSidebarView(view);
+  }, []);
+
   const handleOpenAgentNetwork = useCallback(() => {
     setSidebarView('agents');
     setSidebarOpen(true);
@@ -876,6 +911,8 @@ export default function Home() {
         claimStatus={claimStatus}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={handleToggleSidebar}
+        liveOpen={liveViewActive}
+        onOpenLive={handleOpenLive}
         activityOpen={sidebarView === 'activity'}
         onOpenActivity={handleOpenActivity}
         onAddMe={handleAddMe}
@@ -931,6 +968,9 @@ export default function Home() {
           agentRelationshipGraph={agentRelationshipGraph}
           tooltipDisabled={Boolean(selectedDev || compareDevs.length === 2)}
           trendingLogins={trending?.gainers?.slice(0, 10).map(entry => entry.login) || []}
+          liveMode={liveViewActive}
+          liveDevelopers={filteredLiveDevelopers}
+          onSelectLiveDev={developer => handleSelectDevByLogin(developer.login)}
         />
         <Leaderboard
           developers={filtered}
@@ -945,7 +985,7 @@ export default function Home() {
           open={sidebarOpen}
           onClose={handleCloseSidebar}
           activeView={sidebarView}
-          onViewChange={setSidebarView}
+          onViewChange={handleSidebarViewChange}
           agentGlobeLayerVisible={agentGlobeLayerVisible}
           onToggleAgentGlobeLayer={setAgentGlobeLayerVisible}
           onAgentGraphChange={setAgentRelationshipGraph}
@@ -956,6 +996,14 @@ export default function Home() {
           datasetLoading={datasetLoading && !searchActive}
           onOpenContributions={() => setShowContributions(true)}
           onCreateCard={handleCreateCardFromActivity}
+          liveDevelopers={filteredLiveDevelopers}
+          liveConnection={liveConnection}
+          liveLanguage={liveLanguage}
+          livePlatform={livePlatform}
+          liveLanguages={liveLanguages}
+          livePlatforms={livePlatforms}
+          onLiveLanguageChange={setLiveLanguage}
+          onLivePlatformChange={setLivePlatform}
         />
         {sidebarOpen && (
           <div className="sidebar-backdrop" onClick={handleCloseSidebar} />
