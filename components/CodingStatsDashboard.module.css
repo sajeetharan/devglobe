@@ -37,7 +37,8 @@
 .intro span { display: block; max-width: 690px; margin-top: 16px; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
 
 .primaryAction,
-.secondaryAction {
+.secondaryAction,
+.introActions button {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
@@ -48,10 +49,13 @@
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .primaryAction { background: var(--accent-blue); color: #fff; }
 .secondaryAction { flex: 0 0 auto; color: var(--accent-blue); }
+.introActions { display: flex; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.introActions > span { width: 100%; min-height: 18px; margin: 0; text-align: right; }
 .primaryAction:focus-visible,
 .secondaryAction:focus-visible,
 .brand:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
@@ -77,6 +81,24 @@
 .chart { display: grid; height: 180px; grid-template-columns: repeat(30, 1fr); align-items: flex-end; gap: 5px; margin-top: 24px; }
 .chart i { display: flex; height: 100%; align-items: flex-end; background: color-mix(in srgb, var(--border) 30%, transparent); }
 .chart b { display: block; width: 100%; min-height: 2px; background: var(--accent-blue); }
+
+.momentum { display: grid; grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr); gap: 56px; padding: 38px 0; border-bottom: 1px solid var(--border); }
+.goal h2,
+.achievements h2 { margin: 0; font-size: 17px; letter-spacing: 0; }
+.goal > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.goal label { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 12px; }
+.goal select { min-height: 36px; padding: 0 28px 0 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); }
+.goalProgress { margin-top: 28px; }
+.goalProgress > span { color: var(--text-secondary); font-size: 12px; }
+.goalProgress > i { display: block; height: 9px; margin-top: 10px; overflow: hidden; background: color-mix(in srgb, var(--border) 60%, transparent); }
+.goalProgress b { display: block; height: 100%; background: var(--accent-blue); }
+.achievements > div { display: grid; grid-template-columns: 1fr 1fr; margin-top: 18px; border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+.achievements article { min-width: 0; padding: 16px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); opacity: 0.55; }
+.achievements article[data-earned='true'] { opacity: 1; }
+.achievements article span { color: var(--text-secondary); font-size: 10px; font-weight: 700; }
+.achievements article[data-earned='true'] span { color: #22c55e; }
+.achievements article strong { display: block; margin-top: 6px; font-size: 13px; }
+.achievements article p { margin: 4px 0 0; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
 
 .breakdowns { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; padding-top: 38px; }
 .breakdown { min-width: 0; }
@@ -105,12 +127,15 @@
 @media (max-width: 720px) {
   .page { padding-inline: 16px; }
   .intro { align-items: flex-start; flex-direction: column; padding: 44px 0 30px; }
+  .introActions { width: 100%; justify-content: flex-start; }
+  .introActions > span { text-align: left; }
   .metrics { grid-template-columns: 1fr 1fr; }
   .metrics div { padding: 18px 14px; border-bottom: 1px solid var(--border); }
   .metrics div:nth-child(2) { border-right: 0; }
   .metrics div:nth-last-child(-n + 2) { border-bottom: 0; }
   .metrics div:first-child { padding-left: 14px; }
   .chart { height: 130px; gap: 2px; }
+  .momentum { grid-template-columns: 1fr; gap: 36px; }
   .breakdowns { grid-template-columns: 1fr; gap: 36px; }
   .empty { min-height: 320px; padding: 32px 0; }
 }

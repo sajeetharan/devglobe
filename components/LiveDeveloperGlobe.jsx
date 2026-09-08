@@ -12,8 +12,8 @@ const RENDERER_CONFIG = { alpha: true, antialias: true };
 const pointLat = developer => developer.lat;
 const pointLng = developer => developer.lng;
 const pointColor = developer => getLanguageColor(developer.activeLanguage) || '#3b82f6';
-const pointAltitude = () => 0.035;
-const pointRadius = () => 0.65;
+const pointAltitude = developer => developer.presenceState === 'live' ? 0.035 : 0.018;
+const pointRadius = developer => developer.presenceState === 'live' ? 0.65 : 0.38;
 const ringLat = developer => developer.lat;
 const ringLng = developer => developer.lng;
 const ringColor = developer => () => `${pointColor(developer)}b3`;
@@ -78,7 +78,7 @@ const LiveDeveloperGlobe = forwardRef(function LiveDeveloperGlobe({ developers, 
   }, []);
 
   return (
-    <div ref={containerRef} className="live-globe-canvas" aria-label="Interactive globe showing developers currently coding">
+    <div ref={containerRef} className="live-globe-canvas" aria-label="Interactive globe showing live and recent developer activity">
       <GlobeGL
         ref={globeRef}
         width={size.width}
@@ -101,7 +101,7 @@ const LiveDeveloperGlobe = forwardRef(function LiveDeveloperGlobe({ developers, 
         pointAltitude={pointAltitude}
         pointRadius={pointRadius}
         onPointClick={onSelect}
-        ringsData={developers}
+        ringsData={developers.filter(developer => developer.presenceState === 'live')}
         ringLat={ringLat}
         ringLng={ringLng}
         ringColor={ringColor}

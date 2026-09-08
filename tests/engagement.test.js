@@ -396,7 +396,7 @@ test('accepts bounded community campaign sources', () => {
 });
 
 test('accepts the extension activation funnel without target identities', () => {
-  for (const eventName of ['extension_install_clicked', 'presence_token_issued', 'presence_started', 'presence_heartbeat_received', 'presence_stopped', 'coding_stats_viewed']) {
+  for (const eventName of ['extension_install_clicked', 'presence_token_issued', 'presence_started', 'presence_heartbeat_received', 'presence_stopped', 'coding_stats_viewed', 'coding_stats_shared']) {
     assert.deepEqual(normalizeEngagementEvent({
       eventName,
       properties: { source: 'vscode_extension', login: 'must-not-survive' },

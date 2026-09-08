@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCodingDelta, buildCodingStats, mergeCodingDay } from '../lib/coding-stats.js';
+import { buildCodingAchievements, buildCodingDelta, buildCodingStats, mergeCodingDay } from '../lib/coding-stats.js';
 
 const first = {
   login: 'octocat',
@@ -44,6 +44,15 @@ test('builds owner dashboard totals, dimensions, timeline, and streak', () => {
   assert.equal(result.todaySeconds, 180);
   assert.equal(result.weekSeconds, 360);
   assert.equal(result.currentStreak, 3);
+  assert.equal(result.achievements.find(item => item.id === 'three-day-streak').earned, true);
+  assert.equal(result.achievements.find(item => item.id === 'first-hour').earned, false);
   assert.deepEqual(result.languages[0], { name: 'TypeScript', seconds: 300 });
   assert.equal(result.timeline.length, 30);
+});
+
+test('derives achievements from aggregate totals without source activity', () => {
+  const achievements = buildCodingAchievements({ allSeconds: 3600, weekSeconds: 18000, currentStreak: 7 });
+  assert.equal(achievements.length, 4);
+  assert.equal(achievements.every(item => item.earned), true);
+  assert.equal(achievements.some(item => 'file' in item || 'repository' in item), false);
 });

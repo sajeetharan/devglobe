@@ -2,7 +2,9 @@ const vscode = require('vscode');
 const {
   agentSetupUrl,
   codingStatsUrl,
+  editorName,
   identityCardUrl,
+  isCodingActivityRecent,
   liveGlobeUrl,
   mcpConfiguration,
   normalizeLogin,
@@ -38,15 +40,36 @@ function activeLanguage() {
 
 function createPresenceController(context) {
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 20);
-  status.command = 'devglobedev.stopPresence';
-  status.text = '$(radio-tower) DevGlobe live';
-  status.tooltip = 'Coding presence is visible on DevGlobe. Click to stop sharing.';
   context.subscriptions.push(status);
 
   let timer = null;
   let starting = null;
   let sessionStartedAt = null;
+  let lastActivityAt = 0;
   let sending = false;
+
+  function showOfflineStatus() {
+    status.command = 'devglobedev.startPresence';
+    status.text = '$(globe) DevGlobe: Go live';
+    status.tooltip = 'Show up on the live developer globe while you code.';
+    status.show();
+  }
+
+  function showLiveStatus() {
+    status.command = 'devglobedev.stopPresence';
+    status.text = '$(radio-tower) DevGlobe live';
+    status.tooltip = 'Coding presence is visible on DevGlobe. Click to stop sharing.';
+    status.show();
+  }
+
+  function showIdleStatus() {
+    status.command = 'devglobedev.stopPresence';
+    status.text = '$(debug-pause) DevGlobe idle';
+    status.tooltip = 'Heartbeats pause after one minute without editor activity. Start coding to resume.';
+    status.show();
+  }
+
+  showOfflineStatus();
 
   async function exchangeToken(interactive) {
     const githubSession = await vscode.authentication.getSession('github', ['read:user'], {
@@ -72,6 +95,10 @@ function createPresenceController(context) {
 
   async function heartbeat(interactive = false) {
     if (sending || !configuration().presenceEnabled) return false;
+    if (!isCodingActivityRecent(lastActivityAt)) {
+      showIdleStatus();
+      return false;
+    }
     sending = true;
     try {
       let bearer = await token(interactive);
@@ -81,7 +108,7 @@ function createPresenceController(context) {
         headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           activeLanguage: configuration().shareActiveLanguage ? activeLanguage() : 'Hidden',
-          editor: 'VS Code',
+          editor: editorName(vscode.env.appName),
           platform: platformName(),
           sessionStartedAt,
         }),
@@ -98,7 +125,7 @@ function createPresenceController(context) {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload.error || `DevGlobe presence failed with HTTP ${response.status}.`);
       }
-      status.show();
+      showLiveStatus();
       return true;
     } finally {
       sending = false;
@@ -110,6 +137,7 @@ function createPresenceController(context) {
     if (starting) return starting;
     starting = (async () => {
       sessionStartedAt = new Date().toISOString();
+      lastActivityAt = Date.now();
       const online = await heartbeat(interactive);
       if (!online || !configuration().presenceEnabled) return false;
       timer = setInterval(() => heartbeat(false).catch(() => {}), HEARTBEAT_INTERVAL_MS);
@@ -122,10 +150,11 @@ function createPresenceController(context) {
     }
   }
 
-  async function stop(notifyServer = true) {
+  async function stop(notifyServer = true, keepAction = true) {
     if (timer) clearInterval(timer);
     timer = null;
-    status.hide();
+    if (keepAction) showOfflineStatus();
+    else status.hide();
     if (!notifyServer) return;
     const bearer = await context.secrets.get(PRESENCE_TOKEN_KEY);
     if (!bearer) return;
@@ -136,14 +165,26 @@ function createPresenceController(context) {
     }).catch(() => {});
   }
 
+  function recordActivity() {
+    const wasActive = isCodingActivityRecent(lastActivityAt);
+    lastActivityAt = Date.now();
+    if (configuration().presenceEnabled && !wasActive) heartbeat(false).catch(() => {});
+  }
+
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(() => heartbeat(false).catch(() => {})),
+    vscode.window.onDidChangeActiveTextEditor(recordActivity),
+    vscode.window.onDidChangeTextEditorSelection(recordActivity),
+    vscode.workspace.onDidChangeTextDocument(recordActivity),
+    vscode.workspace.onDidSaveTextDocument(recordActivity),
+    vscode.window.onDidChangeWindowState(event => {
+      if (event.focused) recordActivity();
+    }),
     vscode.workspace.onDidChangeConfiguration(event => {
       if (!event.affectsConfiguration('devglobedev.presence')) return;
       if (configuration().presenceEnabled) start(true).catch(() => {});
       else stop().catch(() => {});
     }),
-    { dispose: () => stop(false) },
+    { dispose: () => stop(false, false) },
   );
   return { start, stop };
 }

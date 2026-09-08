@@ -8,6 +8,8 @@ This extension connects exclusively to [devglobe.dev](https://www.devglobe.dev).
 
 Install [DevGlobe: Live Coding Globe from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery). Choose **Go Live** in the first-run prompt, approve GitHub authentication, and open the live globe to see your presence. You can also use the Command Palette and run `DevGlobe.dev: Go Live on the Developer Globe`.
 
+Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS Code forks can install the same VSIX. Download the release package, then use the editor's **Install from VSIX** action. Open VSX and vendor marketplace publication require their respective publisher credentials.
+
 ## Commands
 
 - `DevGlobe.dev: Find a Developer`
@@ -21,11 +23,11 @@ Install [DevGlobe: Live Coding Globe from the VS Code Marketplace](https://marke
 
 Set `devglobedev.githubLogin` in VS Code settings to enable personal profile and card commands. `devglobedev.baseUrl` defaults to `https://www.devglobe.dev`.
 
-Live presence is off by default. Starting it uses VS Code's GitHub authentication, then sends a heartbeat every 30 seconds while the extension is running. Private daily totals and language/editor breakdowns are calculated from those heartbeats. Set `devglobedev.presence.shareActiveLanguage` to `false` to hide the active language.
+Live presence is off by default. Starting it uses the editor's GitHub authentication, then sends a heartbeat every 30 seconds while you are active. Heartbeats pause after one minute without editor activity and resume when you continue coding. Private daily totals, streaks, weekly goals, achievements, and language/editor breakdowns are calculated from those heartbeats. Set `devglobedev.presence.shareActiveLanguage` to `false` to hide the active language.
 
 ## Privacy
 
-The extension makes a public API request when you run a search command. If you explicitly enable live presence, it sends the active language, editor name, operating system, and session timestamps. It does not send source code, file paths, repository names, branches, or keystrokes. Globe coordinates come from your existing public DevGlobe profile, not device geolocation. The DevGlobe presence token is stored in VS Code SecretStorage.
+The extension makes a public API request when you run a search command. If you explicitly enable live presence, it sends the active language, editor name, operating system, and session timestamps. Editor events only reset an in-memory inactivity timer; the events and their contents are not transmitted. It does not send source code, file paths, repository names, branches, or keystrokes. Globe coordinates come from your existing public DevGlobe profile, not device geolocation. The DevGlobe presence token is stored in VS Code SecretStorage.
 
 ## Development
 

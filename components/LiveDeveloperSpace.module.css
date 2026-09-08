@@ -127,6 +127,8 @@
 .activityRow small { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: var(--text-secondary); font-size: 11px; }
 .activityRow small i { width: 6px; height: 6px; border-radius: 50%; }
 .activityRow time { color: var(--text-muted); font-size: 10px; }
+.activityRow[data-presence='recent'] { opacity: 0.68; }
+.activityRow[data-presence='recent'] img { filter: saturate(0.65); }
 .empty { margin: 0; padding: 22px 16px; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
 
 .filters {
@@ -181,6 +183,9 @@
 .selected span,
 .selected small { color: var(--text-secondary); font-size: 11px; }
 .selected p { margin: 5px 0 2px; font-size: 11px; }
+.selected .presenceLabel { color: #22c55e; font-weight: 700; }
+.selected[data-presence='recent'] .presenceLabel { color: var(--text-secondary); }
+.selected .presenceLabel:not(:last-child) { margin-bottom: 2px; }
 .selected > a { color: var(--accent-blue); font-size: 11px; font-weight: 700; text-decoration: none; }
 .close {
   position: absolute;

@@ -1,8 +1,8 @@
 import LiveDeveloperSpace from '../../components/LiveDeveloperSpace.jsx';
 
 export const metadata = {
-  title: "Who's coding right now | DevGlobe",
-  description: 'See developers who have explicitly chosen to share their current coding presence on DevGlobe.',
+  title: 'Developers coding worldwide | DevGlobe',
+  description: 'See developers who have explicitly chosen to share live and recent coding presence on DevGlobe.',
   alternates: { canonical: '/space' },
 };
 

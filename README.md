@@ -270,7 +270,7 @@ The timer invokes the collector every minute, matching GitHub's advertised polli
 
 ### Live coding presence and private stats
 
-The `/space` globe receives an opt-in heartbeat from the DevGlobe VS Code extension every 30 seconds. Presence expires after 90 seconds. Daily coding totals, language time, and editor time are derived only from consecutive valid heartbeats and are visible only to the signed-in developer. DevGlobe does not collect source code, file paths, repositories, branches, or keystrokes for this feature.
+The `/space` globe receives an opt-in heartbeat from the DevGlobe editor extension every 30 seconds while the developer is active. Heartbeats pause after one minute without editor activity. Presence is live for 90 seconds and remains visible as recently coding for up to 15 minutes. Daily coding totals, streaks, achievements, language time, and editor time are derived only from consecutive valid heartbeats and are visible only to the signed-in developer. DevGlobe does not collect source code, file paths, repositories, branches, or keystrokes for this feature.
 
 Provision both TTL-enabled containers before enabling the feature in production:
 
@@ -279,7 +279,7 @@ npm run setup-live-presence-container
 npm run setup-coding-stats-container
 ```
 
-Publish `extensions/vscode` version `0.2.0` after the web deployment so the Marketplace commands target available `/space`, `/api/presence`, and `/coding-stats` routes.
+Publish `extensions/vscode` version `0.3.0` after the web deployment so the Marketplace commands target available `/space`, `/api/presence`, and `/coding-stats` routes. The same VSIX supports compatible VS Code forks; Open VSX and vendor marketplace publication require separate publisher credentials.
 
 ### Impact history capture
 
