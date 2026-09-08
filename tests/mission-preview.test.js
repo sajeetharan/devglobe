@@ -6,7 +6,7 @@ import { createMissionPreviewHandler } from '../app/api/mission-preview/route.js
 
 const NOW = new Date('2026-08-26T10:00:00.000Z');
 
-function developerContainer(profile = { login: 'octocat', name: 'The Octocat', avatarUrl: 'avatar', topLanguage: 'JavaScript', claimed: true }) {
+function developerContainer(profile = { login: 'octocat', name: 'The Octocat', avatarUrl: 'avatar', topLanguage: 'JavaScript', totalCommits: 128, claimed: true }) {
   return { items: { query: () => ({ fetchAll: async () => ({ resources: profile ? [profile] : [] }) }) } };
 }
 
@@ -65,12 +65,26 @@ test('uses profile languages and safe defaults for sparse profiles', () => {
 });
 
 test('builds a read-only preview without mission lifecycle state', () => {
-  const opportunity = { id: '123', title: 'Improve README', labels: ['documentation'], estimatedMinutes: 15 };
-  const preview = buildMissionPreview(opportunity);
+  const opportunity = {
+    id: '123',
+    title: 'Improve README',
+    language: 'JavaScript',
+    labels: ['documentation', 'good first issue'],
+    estimatedMinutes: 15,
+  };
+  const preview = buildMissionPreview(opportunity, {
+    topLanguage: 'JavaScript',
+    totalCommits: 128,
+  });
 
   assert.equal(preview.type, 'Improve documentation');
   assert.equal(preview.durationMinutes, 15);
   assert.equal(preview.opportunity, opportunity);
+  assert.deepEqual(preview.matchEvidence, [
+    { label: 'Language', value: 'JavaScript in your public profile' },
+    { label: 'Recent contributions', value: '128 in the latest public snapshot' },
+    { label: 'Issue difficulty', value: 'good first issue' },
+  ]);
   assert.equal(Object.hasOwn(preview, 'status'), false);
   assert.equal(Object.hasOwn(preview, 'id'), false);
 });
@@ -94,6 +108,7 @@ test('returns one public read-only mission without claimed profile fields', asyn
   assert.equal(response.status, 200);
   assert.deepEqual(Object.keys(body.profile).sort(), ['avatarUrl', 'login', 'name']);
   assert.equal(body.mission.durationMinutes, 15);
+  assert.deepEqual(body.mission.matchEvidence.map(item => item.label), ['Language', 'Recent contributions', 'Issue difficulty']);
   assert.equal(Object.hasOwn(body.mission, 'status'), false);
 });
 

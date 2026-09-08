@@ -92,10 +92,18 @@ export default function MissionPreview({ signedIn = false, onOpenActivity }) {
             </div>
             <span className="mission-preview__scope">Suggested scope · {result.mission.durationMinutes} min</span>
           </div>
-          {result.mission.opportunity.reasons?.length > 0 && (
-            <ul aria-label="Why this mission matched">
-              {result.mission.opportunity.reasons.map(reason => <li key={reason}>{reason}</li>)}
-            </ul>
+          {result.mission.matchEvidence?.length > 0 && (
+            <section className="mission-preview__evidence" aria-labelledby="mission-match-evidence-title">
+              <h3 id="mission-match-evidence-title">Why this matched you</h3>
+              <dl>
+                {result.mission.matchEvidence.map(item => (
+                  <div key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
           )}
           <div className="mission-preview__actions">
             <p>Previewing does not reserve this issue. Actual effort depends on repository context and maintainer feedback.</p>
