@@ -35,7 +35,7 @@ function clientHash(request) {
 
 async function getPublicProfile(container, login) {
   const { resources } = await container.items.query({
-    query: `SELECT TOP 1 c.login, c.name, c.avatarUrl, c.topLanguage, c.languages
+    query: `SELECT TOP 1 c.login, c.name, c.avatarUrl, c.topLanguage, c.languages, c.totalCommits
       FROM c
       WHERE LOWER(c.login) = @login
         AND (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved')`,
@@ -115,7 +115,7 @@ export function createMissionPreviewHandler(dependencies = {}) {
 
     return NextResponse.json({
       profile: { login: profile.login, name: profile.name || profile.login, avatarUrl: profile.avatarUrl || null },
-      mission: buildMissionPreview(opportunities[0]),
+      mission: buildMissionPreview(opportunities[0], profile),
     }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     if (error instanceof MissionPreviewError || error instanceof SyntaxError) {

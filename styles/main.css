@@ -1222,8 +1222,12 @@ body {
 .mission-preview__issue { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 12px; }
 .mission-preview__issue strong { overflow: hidden; color: var(--text-primary); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .mission-preview__scope { flex: 0 0 auto; padding: 4px 6px; border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 3px; color: var(--mission-link) !important; font-weight: 700; }
-.mission-preview__result ul { display: flex; grid-column: 2; flex-wrap: wrap; gap: 5px; margin: 0; padding: 0; list-style: none; }
-.mission-preview__result li { padding: 3px 5px; border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 3px; color: var(--mission-match); font-size: 8px; }
+.mission-preview__evidence { display: grid; grid-column: 1 / -1; grid-template-columns: 180px minmax(0, 1fr); gap: 18px; padding: 10px 0; border-block: 1px solid var(--border); }
+.mission-preview__evidence h3 { margin: 0; color: var(--text-primary); font-size: 10px; line-height: 1.4; }
+.mission-preview__evidence dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.mission-preview__evidence dl > div { display: grid; min-width: 0; gap: 3px; }
+.mission-preview__evidence dt { color: var(--mission-match); font-size: 8px; font-weight: 700; }
+.mission-preview__evidence dd { margin: 0; color: var(--text-secondary); font-size: 9px; line-height: 1.4; overflow-wrap: anywhere; }
 .mission-preview__actions { display: flex; grid-column: 1 / -1; align-items: center; justify-content: flex-end; gap: 7px; }
 .mission-preview__actions p { margin: 0 auto 0 0; color: var(--text-muted); font-size: 8px; line-height: 1.4; }
 .mission-preview__actions :is(a, button) { display: inline-grid; place-items: center; padding: 7px 10px; text-decoration: none; }
@@ -1241,7 +1245,8 @@ body {
   }
   .mission-preview__intro p { display: none; }
   .mission-preview__result { grid-template-columns: minmax(0, 1fr); }
-  .mission-preview__result ul { grid-column: 1; }
+  .mission-preview__evidence { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .mission-preview__evidence dl { grid-template-columns: minmax(0, 1fr); }
   .mission-preview__actions { grid-column: 1; flex-wrap: wrap; justify-content: stretch; }
   .mission-preview__actions p { width: 100%; }
   .mission-preview__actions :is(a, button) { flex: 1 1 auto; }
