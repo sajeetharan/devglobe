@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { attributedInstallUrl, editorChannels, editorInstallSteps, getEditorChannel } from '../lib/editor-distribution.js';
+import { attributedInstallUrl, editorChannels, editorInstallSteps, filterEditorChannels, getEditorChannel } from '../lib/editor-distribution.js';
 
 test('defines unique canonical editor channels', () => {
   const slugs = editorChannels.map(editor => editor.slug);
@@ -20,4 +20,12 @@ test('only available clients expose installation steps and attributed links', ()
   assert.match(installUrl.pathname, /v0\.3\.0\/devglobe-developer-discovery-0\.3\.0\.vsix$/);
   assert.equal(installUrl.searchParams.get('utm_campaign'), 'cursor');
   assert.equal(installUrl.searchParams.get('utm_medium'), 'plugin_directory');
+});
+
+test('filters editor connections by status, name, family, and aliases', () => {
+  assert.deepEqual(filterEditorChannels(editorChannels, { query: 'cursor' }).map(editor => editor.slug), ['cursor']);
+  assert.deepEqual(filterEditorChannels(editorChannels, { query: 'pycharm' }).map(editor => editor.slug), ['jetbrains']);
+  assert.deepEqual(filterEditorChannels(editorChannels, { query: 'claude' }).map(editor => editor.slug), ['cli']);
+  assert.equal(filterEditorChannels(editorChannels, { query: 'vs code', status: 'available' }).length, 7);
+  assert.deepEqual(filterEditorChannels(editorChannels, { status: 'planned' }).map(editor => editor.slug), ['jetbrains', 'cli']);
 });
