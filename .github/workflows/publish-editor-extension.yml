@@ -1,0 +1,89 @@
+name: Publish editor extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      github_release:
+        description: Upload the VSIX to its GitHub Release
+        type: boolean
+        default: true
+      marketplace:
+        description: Publish to Visual Studio Marketplace
+        type: boolean
+        default: false
+      open_vsx:
+        description: Publish to Open VSX
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extensions/vscode
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extensions/vscode/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate extension
+        run: |
+          npm test
+          npm run check
+
+      - name: Package VSIX
+        run: npm run package
+
+      - name: Resolve artifact
+        id: artifact
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "vsix=devglobe-developer-discovery-$version.vsix" >> "$GITHUB_OUTPUT"
+
+      - name: Upload GitHub Release
+        if: inputs.github_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.artifact.outputs.version }}
+          VSIX: ${{ steps.artifact.outputs.vsix }}
+        run: |
+          gh release view "v$VERSION" >/dev/null 2>&1 || gh release create "v$VERSION" --target "$GITHUB_SHA" --title "DevGlobe editor extension $VERSION" --generate-notes
+          gh release upload "v$VERSION" "$VSIX" --clobber
+
+      - name: Require Marketplace credentials
+        if: inputs.marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: test -n "$VSCE_PAT" || (echo "VSCE_PAT is not configured" && exit 1)
+
+      - name: Publish to Visual Studio Marketplace
+        if: inputs.marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          VSIX: ${{ steps.artifact.outputs.vsix }}
+        run: npx --yes @vscode/vsce publish --packagePath "$VSIX" -p "$VSCE_PAT"
+
+      - name: Require Open VSX credentials
+        if: inputs.open_vsx
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: test -n "$OVSX_PAT" || (echo "OVSX_PAT is not configured" && exit 1)
+
+      - name: Publish to Open VSX
+        if: inputs.open_vsx
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+          VSIX: ${{ steps.artifact.outputs.vsix }}
+        run: npx --yes ovsx publish "$VSIX" -p "$OVSX_PAT"

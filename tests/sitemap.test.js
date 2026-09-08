@@ -10,6 +10,9 @@ test('includes every existing indexable acquisition route', () => {
   assert.ok(paths.includes('/leaderboard'));
   assert.ok(paths.includes('/repository-match'));
   assert.ok(paths.includes('/space'));
+  assert.ok(paths.includes('/plugins'));
+  assert.ok(paths.includes('/plugins/cursor'));
+  assert.ok(paths.includes('/plugins/jetbrains'));
   assert.ok(paths.includes('/developer/octocat'));
   assert.ok(!paths.includes('/share/octocat'));
   assert.ok(paths.includes('/developer/octo%20cat'));

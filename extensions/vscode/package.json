@@ -114,7 +114,8 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "check": "node --check src/extension.js && node --check src/devglobe.js",
-    "package": "npx --yes @vscode/vsce package"
+    "package": "npx --yes @vscode/vsce package",
+    "publish:open-vsx": "npx --yes ovsx publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0"
