@@ -6,9 +6,9 @@ This extension connects exclusively to [devglobe.dev](https://www.devglobe.dev).
 
 ## Install
 
-Install [DevGlobe: Live Coding Globe from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery). Choose **Go Live** in the first-run prompt, approve GitHub authentication, and open the live globe to see your presence. You can also use the Command Palette and run `DevGlobe.dev: Go Live on the Developer Globe`.
+Choose your editor in the [DevGlobe editor directory](https://www.devglobe.dev/plugins), or install [DevGlobe: Live Coding Globe from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery). Choose **Go Live** in the first-run prompt, approve GitHub authentication, and open the live globe to see your presence. You can also use the Command Palette and run `DevGlobe.dev: Go Live on the Developer Globe`.
 
-Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS Code forks can install the same VSIX. Download the release package, then use the editor's **Install from VSIX** action. Open VSX and vendor marketplace publication require their respective publisher credentials.
+Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS Code forks can install the same VSIX. Download the [version 0.3.0 release package](https://github.com/sajeetharan/devglobe/releases/download/v0.3.0/devglobe-developer-discovery-0.3.0.vsix), then use the editor's **Install from VSIX** action. Open VSX and vendor marketplace publication require their respective publisher credentials.
 
 ## Commands
 
@@ -48,4 +48,4 @@ Package a release candidate from this directory with:
 npx @vscode/vsce package
 ```
 
-Marketplace publication requires `devglobedev` publisher credentials and must use a version not already published.
+The **Publish editor extension** GitHub Actions workflow validates and packages one VSIX, then can publish that exact artifact to GitHub Releases, Visual Studio Marketplace, and Open VSX. Marketplace publication requires the `VSCE_PAT` repository secret. Open VSX publication requires the `devglobedev` namespace and an `OVSX_PAT` repository secret. Each registry requires a version not already published.

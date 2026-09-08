@@ -1,0 +1,58 @@
+.page {
+  --editor-accent: #3b82f6;
+  min-height: 100svh;
+  padding: 0 max(24px, calc((100vw - 1040px) / 2)) 72px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--border) 18%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 18%, transparent) 1px, transparent 1px),
+    var(--bg-primary);
+  background-size: 44px 44px;
+  color: var(--text-primary);
+}
+
+.header { display: flex; min-height: 64px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.header a { color: var(--text-secondary); font-size: 13px; font-weight: 700; text-decoration: none; }
+.header a:hover { color: var(--text-primary); }
+.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--text-primary) !important; }
+.brand img { width: 28px; height: 28px; }
+.intro, .editorIntro { max-width: 760px; padding: clamp(72px, 11vw, 132px) 0 64px; }
+.intro > p, .editorIntro > p { margin: 0 0 14px; color: var(--text-secondary); font-size: 14px; }
+.intro h1, .editorIntro h1 { max-width: 720px; margin: 0; font-size: clamp(42px, 7vw, 82px); line-height: 0.98; letter-spacing: 0; }
+.intro > span, .editorIntro > span { display: block; max-width: 650px; margin-top: 24px; color: var(--text-secondary); font-size: 17px; line-height: 1.65; }
+.directory, .planned, .waiting { border-top: 1px solid var(--border); }
+.sectionHeading { display: flex; align-items: baseline; justify-content: space-between; padding: 20px 0; }
+.sectionHeading h2, .waiting h2 { margin: 0; font-size: 18px; letter-spacing: 0; }
+.sectionHeading span { color: var(--text-muted); font-size: 12px; }
+.rows { border-bottom: 1px solid var(--border); }
+.row { display: grid; grid-template-columns: 14px 1fr auto auto; align-items: center; gap: 18px; min-height: 68px; border-top: 1px solid var(--border); color: inherit; text-decoration: none; }
+.row > i, .editorIntro > i { width: 10px; height: 10px; border-radius: 50%; background: var(--editor-accent); box-shadow: 0 0 20px color-mix(in srgb, var(--editor-accent) 65%, transparent); }
+.row strong { font-size: 16px; }
+.row > span { color: var(--text-muted); font-size: 12px; }
+.row > b { min-width: 72px; color: var(--editor-accent); font-size: 12px; text-align: right; }
+.row:hover strong { color: var(--editor-accent); }
+.planned { margin-top: 72px; }
+.planned > div:not(.sectionHeading) { display: grid; grid-template-columns: 1fr 1fr; padding: 18px 0; border-top: 1px solid var(--border); }
+.planned span, .waiting p { color: var(--text-secondary); }
+.privacy { display: grid; grid-template-columns: 220px 1fr; gap: 32px; margin-top: 72px; padding: 26px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.privacy p { max-width: 650px; margin: 0; color: var(--text-secondary); line-height: 1.65; }
+.editorIntro { position: relative; }
+.editorIntro > i { display: block; width: 18px; height: 18px; margin-bottom: 26px; }
+.primaryAction, .secondaryAction { display: inline-flex; min-height: 46px; align-items: center; margin-top: 30px; padding: 0 20px; border: 1px solid var(--editor-accent); border-radius: 6px; color: var(--editor-accent); font-size: 13px; font-weight: 800; text-decoration: none; }
+.primaryAction:hover, .secondaryAction:hover { background: color-mix(in srgb, var(--editor-accent) 10%, transparent); }
+.steps { margin: 0; padding: 0; border-top: 1px solid var(--border); list-style: none; }
+.steps li { display: grid; grid-template-columns: 48px 1fr; align-items: center; min-height: 76px; border-bottom: 1px solid var(--border); }
+.steps li > span { color: var(--editor-accent); font-weight: 800; }
+.steps p { margin: 0; font-size: 15px; }
+.waiting { padding: 28px 0; }
+.waiting p { max-width: 680px; line-height: 1.6; }
+.page a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+
+@media (max-width: 640px) {
+  .page { padding-right: 18px; padding-left: 18px; }
+  .intro, .editorIntro { padding: 62px 0 48px; }
+  .intro h1, .editorIntro h1 { font-size: 44px; }
+  .intro > span, .editorIntro > span { font-size: 15px; }
+  .row { grid-template-columns: 12px minmax(0, 1fr) auto; gap: 12px; }
+  .row > span { display: none; }
+  .planned > div:not(.sectionHeading), .privacy { grid-template-columns: 1fr; gap: 7px; }
+}

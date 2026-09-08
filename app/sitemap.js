@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { getCosmosContainer } from '../lib/cosmos.js';
+import { editorChannels } from '../lib/editor-distribution.js';
 import { getSiteUrl } from '../lib/site.js';
 
 const siteUrl = getSiteUrl();
@@ -52,6 +53,18 @@ export function buildSitemapEntries(profileLogins, lastModified = new Date()) {
       changeFrequency: 'always',
       priority: 0.8,
     },
+    {
+      url: `${siteUrl}/plugins`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    ...editorChannels.map(editor => ({
+      url: `${siteUrl}/plugins/${editor.slug}`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: editor.status === 'available' ? 0.8 : 0.5,
+    })),
     ...logins.map(login => ({
       url: `${siteUrl}/developer/${encodeURIComponent(login)}`,
       changeFrequency: 'daily',

@@ -279,7 +279,9 @@ npm run setup-live-presence-container
 npm run setup-coding-stats-container
 ```
 
-Publish `extensions/vscode` version `0.3.0` after the web deployment so the Marketplace commands target available `/space`, `/api/presence`, and `/coding-stats` routes. The same VSIX supports compatible VS Code forks; Open VSX and vendor marketplace publication require separate publisher credentials.
+The [editor directory](https://www.devglobe.dev/plugins) provides tailored installation paths for VS Code, Cursor, Windsurf, VSCodium, Positron, Void, and Antigravity. Release `v0.3.0` is available from both the Marketplace and [GitHub Releases](https://github.com/sajeetharan/devglobe/releases/tag/v0.3.0). The same VSIX supports compatible VS Code forks; Open VSX publication requires the `devglobedev` namespace and an `OVSX_PAT` repository secret.
+
+Run the **Publish editor extension** workflow manually to validate and package one artifact, then select GitHub Release, Visual Studio Marketplace, or Open VSX destinations. Store publisher credentials only in the `VSCE_PAT` and `OVSX_PAT` GitHub Actions secrets.
 
 ### Impact history capture
 
