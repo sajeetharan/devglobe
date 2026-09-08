@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  LIVE_PRESENCE_ACTIVE_SECONDS,
+  LIVE_PRESENCE_RECENT_SECONDS,
   LIVE_PRESENCE_TTL_SECONDS,
   diffLivePresence,
   isLivePresenceActive,
   normalizeLivePresence,
+  presenceActivityState,
   presenceRetryAfter,
 } from '../lib/live-presence.js';
 
@@ -51,6 +54,17 @@ test('expires presence after the heartbeat window', () => {
   assert.equal(isLivePresenceActive(presence, now.getTime() + 90_000), false);
 });
 
+test('classifies live and recently coding presence independently of storage retention', () => {
+  const presence = { lastHeartbeat: now.toISOString() };
+  assert.equal(LIVE_PRESENCE_ACTIVE_SECONDS, 90);
+  assert.equal(LIVE_PRESENCE_RECENT_SECONDS, 900);
+  assert.equal(LIVE_PRESENCE_TTL_SECONDS, LIVE_PRESENCE_RECENT_SECONDS);
+  assert.equal(presenceActivityState(presence, now.getTime() + 89_000), 'live');
+  assert.equal(presenceActivityState(presence, now.getTime() + 90_000), 'recent');
+  assert.equal(presenceActivityState(presence, now.getTime() + 899_000), 'recent');
+  assert.equal(presenceActivityState(presence, now.getTime() + 900_000), null);
+});
+
 test('rate limits heartbeat bursts without delaying the normal interval', () => {
   const presence = { lastHeartbeat: now.toISOString() };
   assert.equal(presenceRetryAfter(presence, now.getTime() + 9_000), 1);
@@ -67,5 +81,13 @@ test('diffs changed and removed developers for SSE updates', () => {
   assert.deepEqual(diffLivePresence(previous, next), [
     { type: 'upsert', developer: next[0] },
     { type: 'delete', developerId: 'offline' },
+  ]);
+});
+
+test('diffs a transition from live to recently coding', () => {
+  const previous = [{ id: 'octo-cat', lastHeartbeat: now.toISOString(), presenceState: 'live' }];
+  const next = [{ id: 'octo-cat', lastHeartbeat: now.toISOString(), presenceState: 'recent' }];
+  assert.deepEqual(diffLivePresence(previous, next), [
+    { type: 'upsert', developer: next[0] },
   ]);
 });

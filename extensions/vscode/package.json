@@ -2,7 +2,7 @@
   "name": "devglobe-developer-discovery",
   "displayName": "DevGlobe: Live Coding Globe",
   "description": "Show up on the live developer globe while you code, track private coding stats, and discover developers.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "devglobedev",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -113,7 +113,8 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "check": "node --check src/extension.js && node --check src/devglobe.js"
+    "check": "node --check src/extension.js && node --check src/devglobe.js",
+    "package": "npx --yes @vscode/vsce package"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0"

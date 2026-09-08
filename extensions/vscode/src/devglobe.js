@@ -2,6 +2,25 @@ const ATTRIBUTION = Object.freeze({
   utm_source: 'vscode_extension',
   utm_medium: 'marketplace',
 });
+const CODING_ACTIVITY_WINDOW_MS = 60_000;
+
+function isCodingActivityRecent(lastActivityAt, now = Date.now()) {
+  return Number.isFinite(lastActivityAt)
+    && now >= lastActivityAt
+    && now - lastActivityAt <= CODING_ACTIVITY_WINDOW_MS;
+}
+
+function editorName(appName) {
+  const name = String(appName || '').toLowerCase();
+  if (name.includes('cursor')) return 'Cursor';
+  if (name.includes('windsurf')) return 'Windsurf';
+  if (name.includes('vscodium')) return 'VSCodium';
+  if (name.includes('positron')) return 'Positron';
+  if (name.includes('void')) return 'Void';
+  if (name.includes('antigravity')) return 'Antigravity';
+  if (name.includes('insider')) return 'VS Code Insiders';
+  return 'VS Code';
+}
 
 function resolveBaseUrl(value) {
   const candidate = String(value || '').trim().replace(/\/$/, '');
@@ -114,9 +133,12 @@ function normalizeResults(payload) {
 }
 
 module.exports = {
+  CODING_ACTIVITY_WINDOW_MS,
   agentSetupUrl,
   codingStatsUrl,
+  editorName,
   identityCardUrl,
+  isCodingActivityRecent,
   liveGlobeUrl,
   mcpConfiguration,
   normalizeLogin,

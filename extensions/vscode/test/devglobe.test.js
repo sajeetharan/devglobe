@@ -1,9 +1,12 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const {
+  CODING_ACTIVITY_WINDOW_MS,
   agentSetupUrl,
   codingStatsUrl,
+  editorName,
   identityCardUrl,
+  isCodingActivityRecent,
   liveGlobeUrl,
   mcpConfiguration,
   normalizeLogin,
@@ -14,6 +17,22 @@ const {
   resolveBaseUrl,
   searchUrl,
 } = require('../src/devglobe');
+
+test('detects compatible VS Code editor families', () => {
+  assert.equal(editorName('Visual Studio Code'), 'VS Code');
+  assert.equal(editorName('Visual Studio Code - Insiders'), 'VS Code Insiders');
+  assert.equal(editorName('Cursor'), 'Cursor');
+  assert.equal(editorName('Windsurf'), 'Windsurf');
+  assert.equal(editorName('VSCodium'), 'VSCodium');
+});
+
+test('treats editor activity as current for one minute', () => {
+  assert.equal(CODING_ACTIVITY_WINDOW_MS, 60_000);
+  assert.equal(isCodingActivityRecent(1_000, 61_000), true);
+  assert.equal(isCodingActivityRecent(1_000, 61_001), false);
+  assert.equal(isCodingActivityRecent(0, 1_000), true);
+  assert.equal(isCodingActivityRecent(Number.NaN, 1_000), false);
+});
 
 test('validates production and local base URLs', () => {
   assert.equal(resolveBaseUrl('https://www.devglobe.dev/'), 'https://www.devglobe.dev');

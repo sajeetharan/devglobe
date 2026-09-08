@@ -51,7 +51,7 @@ The extension contributes these commands:
 - Links include `utm_source=vscode_extension&utm_medium=marketplace`.
 - MCP setup copies a configuration pointing to `/mcp`; it never handles agent credentials.
 - URL construction and response normalization are framework-independent and unit tested.
-- Presence uses a scoped token in VS Code `SecretStorage`, a 30-second heartbeat, and a 90-second server TTL.
+- Presence uses a scoped token in VS Code `SecretStorage` and a 30-second heartbeat. A heartbeat is live for 90 seconds and remains visible as recently coding for up to 15 minutes.
 - Daily totals are derived server-side from consecutive valid heartbeats and retained for 400 days.
 
 ## Privacy and Security
@@ -91,6 +91,6 @@ DevGlobe records first-party install-click, token, presence, sign-off, and stats
 ## Rollout
 
 1. Validate the VSIX locally and with Extension Development Host.
-2. Deploy the presence and coding-stats APIs before publishing extension version `0.2.0`.
+2. Deploy the presence and coding-stats APIs before publishing extension version `0.3.0`.
 3. Publish an unlisted marketplace preview and verify GitHub authentication, presence expiry, and VS Code forks.
 4. Publish publicly and measure install-to-presence activation and stats return usage.

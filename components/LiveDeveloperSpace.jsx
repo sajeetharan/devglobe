@@ -27,6 +27,8 @@ export default function LiveDeveloperSpace() {
   const [platform, setPlatform] = useState('');
   const [selected, setSelected] = useState(null);
   const deferredDevelopers = useDeferredValue(developers);
+  const liveCount = developers.filter(developer => developer.presenceState === 'live').length;
+  const recentCount = developers.length - liveCount;
   const languages = useMemo(() => uniqueValues(developers, 'activeLanguage'), [developers]);
   const platforms = useMemo(() => uniqueValues(developers, 'platform'), [developers]);
   const filtered = useMemo(() => deferredDevelopers
@@ -48,10 +50,10 @@ export default function LiveDeveloperSpace() {
           <span>DevGlobe</span>
         </Link>
         <div className={styles.title}>
-          <h1>Who&apos;s coding right now</h1>
+          <h1>Developers coding worldwide</h1>
           <span className={styles.connection} data-state={connection} role="status">
             <i aria-hidden="true" /> {connection === 'live'
-              ? `${developers.length} live`
+              ? `${liveCount} live, ${recentCount} recent`
               : connection === 'unavailable' ? 'Unavailable' : 'Connecting'}
           </span>
         </div>
@@ -65,18 +67,18 @@ export default function LiveDeveloperSpace() {
         <LiveDeveloperGlobe ref={globeRef} developers={filtered} onSelect={selectDeveloper} />
       </section>
 
-      <aside className={styles.activity} aria-label="Developers online now">
+      <aside className={styles.activity} aria-label="Live and recent developer activity">
         <div className={styles.panelHeading}>
-          <h2>Live activity</h2>
+          <h2>Developer activity</h2>
           <span>{filtered.length}</span>
         </div>
         <div className={styles.activityList}>
           {filtered.map(developer => (
-            <button key={developer.id} type="button" onClick={() => selectDeveloper(developer)} className={styles.activityRow}>
+            <button key={developer.id} type="button" onClick={() => selectDeveloper(developer)} className={styles.activityRow} data-presence={developer.presenceState}>
               <img src={developer.avatarUrl || '/devglobe.png'} alt="" />
               <span>
                 <strong>{developer.name || developer.login}</strong>
-                <small><i style={{ background: getLanguageColor(developer.activeLanguage) || '#3b82f6' }} />{developer.activeLanguage}</small>
+                <small><i style={{ background: getLanguageColor(developer.activeLanguage) || '#3b82f6' }} />{developer.activeLanguage} · {developer.presenceState === 'live' ? 'Live now' : 'Recently coding'}</small>
               </span>
               <time dateTime={developer.lastHeartbeat}>{relativeTime(developer.lastHeartbeat)}</time>
             </button>
@@ -90,7 +92,7 @@ export default function LiveDeveloperSpace() {
         </div>
       </aside>
 
-      <aside className={styles.filters} aria-label="Filter live developers">
+      <aside className={styles.filters} aria-label="Filter developer activity">
         <label>
           <span>Language</span>
           <select value={language} onChange={event => setLanguage(event.target.value)}>
@@ -113,13 +115,14 @@ export default function LiveDeveloperSpace() {
       </aside>
 
       {selected ? (
-        <aside className={styles.selected} aria-live="polite">
+        <aside className={styles.selected} data-presence={selected.presenceState} aria-live="polite">
           <button type="button" className={styles.close} onClick={() => setSelected(null)} aria-label="Close developer details">×</button>
           <img src={selected.avatarUrl || '/devglobe.png'} alt="" />
           <div>
             <strong>{selected.name || selected.login}</strong>
             <span>@{selected.login}</span>
             <p>{selected.activeLanguage} in {selected.editor} on {selected.platform}</p>
+            <small className={styles.presenceLabel}>{selected.presenceState === 'live' ? 'Live now' : 'Recently coding'}</small>
             <small>{selected.location || 'Location not listed'}</small>
           </div>
           <Link href={`/developer/${encodeURIComponent(selected.login)}`}>View profile</Link>
