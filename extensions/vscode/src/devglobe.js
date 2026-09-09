@@ -94,10 +94,6 @@ function profileSetupUrl(baseUrl, login) {
   return buildUrl(baseUrl, '/', { add: normalizeLogin(login) });
 }
 
-function githubProfileSettingsUrl() {
-  return 'https://github.com/settings/profile';
-}
-
 function presenceTokenUrl(baseUrl) {
   return new URL('/api/presence/token', `${resolveBaseUrl(baseUrl)}/`).toString();
 }
@@ -156,7 +152,6 @@ module.exports = {
   agentSetupUrl,
   codingStatsUrl,
   editorName,
-  githubProfileSettingsUrl,
   identityCardUrl,
   isCodingActivityRecent,
   liveGlobeUrl,

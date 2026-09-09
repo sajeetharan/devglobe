@@ -15,6 +15,7 @@ test('only available clients expose installation steps and attributed links', ()
   const jetbrains = getEditorChannel('jetbrains');
   const installUrl = new URL(attributedInstallUrl(cursor));
   assert.equal(editorInstallSteps(cursor).length, 3);
+  assert.match(editorInstallSteps(cursor)[2], /verified GitHub name/);
   assert.deepEqual(editorInstallSteps(jetbrains), []);
   assert.equal(attributedInstallUrl(jetbrains), null);
   assert.match(installUrl.pathname, /v0\.3\.0\/devglobe-developer-discovery-0\.3\.0\.vsix$/);

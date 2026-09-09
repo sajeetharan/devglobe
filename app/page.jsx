@@ -659,6 +659,14 @@ export default function Home() {
       .catch(() => {});
   }, [developers, handleSelectDev]);
 
+  const handleSelectLiveDeveloper = useCallback((login, developer) => {
+    if (developer?.profileAvailable === false) {
+      window.open(`https://github.com/${encodeURIComponent(login)}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    handleSelectDevByLogin(login);
+  }, [handleSelectDevByLogin]);
+
   // Deep link support: /?dev=login opens that developer's panel and flies
   // the globe to their location on load (see share page's "Explore" link).
   const deepLinkHandledRef = useRef(false);
@@ -970,7 +978,7 @@ export default function Home() {
           trendingLogins={trending?.gainers?.slice(0, 10).map(entry => entry.login) || []}
           liveMode={liveViewActive}
           liveDevelopers={filteredLiveDevelopers}
-          onSelectLiveDev={developer => handleSelectDevByLogin(developer.login)}
+          onSelectLiveDev={developer => handleSelectLiveDeveloper(developer.login, developer)}
         />
         <Leaderboard
           developers={filtered}
@@ -991,7 +999,7 @@ export default function Home() {
           onAgentGraphChange={setAgentRelationshipGraph}
           trending={trending}
           trendingError={trendingError}
-          onSelectDevByLogin={handleSelectDevByLogin}
+          onSelectDevByLogin={liveViewActive ? handleSelectLiveDeveloper : handleSelectDevByLogin}
           totalDeveloperCount={datasetCount}
           datasetLoading={datasetLoading && !searchActive}
           onOpenContributions={() => setShowContributions(true)}

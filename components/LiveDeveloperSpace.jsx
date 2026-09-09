@@ -124,7 +124,11 @@ export default function LiveDeveloperSpace() {
             <small className={styles.presenceLabel}>{selected.presenceState === 'live' ? 'Live now' : 'Recently coding'}</small>
             <small>{selected.location || 'Location not listed'}</small>
           </div>
-          <Link href={`/developer/${encodeURIComponent(selected.login)}`}>View profile</Link>
+          {selected.profileAvailable === false ? (
+            <a href={`https://github.com/${encodeURIComponent(selected.login)}`} target="_blank" rel="noreferrer">View GitHub</a>
+          ) : (
+            <Link href={`/developer/${encodeURIComponent(selected.login)}`}>View profile</Link>
+          )}
         </aside>
       ) : null}
     </main>

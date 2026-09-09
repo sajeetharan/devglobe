@@ -19,10 +19,15 @@ export default function PluginDirectoryPage() {
       <section className={styles.intro}>
         <div>
           <p>Editor connections</p>
-          <h1>Pick an editor. Go live.</h1>
+          <h1>Install once. See yourself live.</h1>
         </div>
-        <span>Search your editor, install the connection, and appear on the globe while you actively code.</span>
+        <span>DevGlobe uses your verified GitHub name. Install the extension, choose Go Live Now, and your marker appears automatically.</span>
       </section>
+      <ol className={styles.quickStart} aria-label="How to appear on the live globe">
+        <li><span>1</span><div><strong>Install</strong><p>Choose your editor below.</p></div></li>
+        <li><span>2</span><div><strong>Approve GitHub</strong><p>Confirm your public identity.</p></div></li>
+        <li><span>3</span><div><strong>See your name live</strong><p>No separate DevGlobe profile required.</p></div></li>
+      </ol>
       <EditorPicker editors={editorChannels} />
       <aside className={styles.privacy}>
         <strong>Activity, not contents</strong>

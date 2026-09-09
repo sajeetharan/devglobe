@@ -3,7 +3,6 @@ const {
   agentSetupUrl,
   codingStatsUrl,
   editorName,
-  githubProfileSettingsUrl,
   identityCardUrl,
   isCodingActivityRecent,
   liveGlobeUrl,
@@ -25,6 +24,7 @@ function configuration() {
     baseUrl: resolveBaseUrl(settings.get('baseUrl', 'https://www.devglobe.dev')),
     githubLogin: settings.get('githubLogin', ''),
     presenceEnabled: settings.get('presence.enabled', false),
+    presenceLocation: settings.get('presence.location', ''),
     shareActiveLanguage: settings.get('presence.shareActiveLanguage', true),
   };
 }
@@ -72,20 +72,10 @@ function createPresenceController(context) {
     status.show();
   }
 
-  function showWaitingStatus() {
-    status.command = 'workbench.action.files.openFile';
-    status.text = '$(file-code) DevGlobe: Open a code file';
-    status.tooltip = 'Live presence is enabled and will start when you open a source-code file.';
-    status.show();
-  }
-
-  function showProfileRequiredStatus(code = 'devglobe-profile-required') {
-    const locationRequired = code === 'github-location-required';
-    status.command = locationRequired ? 'devglobedev.updateGitHubLocation' : 'devglobedev.completeProfile';
-    status.text = locationRequired ? '$(location) DevGlobe: Add location' : '$(account) DevGlobe: Complete profile';
-    status.tooltip = locationRequired
-      ? 'Add a public GitHub location so DevGlobe can place you on the globe.'
-      : 'Complete your DevGlobe profile so you can appear on the globe.';
+  function showLocationRequiredStatus() {
+    status.command = 'devglobedev.startPresence';
+    status.text = '$(location) DevGlobe: Add location';
+    status.tooltip = 'Enter a city and country to place your marker on the globe.';
     status.show();
   }
 
@@ -126,11 +116,7 @@ function createPresenceController(context) {
       showIdleStatus();
       return false;
     }
-    const language = activeLanguage();
-    if (!language) {
-      showWaitingStatus();
-      return 'waiting';
-    }
+    const language = activeLanguage() || 'Ready to code';
     sending = true;
     try {
       let bearer = await token(interactive);
@@ -141,6 +127,7 @@ function createPresenceController(context) {
         body: JSON.stringify({
           activeLanguage: configuration().shareActiveLanguage ? language : 'Hidden',
           editor: editorName(vscode.env.appName),
+          location: configuration().presenceLocation,
           platform: platformName(),
           sessionStartedAt,
         }),
@@ -156,8 +143,7 @@ function createPresenceController(context) {
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
         const error = new Error(payload.error || `DevGlobe presence failed with HTTP ${response.status}.`);
-        if (response.status === 404) error.code = 'devglobe-profile-required';
-        if (response.status === 422) error.code = 'github-location-required';
+        if (response.status === 422 && payload.code === 'location_required') error.code = 'location-required';
         throw error;
       }
       showLiveStatus();
@@ -180,11 +166,7 @@ function createPresenceController(context) {
         timer = setInterval(() => heartbeat(false).catch(handleBackgroundError), HEARTBEAT_INTERVAL_MS);
         return state;
       } catch (error) {
-        if (['devglobe-profile-required', 'github-location-required'].includes(error.code)
-          && configuration().presenceEnabled) {
-          timer = setInterval(() => heartbeat(false).catch(handleBackgroundError), HEARTBEAT_INTERVAL_MS);
-          showProfileRequiredStatus(error.code);
-        }
+        if (error.code === 'location-required') showLocationRequiredStatus();
         throw error;
       }
     })();
@@ -196,8 +178,10 @@ function createPresenceController(context) {
   }
 
   function handleBackgroundError(error) {
-    if (['devglobe-profile-required', 'github-location-required'].includes(error?.code)) {
-      showProfileRequiredStatus(error.code);
+    if (error?.code === 'location-required') {
+      if (timer) clearInterval(timer);
+      timer = null;
+      showLocationRequiredStatus();
       return;
     }
     console.error('DevGlobe presence heartbeat failed:', error);
@@ -336,37 +320,40 @@ async function goLive(presence) {
   const settings = vscode.workspace.getConfiguration('devglobedev');
   await settings.update('presence.enabled', true, vscode.ConfigurationTarget.Global);
   try {
-    const state = await presence.start(true);
+    let state;
+    try {
+      state = await presence.start(true);
+    } catch (error) {
+      if (error?.code !== 'location-required') throw error;
+      const location = await vscode.window.showInputBox({
+        title: 'Place your marker on DevGlobe',
+        prompt: 'Enter a city and country. This is shared publicly while you are live.',
+        placeHolder: 'Colombo, Sri Lanka',
+        ignoreFocusOut: true,
+        validateInput: value => {
+          const length = value.trim().length;
+          if (length < 2) return 'Enter a city or country.';
+          if (length > 80) return 'Keep the location under 80 characters.';
+          return null;
+        },
+      });
+      if (location === undefined) {
+        await settings.update('presence.enabled', false, vscode.ConfigurationTarget.Global);
+        await presence.stop(false);
+        return;
+      }
+      await settings.update('presence.location', location.trim(), vscode.ConfigurationTarget.Global);
+      state = await presence.start(true);
+    }
     if (!state) throw new Error('GitHub authentication is required to go live on DevGlobe.');
     const action = await vscode.window.showInformationMessage(
-      state === 'waiting'
-        ? 'DevGlobe is ready. Open a source-code file and your presence will appear automatically.'
-        : 'You are live on DevGlobe. Your private coding stats are now being counted.',
-      'View Live Globe',
+      `You are live as @${configuration().githubLogin}.`,
+      'See Me Live',
       'View My Stats',
     );
-    if (action === 'View Live Globe') await openExternal(liveGlobeUrl(configuration().baseUrl));
+    if (action === 'See Me Live') await openExternal(liveGlobeUrl(configuration().baseUrl));
     if (action === 'View My Stats') await openExternal(codingStatsUrl(configuration().baseUrl));
   } catch (error) {
-    if (error?.code === 'devglobe-profile-required') {
-      const action = await vscode.window.showWarningMessage(
-        'Complete your DevGlobe profile to appear on the globe. Presence will retry automatically.',
-        'Complete Profile',
-      );
-      if (action === 'Complete Profile') {
-        const { baseUrl, githubLogin } = configuration();
-        await openExternal(profileSetupUrl(baseUrl, githubLogin));
-      }
-      return;
-    }
-    if (error?.code === 'github-location-required') {
-      const action = await vscode.window.showWarningMessage(
-        'Add a public location to your GitHub profile so DevGlobe can place you on the globe. Presence will retry automatically.',
-        'Update GitHub Location',
-      );
-      if (action === 'Update GitHub Location') await openExternal(githubProfileSettingsUrl());
-      return;
-    }
     await settings.update('presence.enabled', false, vscode.ConfigurationTarget.Global);
     await presence.stop(false);
     throw error;
@@ -379,7 +366,7 @@ async function offerGoLiveOnboarding(context) {
   if (configuration().presenceEnabled) return;
 
   const action = await vscode.window.showInformationMessage(
-    'Join the DevGlobe live coding map? Share only language, editor, OS, and session timing; never code, files, or repositories.',
+    'Join the DevGlobe live coding map? Share your public location, language, editor, OS, and session timing; never code, files, or repositories.',
     'Go Live Now',
     'Learn More',
     'Not Now',
@@ -416,9 +403,6 @@ async function activate(context) {
   registerCommand(context, 'devglobedev.completeProfile', async () => {
     const login = await configuredLogin();
     if (login) await openExternal(profileSetupUrl(configuration().baseUrl, login));
-  });
-  registerCommand(context, 'devglobedev.updateGitHubLocation', async () => {
-    await openExternal(githubProfileSettingsUrl());
   });
   registerCommand(context, 'devglobedev.startPresence', async () => {
     await goLive(presence);

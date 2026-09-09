@@ -80,11 +80,6 @@
         "category": "DevGlobe.dev"
       },
       {
-        "command": "devglobedev.updateGitHubLocation",
-        "title": "Update My GitHub Location",
-        "category": "DevGlobe.dev"
-      },
-      {
         "command": "devglobedev.startPresence",
         "title": "Go Live on the Developer Globe",
         "category": "DevGlobe.dev"
@@ -112,6 +107,12 @@
           "type": "boolean",
           "default": false,
           "description": "Share an opt-in coding heartbeat on the DevGlobe live globe. No file paths, repository names, or source code are sent."
+        },
+        "devglobedev.presence.location": {
+          "type": "string",
+          "default": "",
+          "maxLength": 80,
+          "description": "Optional city and country used to place your live marker when your public profiles do not include a location."
         },
         "devglobedev.presence.shareActiveLanguage": {
           "type": "boolean",

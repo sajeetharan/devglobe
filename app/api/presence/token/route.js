@@ -27,6 +27,8 @@ export async function POST(request) {
     const token = await createSessionToken({
       login: user.login.toLowerCase(),
       scope: 'live-presence',
+      githubName: typeof user.name === 'string' ? user.name.trim().slice(0, 80) : '',
+      githubAvatarUrl: typeof user.avatar_url === 'string' ? user.avatar_url.trim().slice(0, 500) : '',
       githubLocation: typeof user.location === 'string' ? user.location.trim().slice(0, 80) : '',
     });
     await recordExtensionEvent('presence_token_issued', user.login, { source: 'vscode_extension' }).catch(error => {

@@ -72,11 +72,12 @@ The extension contributes these commands:
 - Invalid base URLs, empty queries, unavailable APIs, and malformed responses produce actionable errors.
 - Unit tests cover URL validation, attribution, MCP configuration, and result normalization.
 - The extension package contains marketplace metadata and local development instructions.
-- First run offers a clear Go Live action and explains the data boundary before authentication.
+- First run offers a clear Go Live action and discloses public location, language, editor, OS, and session timing before authentication.
 - Canceling authentication leaves presence disabled.
 - After one explicit opt-in, presence resumes automatically on later editor launches.
-- Presence waits for a source-code file instead of publishing an unknown active language.
-- Missing profile or location data produces the appropriate DevGlobe or GitHub setup action and automatic retry.
+- A verified GitHub user can appear immediately without an existing DevGlobe directory profile.
+- Presence publishes `Ready to code` until a source-code file supplies a language.
+- Missing location data is collected in the editor with a bounded city/country prompt.
 
 ## Measures
 

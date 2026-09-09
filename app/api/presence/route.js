@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import { verifySessionToken } from '../../../lib/auth.js';
 import { recordCodingHeartbeat } from '../../../lib/coding-stats-store.js';
 import { recordExtensionEvent } from '../../../lib/extension-telemetry.js';
-import { normalizeLivePresence, presenceRetryAfter, resolvePresenceProfile } from '../../../lib/live-presence.js';
+import {
+  normalizeLivePresence,
+  presenceProfileFromIdentity,
+  presenceRetryAfter,
+  resolvePresenceProfile,
+} from '../../../lib/live-presence.js';
 import {
   findLivePresence,
   findPresenceProfile,
@@ -27,8 +32,6 @@ export async function POST(request) {
       findPresenceProfile(session.login),
       findLivePresence(session.login),
     ]);
-    if (!profile) return NextResponse.json({ error: 'DevGlobe profile not found' }, { status: 404 });
-
     const retryAfter = presenceRetryAfter(previousPresence);
     if (retryAfter > 0) {
       return NextResponse.json({ error: 'Heartbeat rate limit exceeded' }, {
@@ -37,14 +40,23 @@ export async function POST(request) {
       });
     }
 
-    const presenceProfile = await resolvePresenceProfile(profile, {
-      fallbackLocation: session.githubLocation,
+    const baseProfile = presenceProfileFromIdentity(profile, {
+      login: session.login,
+      name: session.githubName,
+      avatarUrl: session.githubAvatarUrl,
+      location: session.githubLocation,
+    });
+    const presenceProfile = await resolvePresenceProfile(baseProfile, {
+      fallbackLocation: heartbeat.location || session.githubLocation,
       previousPresence,
       geocode: geocodeLocation,
     });
     const presence = normalizeLivePresence({ heartbeat, profile: presenceProfile });
     if (!presence) {
-      return NextResponse.json({ error: 'A geocoded DevGlobe profile is required' }, { status: 422 });
+      return NextResponse.json({
+        code: 'location_required',
+        error: 'Enter a city and country so DevGlobe can place you on the globe',
+      }, { status: 422 });
     }
     await saveLivePresence(presence);
     await recordCodingHeartbeat(previousPresence, presence).catch(error => {
