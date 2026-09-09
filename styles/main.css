@@ -298,6 +298,23 @@ body {
   text-transform: uppercase;
 }
 
+.activity-banner__feedback-mark {
+  color: var(--accent-blue);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.activity-banner__label--feedback {
+  color: var(--accent-blue);
+}
+
+.activity-banner__feedback-author {
+  flex: 0 0 auto;
+  color: var(--text-primary);
+  font-size: 11px;
+}
+
 .activity-banner__actor {
   display: inline-flex;
   min-width: 0;
@@ -6983,6 +7000,11 @@ body {
   }
   .activity-banner__label {
     display: none;
+  }
+  .activity-banner__feedback-author {
+    max-width: 38%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .activity-banner__actor img,
   .activity-banner__actor > span,
