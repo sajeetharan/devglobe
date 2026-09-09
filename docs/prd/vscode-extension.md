@@ -74,6 +74,9 @@ The extension contributes these commands:
 - The extension package contains marketplace metadata and local development instructions.
 - First run offers a clear Go Live action and explains the data boundary before authentication.
 - Canceling authentication leaves presence disabled.
+- After one explicit opt-in, presence resumes automatically on later editor launches.
+- Presence waits for a source-code file instead of publishing an unknown active language.
+- Missing profile or location data produces the appropriate DevGlobe or GitHub setup action and automatic retry.
 
 ## Measures
 

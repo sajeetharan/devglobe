@@ -6,7 +6,7 @@ This extension connects exclusively to [devglobe.dev](https://www.devglobe.dev).
 
 ## Install
 
-Choose your editor in the [DevGlobe editor directory](https://www.devglobe.dev/plugins), or install [DevGlobe: Live Coding Globe from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery). Choose **Go Live** in the first-run prompt, approve GitHub authentication, and open the live globe to see your presence. You can also use the Command Palette and run `DevGlobe.dev: Go Live on the Developer Globe`.
+Choose your editor in the [DevGlobe editor directory](https://www.devglobe.dev/plugins), or install [DevGlobe: Live Coding Globe from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery). Choose **Go Live Now** in the first-run prompt, approve GitHub authentication, and open a source-code file. Your presence then appears automatically on the [live globe](https://www.devglobe.dev/space). You can also use the Command Palette and run `DevGlobe.dev: Go Live on the Developer Globe`.
 
 Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS Code forks can install the same VSIX. Download the [version 0.3.0 release package](https://github.com/sajeetharan/devglobe/releases/download/v0.3.0/devglobe-developer-discovery-0.3.0.vsix), then use the editor's **Install from VSIX** action. Open VSX and vendor marketplace publication require their respective publisher credentials.
 
@@ -18,12 +18,13 @@ Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS
 - `DevGlobe.dev: Copy MCP Configuration`
 - `DevGlobe.dev: Open Agent Setup`
 - `DevGlobe.dev: View My Coding Stats`
+- `DevGlobe.dev: Complete My Globe Profile`
 - `DevGlobe.dev: Go Live on the Developer Globe`
 - `DevGlobe.dev: Stop Sharing Coding Presence`
 
 Set `devglobedev.githubLogin` in VS Code settings to enable personal profile and card commands. `devglobedev.baseUrl` defaults to `https://www.devglobe.dev`.
 
-Live presence is off by default. Starting it uses the editor's GitHub authentication, then sends a heartbeat every 30 seconds while you are active. Heartbeats pause after one minute without editor activity and resume when you continue coding. Private daily totals, streaks, weekly goals, achievements, and language/editor breakdowns are calculated from those heartbeats. Set `devglobedev.presence.shareActiveLanguage` to `false` to hide the active language.
+Live presence is off by default. After you opt in once, it resumes automatically on later editor launches. Starting it uses the editor's GitHub authentication, waits until a source-code file is active, then sends a heartbeat every 30 seconds while you are active. DevGlobe uses your existing profile coordinates or geocodes your public profile location. If your DevGlobe profile or public GitHub location is missing, the extension provides the appropriate setup action and retries automatically. Heartbeats pause after one minute without editor activity and resume when you continue coding. Private daily totals, streaks, weekly goals, achievements, and language/editor breakdowns are calculated from those heartbeats. Set `devglobedev.presence.shareActiveLanguage` to `false` to hide the active language.
 
 ## Privacy
 

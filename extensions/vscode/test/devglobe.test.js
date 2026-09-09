@@ -5,14 +5,17 @@ const {
   agentSetupUrl,
   codingStatsUrl,
   editorName,
+  githubProfileSettingsUrl,
   identityCardUrl,
   isCodingActivityRecent,
   liveGlobeUrl,
   mcpConfiguration,
+  normalizeActiveLanguage,
   normalizeLogin,
   normalizeResults,
   presenceTokenUrl,
   presenceUrl,
+  profileSetupUrl,
   profileUrl,
   resolveBaseUrl,
   searchUrl,
@@ -53,12 +56,26 @@ test('builds attributed profile, card, setup, activation, and search URLs', () =
   const liveGlobe = new URL(liveGlobeUrl('https://www.devglobe.dev'));
   assert.equal(liveGlobe.pathname, '/space');
   assert.equal(liveGlobe.searchParams.get('utm_source'), 'vscode_extension');
+  const profileSetup = new URL(profileSetupUrl('https://www.devglobe.dev', '@sajeetharan'));
+  assert.equal(profileSetup.pathname, '/');
+  assert.equal(profileSetup.searchParams.get('add'), 'sajeetharan');
+  assert.equal(profileSetup.searchParams.get('utm_source'), 'vscode_extension');
+  assert.equal(githubProfileSettingsUrl(), 'https://github.com/settings/profile');
 
   const search = new URL(searchUrl('https://www.devglobe.dev', 'TypeScript Canada'));
   assert.equal(search.pathname, '/api/search');
   assert.equal(search.searchParams.get('q'), 'TypeScript Canada');
   assert.equal(search.searchParams.get('mode'), 'text');
   assert.equal(search.searchParams.get('top'), '10');
+});
+
+test('waits for a source-code language before publishing presence', () => {
+  assert.equal(normalizeActiveLanguage(), '');
+  assert.equal(normalizeActiveLanguage('plaintext'), '');
+  assert.equal(normalizeActiveLanguage('markdown'), '');
+  assert.equal(normalizeActiveLanguage('log'), '');
+  assert.equal(normalizeActiveLanguage(' TypeScript '), 'typescript');
+  assert.equal(normalizeActiveLanguage('python'), 'python');
 });
 
 test('creates a VS Code Streamable HTTP MCP configuration', () => {

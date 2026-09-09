@@ -24,7 +24,11 @@ export async function POST(request) {
     if (!LOGIN_PATTERN.test(user?.login || '')) {
       return NextResponse.json({ error: 'GitHub account is unavailable' }, { status: 401 });
     }
-    const token = await createSessionToken({ login: user.login.toLowerCase(), scope: 'live-presence' });
+    const token = await createSessionToken({
+      login: user.login.toLowerCase(),
+      scope: 'live-presence',
+      githubLocation: typeof user.location === 'string' ? user.location.trim().slice(0, 80) : '',
+    });
     await recordExtensionEvent('presence_token_issued', user.login, { source: 'vscode_extension' }).catch(error => {
       console.error('Presence token telemetry failed:', error.message);
     });

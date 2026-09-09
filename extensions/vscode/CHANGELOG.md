@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Offer a clearer consent-first Go Live flow immediately after installation.
+- Remember the authenticated GitHub login and resume opted-in presence automatically.
+- Wait for a source-code file before publishing presence instead of showing an unknown language.
+- Geocode a public profile location on demand and link to the right setup action when profile data is missing.
+
 ## 0.3.0
 
 - Pause presence heartbeats after one minute without editor activity and resume automatically when coding continues.

@@ -3,6 +3,12 @@ const ATTRIBUTION = Object.freeze({
   utm_medium: 'marketplace',
 });
 const CODING_ACTIVITY_WINDOW_MS = 60_000;
+const NON_CODING_LANGUAGE_IDS = new Set([
+  'log',
+  'markdown',
+  'plaintext',
+  'search-result',
+]);
 
 function isCodingActivityRecent(lastActivityAt, now = Date.now()) {
   return Number.isFinite(lastActivityAt)
@@ -84,6 +90,14 @@ function liveGlobeUrl(baseUrl) {
   return buildUrl(baseUrl, '/space');
 }
 
+function profileSetupUrl(baseUrl, login) {
+  return buildUrl(baseUrl, '/', { add: normalizeLogin(login) });
+}
+
+function githubProfileSettingsUrl() {
+  return 'https://github.com/settings/profile';
+}
+
 function presenceTokenUrl(baseUrl) {
   return new URL('/api/presence/token', `${resolveBaseUrl(baseUrl)}/`).toString();
 }
@@ -109,6 +123,11 @@ function normalizeLogin(value) {
     throw new Error('Configure a valid GitHub login in DevGlobe settings.');
   }
   return login;
+}
+
+function normalizeActiveLanguage(value) {
+  const language = String(value || '').trim().toLowerCase();
+  return language && !NON_CODING_LANGUAGE_IDS.has(language) ? language : '';
 }
 
 function normalizeResults(payload) {
@@ -137,14 +156,17 @@ module.exports = {
   agentSetupUrl,
   codingStatsUrl,
   editorName,
+  githubProfileSettingsUrl,
   identityCardUrl,
   isCodingActivityRecent,
   liveGlobeUrl,
   mcpConfiguration,
+  normalizeActiveLanguage,
   normalizeLogin,
   normalizeResults,
   presenceTokenUrl,
   presenceUrl,
+  profileSetupUrl,
   profileUrl,
   resolveBaseUrl,
   searchUrl,
