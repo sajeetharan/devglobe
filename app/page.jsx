@@ -926,15 +926,14 @@ export default function Home() {
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
-      {!tourStep && (user && claimStatus === 'claimed' ? (
+      {!tourStep && <PlatformActivityBanner />}
+      {!tourStep && user && claimStatus === 'claimed' && (
           <ReturnBriefing
             login={user.login}
             onOpenContributions={() => setShowContributions(true)}
             onOpenWeeklyUpdates={() => setUserMenuRequest(request => request + 1)}
           />
-        ) : (
-          <PlatformActivityBanner />
-        ))}
+      )}
       <SearchBar
         developers={developers}
         onResults={handleSearch}
