@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Let new installers appear immediately with their verified GitHub name, without requiring an existing DevGlobe profile.
+- Ask for a city and country inside the editor only when no public location is available.
+- Publish a `Ready to code` presence immediately instead of waiting for a source file.
 - Offer a clearer consent-first Go Live flow immediately after installation.
 - Remember the authenticated GitHub login and resume opted-in presence automatically.
 - Wait for a source-code file before publishing presence instead of showing an unknown language.

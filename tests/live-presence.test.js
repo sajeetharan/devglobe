@@ -7,6 +7,7 @@ import {
   diffLivePresence,
   isLivePresenceActive,
   normalizeLivePresence,
+  presenceProfileFromIdentity,
   presenceActivityState,
   presenceRetryAfter,
   resolvePresenceProfile,
@@ -18,6 +19,7 @@ const profile = {
   name: 'Octo Cat',
   avatarUrl: 'https://avatars.example/octo.png',
   location: 'London, UK',
+  profileAvailable: true,
   lat: 51.5072,
   lng: -0.1276,
 };
@@ -34,6 +36,7 @@ test('normalizes a heartbeat using profile-owned identity and coordinates', () =
     name: 'Octo Cat',
     avatarUrl: 'https://avatars.example/octo.png',
     location: 'London, UK',
+    profileAvailable: true,
     lat: 51.5072,
     lng: -0.1276,
     activeLanguage: 'TypeScript',
@@ -42,6 +45,32 @@ test('normalizes a heartbeat using profile-owned identity and coordinates', () =
     sessionStartedAt: now.toISOString(),
     lastHeartbeat: now.toISOString(),
     ttl: LIVE_PRESENCE_TTL_SECONDS,
+  });
+});
+
+test('creates a temporary live profile from verified GitHub identity', () => {
+  assert.deepEqual(presenceProfileFromIdentity(null, {
+    login: 'Octo-Cat',
+    name: 'Octo Cat',
+    avatarUrl: 'https://avatars.example/octo.png',
+    location: 'London, UK',
+  }), {
+    login: 'octo-cat',
+    name: 'Octo Cat',
+    avatarUrl: 'https://avatars.example/octo.png',
+    location: 'London, UK',
+    lat: null,
+    lng: null,
+    profileAvailable: false,
+  });
+});
+
+test('prefers an existing DevGlobe profile for live identity', () => {
+  assert.deepEqual(presenceProfileFromIdentity(profile, {
+    login: 'different-user',
+  }), {
+    ...profile,
+    profileAvailable: true,
   });
 });
 
@@ -77,15 +106,46 @@ test('uses the authenticated GitHub location when the profile location is unknow
   assert.equal(resolved.lng, 79.8612);
 });
 
+test('prefers an explicit editor location over an unusable public location', async () => {
+  const resolved = await resolvePresenceProfile({
+    ...profile,
+    location: 'Earth',
+    lat: null,
+    lng: null,
+  }, {
+    fallbackLocation: 'Colombo, Sri Lanka',
+    geocode: async location => {
+      assert.equal(location, 'Colombo, Sri Lanka');
+      return { lat: 6.9271, lng: 79.8612 };
+    },
+  });
+  assert.equal(resolved.location, 'Colombo, Sri Lanka');
+});
+
 test('reuses previous presence coordinates before calling the geocoder', async () => {
   const resolved = await resolvePresenceProfile({ ...profile, lat: null, lng: null }, {
-    previousPresence: { lat: 51.4, lng: -0.1 },
+    previousPresence: { location: 'Saved location', lat: 51.4, lng: -0.1 },
     geocode: async () => {
       throw new Error('geocoder should not be called');
     },
   });
   assert.equal(resolved.lat, 51.4);
   assert.equal(resolved.lng, -0.1);
+  assert.equal(resolved.location, 'Saved location');
+});
+
+test('re-geocodes when the editor location changes', async () => {
+  const resolved = await resolvePresenceProfile({ ...profile, lat: null, lng: null }, {
+    fallbackLocation: 'Berlin, Germany',
+    previousPresence: { location: 'London, UK', lat: 51.4, lng: -0.1 },
+    geocode: async location => {
+      assert.equal(location, 'Berlin, Germany');
+      return { lat: 52.52, lng: 13.405 };
+    },
+  });
+  assert.equal(resolved.location, 'Berlin, Germany');
+  assert.equal(resolved.lat, 52.52);
+  assert.equal(resolved.lng, 13.405);
 });
 
 test('expires presence after the heartbeat window', () => {

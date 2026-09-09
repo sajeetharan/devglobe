@@ -21,6 +21,12 @@
 .intro > span, .editorIntro > span { display: block; color: var(--text-secondary); font-size: 16px; line-height: 1.65; }
 .editorIntro { max-width: 760px; padding: 96px 0 64px; }
 .editorIntro > span { max-width: 650px; margin-top: 24px; }
+.quickStart { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 52px; padding: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); list-style: none; }
+.quickStart li { display: grid; grid-template-columns: 32px 1fr; gap: 12px; min-width: 0; padding: 22px 18px 22px 0; }
+.quickStart li + li { padding-left: 18px; border-left: 1px solid var(--border); }
+.quickStart li > span { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--accent-blue); font-size: 12px; font-weight: 800; }
+.quickStart strong { display: block; font-size: 14px; }
+.quickStart p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
 .picker, .waiting { border-top: 1px solid var(--border); }
 .picker { padding-top: 22px; }
 .pickerHeading { display: grid; grid-template-columns: 1fr minmax(320px, 440px); align-items: center; gap: 28px; }
@@ -80,6 +86,9 @@
   .intro { grid-template-columns: 1fr; gap: 20px; padding: 48px 0 38px; }
   .editorIntro { padding: 62px 0 48px; }
   .intro h1, .editorIntro h1 { font-size: 40px; }
+  .quickStart { grid-template-columns: 1fr; }
+  .quickStart li, .quickStart li + li { padding: 16px 0; border-left: 0; }
+  .quickStart li + li { border-top: 1px solid var(--border); }
   .intro > span, .editorIntro > span { font-size: 15px; }
   .pickerHeading { grid-template-columns: 1fr; gap: 16px; }
   .pickerHeading > div:first-child { justify-content: space-between; }

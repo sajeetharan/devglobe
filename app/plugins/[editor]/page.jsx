@@ -37,7 +37,7 @@ export default async function EditorPluginPage({ params }) {
         <i aria-hidden="true" />
         <p>{editor.family}</p>
         <h1>DevGlobe for {editor.name}</h1>
-        <span>{editor.status === 'available' ? 'Connect your editor, choose Go Live, and appear on the globe while you are actively coding.' : 'This connection needs a native client and is on the distribution roadmap.'}</span>
+        <span>{editor.status === 'available' ? 'Install the extension, choose Go Live Now, and approve GitHub. Your verified name appears on the globe automatically.' : 'This connection needs a native client and is on the distribution roadmap.'}</span>
         {installUrl ? <EditorInstallLink className={styles.primaryAction} editor={editor.slug} href={installUrl}>{editor.installLabel}</EditorInstallLink> : <Link className={styles.secondaryAction} href="/plugins">Use a supported editor</Link>}
       </section>
       {steps.length ? (
@@ -49,7 +49,7 @@ export default async function EditorPluginPage({ params }) {
       )}
       <aside className={styles.privacy}>
         <strong>Your work stays local</strong>
-        <p>Only bounded presence timestamps, editor, platform, and optionally active language are sent. Tracking pauses after one minute without editor activity.</p>
+        <p>Your public location, bounded presence timestamps, editor, platform, and optionally active language are sent. Tracking pauses after one minute without editor activity.</p>
       </aside>
     </main>
   );

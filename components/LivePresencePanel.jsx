@@ -62,7 +62,7 @@ export default function LivePresencePanel({
             type="button"
             className="live-presence-row"
             data-presence={developer.presenceState}
-            onClick={() => onSelectLogin(developer.login)}
+            onClick={() => onSelectLogin(developer.login, developer)}
           >
             <img src={developer.avatarUrl || '/devglobe.png'} alt="" />
             <span className="live-presence-row__identity">

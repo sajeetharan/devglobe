@@ -5,7 +5,6 @@ const {
   agentSetupUrl,
   codingStatsUrl,
   editorName,
-  githubProfileSettingsUrl,
   identityCardUrl,
   isCodingActivityRecent,
   liveGlobeUrl,
@@ -60,8 +59,6 @@ test('builds attributed profile, card, setup, activation, and search URLs', () =
   assert.equal(profileSetup.pathname, '/');
   assert.equal(profileSetup.searchParams.get('add'), 'sajeetharan');
   assert.equal(profileSetup.searchParams.get('utm_source'), 'vscode_extension');
-  assert.equal(githubProfileSettingsUrl(), 'https://github.com/settings/profile');
-
   const search = new URL(searchUrl('https://www.devglobe.dev', 'TypeScript Canada'));
   assert.equal(search.pathname, '/api/search');
   assert.equal(search.searchParams.get('q'), 'TypeScript Canada');
@@ -69,7 +66,7 @@ test('builds attributed profile, card, setup, activation, and search URLs', () =
   assert.equal(search.searchParams.get('top'), '10');
 });
 
-test('waits for a source-code language before publishing presence', () => {
+test('normalizes source-code languages and identifies non-code editors', () => {
   assert.equal(normalizeActiveLanguage(), '');
   assert.equal(normalizeActiveLanguage('plaintext'), '');
   assert.equal(normalizeActiveLanguage('markdown'), '');
