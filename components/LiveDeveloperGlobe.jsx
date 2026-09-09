@@ -23,8 +23,17 @@ const ringPeriod = () => 1800;
 const polygonCapColor = () => 'rgba(20, 32, 51, 0.86)';
 const polygonSideColor = () => 'rgba(10, 14, 23, 0.55)';
 const polygonStrokeColor = () => 'rgba(92, 117, 151, 0.3)';
+const arcStartLat = connection => connection.from.lat;
+const arcStartLng = connection => connection.from.lng;
+const arcEndLat = connection => connection.to.lat;
+const arcEndLng = connection => connection.to.lng;
+const arcColor = connection => connection.color;
 
-const LiveDeveloperGlobe = forwardRef(function LiveDeveloperGlobe({ developers, onSelect }, forwardedRef) {
+const LiveDeveloperGlobe = forwardRef(function LiveDeveloperGlobe({
+  connections,
+  developers,
+  onSelect,
+}, forwardedRef) {
   const containerRef = useRef(null);
   const globeRef = useRef(null);
   const [size, setSize] = useState({ width: 800, height: 700 });
@@ -108,6 +117,17 @@ const LiveDeveloperGlobe = forwardRef(function LiveDeveloperGlobe({ developers, 
         ringMaxRadius={ringMaxRadius}
         ringPropagationSpeed={ringSpeed}
         ringRepeatPeriod={ringPeriod}
+        arcsData={connections}
+        arcStartLat={arcStartLat}
+        arcStartLng={arcStartLng}
+        arcEndLat={arcEndLat}
+        arcEndLng={arcEndLng}
+        arcColor={arcColor}
+        arcAltitude={0.12}
+        arcStroke={0.35}
+        arcDashLength={0.45}
+        arcDashGap={0.55}
+        arcDashAnimateTime={2600}
       />
     </div>
   );

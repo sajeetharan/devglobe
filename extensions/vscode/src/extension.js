@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const { randomUUID } = require('node:crypto');
 const {
   agentSetupUrl,
   codingStatsUrl,
@@ -30,6 +31,7 @@ function configuration() {
 }
 
 const PRESENCE_TOKEN_KEY = 'devglobedev.livePresenceToken';
+const LAST_WAVE_SEEN_KEY = 'devglobedev.lastWaveSeenAt';
 const ONBOARDING_KEY = 'devglobedev.goLiveOnboarding.v1';
 const HEARTBEAT_INTERVAL_MS = 30000;
 
@@ -48,8 +50,16 @@ function createPresenceController(context) {
   let timer = null;
   let starting = null;
   let sessionStartedAt = null;
+  let sessionId = null;
   let lastActivityAt = 0;
+  let lastWaveSeenAt = context.globalState.get(LAST_WAVE_SEEN_KEY, null);
+  let codingStatus = '';
+  let focusStartedAt = null;
+  let focusEndsAt = null;
   let sending = false;
+  let activeHeartbeatController = null;
+  let activeHeartbeatDone = null;
+  let stopping = false;
 
   function showOfflineStatus() {
     status.command = 'devglobedev.startPresence';
@@ -61,7 +71,8 @@ function createPresenceController(context) {
   function showLiveStatus() {
     status.command = 'devglobedev.stopPresence';
     status.text = '$(radio-tower) DevGlobe live';
-    status.tooltip = 'Coding presence is visible on DevGlobe. Click to stop sharing.';
+    const focus = focusEndsAt && Date.parse(focusEndsAt) > Date.now() ? ' Focus session active.' : '';
+    status.tooltip = `Coding presence is visible on DevGlobe.${focus} Click to stop sharing.`;
     status.show();
   }
 
@@ -110,7 +121,7 @@ function createPresenceController(context) {
     return await context.secrets.get(PRESENCE_TOKEN_KEY) || exchangeToken(interactive);
   }
 
-  async function heartbeat(interactive = false) {
+  async function heartbeat(interactive = false, metadataOnly = false) {
     if (sending || !configuration().presenceEnabled) return false;
     if (!isCodingActivityRecent(lastActivityAt)) {
       showIdleStatus();
@@ -118,20 +129,32 @@ function createPresenceController(context) {
     }
     const language = activeLanguage() || 'Ready to code';
     sending = true;
+    const controller = new AbortController();
+    activeHeartbeatController = controller;
+    let resolveHeartbeat;
+    activeHeartbeatDone = new Promise(resolve => { resolveHeartbeat = resolve; });
+    const timeout = setTimeout(() => controller.abort(), 15000);
     try {
       let bearer = await token(interactive);
       if (!bearer) return false;
+      if (controller.signal.aborted) return false;
       const send = () => fetch(presenceUrl(configuration().baseUrl), {
         method: 'POST',
         headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           activeLanguage: configuration().shareActiveLanguage ? language : 'Hidden',
+          codingStatus,
           editor: editorName(vscode.env.appName),
+          focusEndsAt,
+          focusStartedAt,
+          lastWaveSeenAt,
           location: configuration().presenceLocation,
+          metadataOnly,
           platform: platformName(),
+          sessionId,
           sessionStartedAt,
         }),
-        signal: AbortSignal.timeout(15000),
+        signal: controller.signal,
       });
       let response = await send();
       if (response.status === 401) {
@@ -144,24 +167,58 @@ function createPresenceController(context) {
         const payload = await response.json().catch(() => ({}));
         const error = new Error(payload.error || `DevGlobe presence failed with HTTP ${response.status}.`);
         if (response.status === 422 && payload.code === 'location_required') error.code = 'location-required';
+        if (response.status === 409 && payload.code === 'stale-session') error.code = 'stale-session';
+        if (response.status === 429) {
+          error.code = 'rate-limit';
+          error.retryAfter = Math.max(1, Number(response.headers.get('retry-after')) || 1);
+        }
         throw error;
+      }
+      const payload = await response.json();
+      for (const wave of Array.isArray(payload.waves) ? payload.waves : []) {
+        lastWaveSeenAt = !lastWaveSeenAt || wave.sentAt > lastWaveSeenAt ? wave.sentAt : lastWaveSeenAt;
+        await context.globalState.update(LAST_WAVE_SEEN_KEY, lastWaveSeenAt);
+        vscode.window.showInformationMessage(
+          `${wave.fromName || `@${wave.fromLogin}`} waved to you on DevGlobe.`,
+          'Open Globe',
+        ).then((action) => {
+          if (action === 'Open Globe') return openExternal(liveGlobeUrl(configuration().baseUrl));
+          return null;
+        }).catch(error => console.error('DevGlobe wave notification failed:', error));
       }
       showLiveStatus();
       return 'live';
     } finally {
+      clearTimeout(timeout);
       sending = false;
+      activeHeartbeatController = null;
+      activeHeartbeatDone = null;
+      resolveHeartbeat();
+    }
+  }
+
+  async function heartbeatWithRetry(interactive = false, metadataOnly = false) {
+    try {
+      return await heartbeat(interactive, metadataOnly);
+    } catch (error) {
+      if (error?.code !== 'rate-limit') throw error;
+      await new Promise(resolve => setTimeout(resolve, Math.min(error.retryAfter, 10) * 1000));
+      if (stopping || !configuration().presenceEnabled) return false;
+      return heartbeat(interactive, metadataOnly);
     }
   }
 
   async function start(interactive = false) {
     if (timer) return true;
     if (starting) return starting;
+    stopping = false;
     starting = (async () => {
       sessionStartedAt = new Date().toISOString();
+      sessionId = randomUUID();
       lastActivityAt = Date.now();
       if (interactive && !await token(true)) return false;
       try {
-        const state = await heartbeat(interactive);
+        const state = await heartbeatWithRetry(interactive);
         if (!state || !configuration().presenceEnabled) return false;
         timer = setInterval(() => heartbeat(false).catch(handleBackgroundError), HEARTBEAT_INTERVAL_MS);
         return state;
@@ -184,22 +241,52 @@ function createPresenceController(context) {
       showLocationRequiredStatus();
       return;
     }
+    if (error?.code === 'stale-session') {
+      if (timer) clearInterval(timer);
+      timer = null;
+      showOfflineStatus();
+      vscode.window.showWarningMessage('DevGlobe presence moved to a newer editor session.');
+      return;
+    }
     console.error('DevGlobe presence heartbeat failed:', error);
   }
 
   async function stop(notifyServer = true, keepAction = true) {
+    stopping = true;
     if (timer) clearInterval(timer);
     timer = null;
+    activeHeartbeatController?.abort();
+    if (activeHeartbeatDone) await activeHeartbeatDone;
     if (keepAction) showOfflineStatus();
     else status.hide();
-    if (!notifyServer) return;
+    if (!notifyServer) return null;
     const bearer = await context.secrets.get(PRESENCE_TOKEN_KEY);
-    if (!bearer) return;
-    await fetch(presenceUrl(configuration().baseUrl), {
+    if (!bearer) return null;
+    const response = await fetch(presenceUrl(configuration().baseUrl), {
       method: 'DELETE',
+      body: JSON.stringify({ sessionId }),
       headers: { Authorization: `Bearer ${bearer}` },
       signal: AbortSignal.timeout(10000),
-    }).catch(() => {});
+    });
+    if (!response.ok) throw new Error(`DevGlobe sign-off failed with HTTP ${response.status}.`);
+    const payload = await response.json();
+    return payload.recap || null;
+  }
+
+  async function setCodingStatus(nextStatus) {
+    codingStatus = nextStatus;
+    lastActivityAt = Date.now();
+    if (configuration().presenceEnabled) return heartbeatWithRetry(false, true);
+    return false;
+  }
+
+  async function startFocus(minutes) {
+    const now = new Date();
+    focusStartedAt = now.toISOString();
+    focusEndsAt = new Date(now.getTime() + minutes * 60 * 1000).toISOString();
+    lastActivityAt = Date.now();
+    if (configuration().presenceEnabled) return heartbeatWithRetry(false, true);
+    return false;
   }
 
   function recordActivity() {
@@ -223,7 +310,7 @@ function createPresenceController(context) {
     }),
     { dispose: () => stop(false, false) },
   );
-  return { start, stop };
+  return { setCodingStatus, start, startFocus, stop };
 }
 
 async function openExternal(url) {
@@ -407,10 +494,66 @@ async function activate(context) {
   registerCommand(context, 'devglobedev.startPresence', async () => {
     await goLive(presence);
   });
+  registerCommand(context, 'devglobedev.setCodingStatus', async () => {
+    const selected = await vscode.window.showQuickPick([
+      { label: '$(tools) Building', value: 'building' },
+      { label: '$(debug) Debugging', value: 'debugging' },
+      { label: '$(git-pull-request) Reviewing', value: 'reviewing' },
+      { label: '$(book) Learning', value: 'learning' },
+      { label: '$(repo) Open-source contribution', value: 'open-source' },
+      { label: '$(organization) Available to pair', value: 'pairing' },
+      { label: '$(circle-slash) Clear status', value: '' },
+    ], { placeHolder: 'What are you working on?' });
+    if (!selected) return;
+    const published = await presence.setCodingStatus(selected.value);
+    const label = selected.label.replace(/^\$\([^)]+\)\s*/, '').toLowerCase();
+    if (!published) {
+      const action = await vscode.window.showWarningMessage(
+        'Go live on DevGlobe before sharing a coding status.',
+        'Go Live',
+      );
+      if (action === 'Go Live') await vscode.commands.executeCommand('devglobedev.startPresence');
+      return;
+    }
+    await vscode.window.showInformationMessage(
+      selected.value ? `DevGlobe status set to ${label}.` : 'DevGlobe status cleared.',
+    );
+  });
+  registerCommand(context, 'devglobedev.startFocusSession', async () => {
+    const selected = await vscode.window.showQuickPick([
+      { label: '25-minute focus session', minutes: 25 },
+      { label: '50-minute focus session', minutes: 50 },
+    ], { placeHolder: 'Choose a shared focus session' });
+    if (!selected) return;
+    const published = await presence.startFocus(selected.minutes);
+    if (!published) {
+      const action = await vscode.window.showWarningMessage(
+        'Go live on DevGlobe before starting a shared focus session.',
+        'Go Live',
+      );
+      if (action === 'Go Live') {
+        await vscode.commands.executeCommand('devglobedev.startPresence');
+        if (configuration().presenceEnabled) {
+          await vscode.window.showInformationMessage(
+            `Your ${selected.minutes}-minute DevGlobe focus session started.`,
+          );
+        }
+      }
+      return;
+    }
+    const action = await vscode.window.showInformationMessage(
+      `Your ${selected.minutes}-minute DevGlobe focus session started.`,
+      'Open Globe',
+    );
+    if (action === 'Open Globe') await openExternal(liveGlobeUrl(configuration().baseUrl));
+  });
   registerCommand(context, 'devglobedev.stopPresence', async () => {
+    const recap = await presence.stop();
     await vscode.workspace.getConfiguration('devglobedev').update('presence.enabled', false, vscode.ConfigurationTarget.Global);
-    await presence.stop();
-    await vscode.window.showInformationMessage('Your DevGlobe coding presence is offline.');
+    const summary = recap
+      ? `You coded for ${recap.durationMinutes} minutes alongside ${recap.developerCount} developers in ${recap.countryCount} countries and received ${recap.waveCount} waves.`
+      : 'Your DevGlobe coding presence is offline.';
+    await vscode.window.showInformationMessage(summary);
   });
   if (configuration().presenceEnabled) {
     presence.start(false).catch(error => console.error('DevGlobe automatic presence resume failed:', error));

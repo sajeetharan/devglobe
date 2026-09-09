@@ -1,17 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  addWave,
+  buildPresenceRecap,
+  deduplicateLivePresence,
   LIVE_PRESENCE_ACTIVE_SECONDS,
   LIVE_PRESENCE_RECENT_SECONDS,
   LIVE_PRESENCE_TTL_SECONDS,
   diffLivePresence,
   isLivePresenceActive,
   normalizeLivePresence,
+  normalizeWaveCooldowns,
+  isOlderPresenceSession,
+  isSamePresenceSession,
   presenceProfileFromIdentity,
   presenceActivityState,
+  presenceMetadataRetryAfter,
+  presenceReplacementRetryAfter,
   presenceRetryAfter,
   resolvePresenceProfile,
 } from '../lib/live-presence.js';
+import { removeLivePresence, saveLivePresence } from '../lib/live-presence-store.js';
 
 const now = new Date('2026-09-07T18:00:00.000Z');
 const profile = {
@@ -42,10 +51,48 @@ test('normalizes a heartbeat using profile-owned identity and coordinates', () =
     activeLanguage: 'TypeScript',
     editor: 'VS Code',
     platform: 'Windows',
+    codingStatus: '',
+    sessionId: '',
     sessionStartedAt: now.toISOString(),
     lastHeartbeat: now.toISOString(),
+    lastMetadataAt: '',
+    waves: [],
+    waveCooldowns: [],
     ttl: LIVE_PRESENCE_TTL_SECONDS,
   });
+});
+
+test('normalizes optional coding and focus context', () => {
+  const presence = normalizeLivePresence({
+    heartbeat: {
+      activeLanguage: 'TypeScript',
+      codingStatus: 'debugging',
+      focusStartedAt: now.toISOString(),
+      focusEndsAt: new Date(now.getTime() + 25 * 60_000).toISOString(),
+      sessionId: 'editor-session-1',
+    },
+    profile,
+    now,
+  });
+  assert.equal(presence.codingStatus, 'debugging');
+  assert.equal(presence.sessionId, 'editor-session-1');
+  assert.equal(presence.focusStartedAt, now.toISOString());
+  assert.equal(presence.focusEndsAt, new Date(now.getTime() + 25 * 60_000).toISOString());
+});
+
+test('drops unknown statuses and expired focus sessions', () => {
+  const presence = normalizeLivePresence({
+    heartbeat: {
+      codingStatus: 'having lunch',
+      focusStartedAt: new Date(now.getTime() - 30 * 60_000).toISOString(),
+      focusEndsAt: new Date(now.getTime() - 5 * 60_000).toISOString(),
+    },
+    profile,
+    now,
+  });
+  assert.equal(presence.codingStatus, '');
+  assert.equal(presence.focusStartedAt, undefined);
+  assert.equal(presence.focusEndsAt, undefined);
 });
 
 test('creates a temporary live profile from verified GitHub identity', () => {
@@ -172,6 +219,18 @@ test('rate limits heartbeat bursts without delaying the normal interval', () => 
   assert.equal(presenceRetryAfter(null, now.getTime()), 0);
 });
 
+test('rate limits metadata writes independently from coding heartbeats', () => {
+  const presence = { lastMetadataAt: now.toISOString() };
+  assert.equal(presenceMetadataRetryAfter(presence, now.getTime() + 1_000), 1);
+  assert.equal(presenceMetadataRetryAfter(presence, now.getTime() + 2_000), 0);
+});
+
+test('bounds rapid session replacement writes per developer', () => {
+  const presence = { lastHeartbeat: now.toISOString() };
+  assert.equal(presenceReplacementRetryAfter(presence, now.getTime() + 1_000), 1);
+  assert.equal(presenceReplacementRetryAfter(presence, now.getTime() + 2_000), 0);
+});
+
 test('diffs changed and removed developers for SSE updates', () => {
   const previous = [
     { id: 'octo-cat', lastHeartbeat: '2026-09-07T17:59:00.000Z' },
@@ -190,4 +249,196 @@ test('diffs a transition from live to recently coding', () => {
   assert.deepEqual(diffLivePresence(previous, next), [
     { type: 'upsert', developer: next[0] },
   ]);
+});
+
+test('deduplicates legacy markers by normalized login and newest heartbeat', () => {
+  const developers = deduplicateLivePresence([
+    { id: 'legacy-one', login: 'Octo-Cat', lastHeartbeat: '2026-09-07T17:50:00.000Z' },
+    { id: 'legacy-two', login: 'octo-cat', lastHeartbeat: now.toISOString() },
+  ]);
+  assert.deepEqual(developers, [{
+    id: 'octo-cat',
+    login: 'octo-cat',
+    lastHeartbeat: now.toISOString(),
+  }]);
+});
+
+test('prevents an older editor session from replacing a newer one', () => {
+  assert.equal(isOlderPresenceSession(
+    { sessionId: 'new', sessionStartedAt: now.toISOString() },
+    { sessionId: 'old', sessionStartedAt: new Date(now.getTime() - 1000).toISOString() },
+  ), true);
+  assert.equal(isOlderPresenceSession(
+    { sessionId: 'old', sessionStartedAt: new Date(now.getTime() - 1000).toISOString() },
+    { sessionId: 'new', sessionStartedAt: now.toISOString() },
+  ), false);
+});
+
+test('fences legacy sessions by their session start time', () => {
+  const older = { sessionStartedAt: new Date(now.getTime() - 1000).toISOString() };
+  const newer = { sessionStartedAt: now.toISOString() };
+  assert.equal(isSamePresenceSession(older, { ...older }), true);
+  assert.equal(isOlderPresenceSession(newer, older), true);
+  assert.equal(isOlderPresenceSession(older, newer), false);
+  assert.equal(isSamePresenceSession({ ...newer, sessionId: 'modern' }, newer), false);
+});
+
+test('adds a rate-limited wave without accepting self-waves', () => {
+  const waved = addWave({ login: 'octo-cat', waves: [] }, {
+    login: 'helper',
+    name: 'Helpful Developer',
+  }, now);
+  assert.deepEqual(waved.waves, [{
+    fromLogin: 'helper',
+    fromName: 'Helpful Developer',
+    sentAt: now.toISOString(),
+  }]);
+  assert.deepEqual(waved.waveCooldowns, [{
+    fromLogin: 'helper',
+    sentAt: now.toISOString(),
+  }]);
+  assert.throws(() => addWave(waved, { login: 'helper' }, now), /already waved/);
+  assert.throws(() => addWave(waved, { login: 'octo-cat' }, now), /cannot wave to yourself/);
+});
+
+test('retains active wave cooldowns independently of the visible wave list', () => {
+  const cooldowns = normalizeWaveCooldowns([
+    { fromLogin: 'recent', sentAt: new Date(now.getTime() - 9 * 60_000).toISOString() },
+    { fromLogin: 'expired', sentAt: new Date(now.getTime() - 11 * 60_000).toISOString() },
+  ], now);
+  assert.deepEqual(cooldowns, [{
+    fromLogin: 'recent',
+    sentAt: new Date(now.getTime() - 9 * 60_000).toISOString(),
+  }]);
+});
+
+test('starts a replacement editor session without inheriting old waves', () => {
+  const presence = normalizeLivePresence({
+    heartbeat: { sessionId: 'new', sessionStartedAt: now.toISOString() },
+    previousPresence: {
+      sessionId: 'old',
+      waves: [{ fromLogin: 'helper', sentAt: now.toISOString() }],
+      waveCooldowns: [{ fromLogin: 'helper', sentAt: now.toISOString() }],
+    },
+    profile,
+    now,
+  });
+  assert.deepEqual(presence.waves, []);
+  assert.deepEqual(presence.waveCooldowns, []);
+});
+
+test('builds an end-of-session companionship recap', () => {
+  const recap = buildPresenceRecap({
+    login: 'octo-cat',
+    sessionStartedAt: new Date(now.getTime() - 47 * 60_000).toISOString(),
+    waves: [{ fromLogin: 'helper', sentAt: now.toISOString() }],
+  }, [
+    { login: 'octo-cat', location: 'London, UK' },
+    { login: 'helper', location: 'Berlin, Germany' },
+    { login: 'friend', location: 'Munich, Germany' },
+  ], now);
+  assert.deepEqual(recap, {
+    durationMinutes: 47,
+    developerCount: 2,
+    countryCount: 1,
+    waveCount: 1,
+  });
+});
+
+test('does not delete a replacement session after an ETag conflict', async () => {
+  let document = {
+    id: 'octo-cat',
+    login: 'octo-cat',
+    sessionId: 'old',
+    _etag: 'v1',
+  };
+  let deleteAttempts = 0;
+  const container = {
+    item: () => ({
+      read: async () => ({ resource: document }),
+      delete: async ({ accessCondition }) => {
+        deleteAttempts += 1;
+        assert.equal(accessCondition.condition, document._etag);
+        document = { ...document, sessionId: 'new', _etag: 'v2' };
+        throw Object.assign(new Error('conflict'), { code: 412 });
+      },
+    }),
+  };
+
+  assert.equal(await removeLivePresence('octo-cat', 'old', container), false);
+  assert.equal(deleteAttempts, 1);
+  assert.equal(document.sessionId, 'new');
+});
+
+test('rejects a parallel heartbeat from the same session after a write conflict', async () => {
+  const timestamp = new Date().toISOString();
+  let document = {
+    id: 'octo-cat',
+    login: 'octo-cat',
+    sessionId: 'same',
+    sessionStartedAt: timestamp,
+    lastHeartbeat: new Date(Date.now() - 20_000).toISOString(),
+    _etag: 'v1',
+  };
+  let replacements = 0;
+  const container = {
+    items: { create: async next => ({ resource: next }) },
+    item: () => ({
+      read: async () => ({ resource: document }),
+      replace: async () => {
+        replacements += 1;
+        document = { ...document, lastHeartbeat: timestamp, _etag: 'v2' };
+        throw Object.assign(new Error('conflict'), { code: 412 });
+      },
+    }),
+  };
+
+  await assert.rejects(
+    saveLivePresence({ ...document, lastHeartbeat: timestamp }, { container }),
+    error => error.code === 'heartbeat-rate-limit',
+  );
+  assert.equal(replacements, 1);
+});
+
+test('lets a newer replacement session win after a write conflict', async () => {
+  const startedAt = new Date().toISOString();
+  let document = {
+    id: 'octo-cat',
+    login: 'octo-cat',
+    sessionId: 'oldest',
+    sessionStartedAt: new Date(Date.now() - 20_000).toISOString(),
+    lastHeartbeat: new Date(Date.now() - 20_000).toISOString(),
+    _etag: 'v1',
+  };
+  let replacements = 0;
+  const container = {
+    items: { create: async next => ({ resource: next }) },
+    item: () => ({
+      read: async () => ({ resource: document }),
+      replace: async (next) => {
+        replacements += 1;
+        if (replacements === 1) {
+          document = {
+            ...document,
+            sessionId: 'older',
+            sessionStartedAt: new Date(Date.now() - 10_000).toISOString(),
+            lastHeartbeat: new Date(Date.now() - 3_000).toISOString(),
+            _etag: 'v2',
+          };
+          throw Object.assign(new Error('conflict'), { code: 412 });
+        }
+        document = { ...next, _etag: 'v3' };
+        return { resource: document };
+      },
+    }),
+  };
+
+  const saved = await saveLivePresence({
+    ...document,
+    sessionId: 'new',
+    sessionStartedAt: startedAt,
+    lastHeartbeat: startedAt,
+  }, { container });
+  assert.equal(saved.sessionId, 'new');
+  assert.equal(replacements, 2);
 });

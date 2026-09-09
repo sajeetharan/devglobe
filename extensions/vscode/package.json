@@ -2,7 +2,7 @@
   "name": "devglobe-developer-discovery",
   "displayName": "DevGlobe: Live Coding Globe",
   "description": "Show up on the live developer globe while you code, track private coding stats, and discover developers.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "devglobedev",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -82,6 +82,16 @@
       {
         "command": "devglobedev.startPresence",
         "title": "Go Live on the Developer Globe",
+        "category": "DevGlobe.dev"
+      },
+      {
+        "command": "devglobedev.setCodingStatus",
+        "title": "Set My Coding Status",
+        "category": "DevGlobe.dev"
+      },
+      {
+        "command": "devglobedev.startFocusSession",
+        "title": "Start a Shared Focus Session",
         "category": "DevGlobe.dev"
       },
       {

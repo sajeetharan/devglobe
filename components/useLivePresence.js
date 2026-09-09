@@ -2,6 +2,19 @@
 
 import { useEffect, useState } from 'react';
 
+function deduplicateDevelopers(developers) {
+  const unique = new Map();
+  for (const developer of Array.isArray(developers) ? developers : []) {
+    const login = String(developer?.login || developer?.id || '').trim().toLowerCase();
+    if (!login) continue;
+    const existing = unique.get(login);
+    if (!existing || String(developer.lastHeartbeat || '') >= String(existing.lastHeartbeat || '')) {
+      unique.set(login, { ...developer, id: login, login });
+    }
+  }
+  return [...unique.values()];
+}
+
 export function useLivePresence(enabled = true) {
   const [developers, setDevelopers] = useState([]);
   const [connection, setConnection] = useState(enabled ? 'connecting' : 'idle');
@@ -20,7 +33,7 @@ export function useLivePresence(enabled = true) {
     }, 5000);
     const onInit = (event) => {
       try {
-        setDevelopers(JSON.parse(event.data));
+        setDevelopers(deduplicateDevelopers(JSON.parse(event.data)));
         initialized = true;
         clearTimeout(initialTimer);
         setConnection('live');
@@ -32,12 +45,15 @@ export function useLivePresence(enabled = true) {
       try {
         const update = JSON.parse(event.data);
         setDevelopers(current => {
-          if (update.type === 'delete') return current.filter(item => item.id !== update.developerId);
+          if (update.type === 'delete') {
+            return current.filter(item => item.login !== String(update.developerId).toLowerCase());
+          }
           if (update.type !== 'upsert' || !update.developer) return current;
-          const index = current.findIndex(item => item.id === update.developer.id);
-          if (index === -1) return [...current, update.developer];
+          const login = String(update.developer.login || update.developer.id).toLowerCase();
+          const index = current.findIndex(item => item.login === login);
+          if (index === -1) return [...current, { ...update.developer, id: login, login }];
           const next = [...current];
-          next[index] = update.developer;
+          next[index] = { ...update.developer, id: login, login };
           return next;
         });
         setConnection('live');
@@ -57,3 +73,5 @@ export function useLivePresence(enabled = true) {
 
   return { developers, connection };
 }
+
+export { deduplicateDevelopers };

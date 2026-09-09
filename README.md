@@ -270,7 +270,7 @@ The timer invokes the collector every minute, matching GitHub's advertised polli
 
 ### Live coding presence and private stats
 
-The `/space` globe receives an opt-in heartbeat from the DevGlobe editor extension every 30 seconds while the developer is active. Heartbeats pause after one minute without editor activity. Presence is live for 90 seconds and remains visible as recently coding for up to 15 minutes. Daily coding totals, streaks, achievements, language time, and editor time are derived only from consecutive valid heartbeats and are visible only to the signed-in developer. DevGlobe does not collect source code, file paths, repositories, branches, or keystrokes for this feature.
+The `/space` globe receives an opt-in heartbeat from the DevGlobe editor extension every 30 seconds while the developer is active. Heartbeats pause after one minute without editor activity. Presence is live for 90 seconds and remains visible as recently coding for up to 15 minutes. Developers can optionally share a bounded coding status, join a 25- or 50-minute focus session, and receive rate-limited waves from signed-in users. Focused developers using the same language form temporary globe connections, and stopping presence returns a private companionship recap. Daily coding totals, streaks, achievements, language time, and editor time are derived only from consecutive valid heartbeats and are visible only to the signed-in developer. DevGlobe does not collect source code, file paths, repositories, branches, or keystrokes for this feature.
 
 Provision both TTL-enabled containers before enabling the feature in production:
 
@@ -279,7 +279,7 @@ npm run setup-live-presence-container
 npm run setup-coding-stats-container
 ```
 
-The [editor directory](https://www.devglobe.dev/plugins) provides tailored installation paths for VS Code, Cursor, Windsurf, VSCodium, Positron, Void, and Antigravity. Release `v0.3.0` is available from both the Marketplace and [GitHub Releases](https://github.com/sajeetharan/devglobe/releases/tag/v0.3.0). The same VSIX supports compatible VS Code forks; Open VSX publication requires the `devglobedev` namespace and an `OVSX_PAT` repository secret.
+The [editor directory](https://www.devglobe.dev/plugins) provides tailored installation paths for VS Code, Cursor, Windsurf, VSCodium, Positron, Void, and Antigravity. Release `v0.4.0` is available from both the Marketplace and [GitHub Releases](https://github.com/sajeetharan/devglobe/releases/tag/v0.4.0). The same VSIX supports compatible VS Code forks; Open VSX publication requires the `devglobedev` namespace and an `OVSX_PAT` repository secret.
 
 Run the **Publish editor extension** workflow manually to validate and package one artifact, then select GitHub Release, Visual Studio Marketplace, or Open VSX destinations. Store publisher credentials only in the `VSCE_PAT` and `OVSX_PAT` GitHub Actions secrets.
 

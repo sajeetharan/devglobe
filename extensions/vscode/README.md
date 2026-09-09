@@ -20,15 +20,19 @@ Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS
 - `DevGlobe.dev: View My Coding Stats`
 - `DevGlobe.dev: Complete My Globe Profile`
 - `DevGlobe.dev: Go Live on the Developer Globe`
+- `DevGlobe.dev: Set My Coding Status`
+- `DevGlobe.dev: Start a Shared Focus Session`
 - `DevGlobe.dev: Stop Sharing Coding Presence`
 
 Set `devglobedev.githubLogin` in VS Code settings to enable personal profile and card commands. `devglobedev.baseUrl` defaults to `https://www.devglobe.dev`.
 
-Live presence is off by default. After you opt in once, it resumes automatically on later editor launches. Starting it uses the editor's GitHub authentication, then sends a heartbeat every 30 seconds while you are active. DevGlobe uses your verified public GitHub identity and an existing public profile location. If no location is available, the extension asks for a city and country without sending you to another website. Until a source-code file is active, the globe shows **Ready to code** instead of an unknown language. Heartbeats pause after one minute without editor activity and resume when you continue coding. Private daily totals, streaks, weekly goals, achievements, and language/editor breakdowns are calculated from those heartbeats. Set `devglobedev.presence.shareActiveLanguage` to `false` to hide the active language.
+Live presence is off by default. After you opt in once, it resumes automatically on later editor launches. Starting it uses the editor's GitHub authentication, then sends a heartbeat every 30 seconds while you are active. DevGlobe uses your verified public GitHub identity and an existing public profile location. If no location is available, the extension asks for a city and country without sending you to another website. Until a source-code file is active, the globe shows **Ready to code** instead of an unknown language. Heartbeats pause after one minute without editor activity and resume when you continue coding.
+
+Coding statuses and focus sessions are optional. Developers focusing in the same language form temporary connections on the globe. Signed-in DevGlobe users can send a rate-limited wave; the extension shows the sender's public GitHub identity. Stopping presence displays a private recap of the session. Private daily totals, streaks, weekly goals, achievements, and language/editor breakdowns are calculated from valid heartbeats. Set `devglobedev.presence.shareActiveLanguage` to `false` to hide the active language.
 
 ## Privacy
 
-The extension makes a public API request when you run a search command. If you explicitly enable live presence, it sends your public profile location (or the city/country you enter), active language, editor name, operating system, and session timestamps. Editor events only reset an in-memory inactivity timer; the events and their contents are not transmitted. It does not send source code, file paths, repository names, branches, or keystrokes. Globe coordinates are geocoded from that public location, not device geolocation. The DevGlobe presence token is stored in VS Code SecretStorage.
+The extension makes a public API request when you run a search command. If you explicitly enable live presence, it sends your public profile location (or the city/country you enter), active language, optional coding status and focus timing, editor name, operating system, and session timestamps. Editor events only reset an in-memory inactivity timer; the events and their contents are not transmitted. It does not send source code, file paths, repository names, branches, or keystrokes. Globe coordinates are geocoded from that public location, not device geolocation. The DevGlobe presence token is stored in VS Code SecretStorage.
 
 ## Development
 
