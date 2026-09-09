@@ -52,6 +52,8 @@ test('normalizes a heartbeat using profile-owned identity and coordinates', () =
     editor: 'VS Code',
     platform: 'Windows',
     codingStatus: '',
+    codingAgent: '',
+    codingModel: '',
     sessionId: '',
     sessionStartedAt: now.toISOString(),
     lastHeartbeat: now.toISOString(),
@@ -67,6 +69,8 @@ test('normalizes optional coding and focus context', () => {
     heartbeat: {
       activeLanguage: 'TypeScript',
       codingStatus: 'debugging',
+      codingAgent: 'GitHub Copilot',
+      codingModel: 'GPT',
       focusStartedAt: now.toISOString(),
       focusEndsAt: new Date(now.getTime() + 25 * 60_000).toISOString(),
       sessionId: 'editor-session-1',
@@ -75,9 +79,36 @@ test('normalizes optional coding and focus context', () => {
     now,
   });
   assert.equal(presence.codingStatus, 'debugging');
+  assert.equal(presence.codingAgent, 'GitHub Copilot');
+  assert.equal(presence.codingModel, 'GPT');
   assert.equal(presence.sessionId, 'editor-session-1');
   assert.equal(presence.focusStartedAt, now.toISOString());
   assert.equal(presence.focusEndsAt, new Date(now.getTime() + 25 * 60_000).toISOString());
+});
+
+test('requires an explicitly named agent before publishing a model', () => {
+  const presence = normalizeLivePresence({
+    heartbeat: { codingModel: 'private model' },
+    profile,
+    now,
+  });
+  assert.equal(presence.codingAgent, '');
+  assert.equal(presence.codingModel, '');
+});
+
+test('bounds agent identity to single-line public labels', () => {
+  const presence = normalizeLivePresence({
+    heartbeat: {
+      codingAgent: `Custom\nAgent ${'x'.repeat(60)}`,
+      codingModel: `Model\n${'y'.repeat(90)}`,
+    },
+    profile,
+    now,
+  });
+  assert.equal(presence.codingAgent.includes('\n'), false);
+  assert.equal(presence.codingAgent.length, 50);
+  assert.equal(presence.codingModel.includes('\n'), false);
+  assert.equal(presence.codingModel.length, 80);
 });
 
 test('drops unknown statuses and expired focus sessions', () => {

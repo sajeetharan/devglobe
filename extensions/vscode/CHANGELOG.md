@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 - 2026-09-09
+
+- Let developers explicitly share a coding agent and optional model while live.
+- Show shared agent identities in the activity list, developer details, and filters.
+- Keep agent/model sharing off by default and never infer it from installed extensions or editor activity.
+
 ## 0.5.0 - 2026-09-09
 
 - Add optional coding statuses and shared 25- or 50-minute focus sessions.

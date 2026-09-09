@@ -57,6 +57,7 @@ export default function LiveDeveloperSpace() {
   const { developers, connection } = useLivePresence();
   const [language, setLanguage] = useState('');
   const [platform, setPlatform] = useState('');
+  const [codingAgent, setCodingAgent] = useState('');
   const [selected, setSelected] = useState(null);
   const [viewer, setViewer] = useState(null);
   const [waveState, setWaveState] = useState({ state: 'idle', message: '' });
@@ -66,11 +67,13 @@ export default function LiveDeveloperSpace() {
   const focusCount = developers.filter(developer => Date.parse(developer.focusEndsAt || '') > Date.now()).length;
   const languages = useMemo(() => uniqueValues(developers, 'activeLanguage'), [developers]);
   const platforms = useMemo(() => uniqueValues(developers, 'platform'), [developers]);
+  const codingAgents = useMemo(() => uniqueValues(developers, 'codingAgent'), [developers]);
   const filtered = useMemo(() => deferredDevelopers
     .filter(developer => !language || developer.activeLanguage === language)
     .filter(developer => !platform || developer.platform === platform)
+    .filter(developer => !codingAgent || developer.codingAgent === codingAgent)
     .sort((left, right) => right.lastHeartbeat.localeCompare(left.lastHeartbeat)),
-  [deferredDevelopers, language, platform]);
+  [codingAgent, deferredDevelopers, language, platform]);
   const connections = useMemo(() => buildFocusConnections(filtered), [filtered]);
 
   useEffect(() => {
@@ -158,6 +161,9 @@ export default function LiveDeveloperSpace() {
               <span>
                 <strong>{developer.name || developer.login}</strong>
                 <small><i style={{ background: getLanguageColor(developer.activeLanguage) || '#3b82f6' }} />{developer.activeLanguage} · {STATUS_LABELS[developer.codingStatus] || (developer.presenceState === 'live' ? 'Live now' : 'Recently coding')}</small>
+                {developer.codingAgent ? (
+                  <small className={styles.agentIdentity}>{developer.codingAgent}{developer.codingModel ? ` · ${developer.codingModel}` : ''}</small>
+                ) : null}
               </span>
               <time dateTime={developer.lastHeartbeat}>{relativeTime(developer.lastHeartbeat)}</time>
             </button>
@@ -177,6 +183,13 @@ export default function LiveDeveloperSpace() {
           <select value={language} onChange={event => setLanguage(event.target.value)}>
             <option value="">All languages</option>
             {languages.map(value => <option key={value}>{value}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Coding agent</span>
+          <select value={codingAgent} onChange={event => setCodingAgent(event.target.value)}>
+            <option value="">All agents</option>
+            {codingAgents.map(value => <option key={value}>{value}</option>)}
           </select>
         </label>
         <label>
@@ -201,6 +214,11 @@ export default function LiveDeveloperSpace() {
             <strong>{selected.name || selected.login}</strong>
             <span>@{selected.login}</span>
             <p>{selected.activeLanguage} in {selected.editor} on {selected.platform}</p>
+            {selected.codingAgent ? (
+              <small className={styles.agentIdentity}>
+                Using {selected.codingAgent}{selected.codingModel ? ` with ${selected.codingModel}` : ''}
+              </small>
+            ) : null}
             {selected.codingStatus ? <small>{STATUS_LABELS[selected.codingStatus]}</small> : null}
             {selected.waveCount ? <small>{selected.waveCount} waves received</small> : null}
             {Date.parse(selected.focusEndsAt || '') > Date.now() ? (

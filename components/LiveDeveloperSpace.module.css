@@ -130,6 +130,13 @@
 .activityRow strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .activityRow small { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: var(--text-secondary); font-size: 11px; }
 .activityRow small i { width: 6px; height: 6px; border-radius: 50%; }
+.activityRow .agentIdentity {
+  overflow: hidden;
+  padding-left: 12px;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .activityRow time { color: var(--text-muted); font-size: 10px; }
 .activityRow[data-presence='recent'] { opacity: 0.68; }
 .activityRow[data-presence='recent'] img { filter: saturate(0.65); }
@@ -186,11 +193,17 @@
 .selected strong { font-size: 13px; }
 .selected span,
 .selected small { color: var(--text-secondary); font-size: 11px; }
+.selectedDetails > small { display: block; line-height: 1.45; }
 .selected p { margin: 5px 0 2px; font-size: 11px; }
 .selected .presenceLabel { color: #22c55e; font-weight: 700; }
 .selected[data-presence='recent'] .presenceLabel { color: var(--text-secondary); }
 .selected .presenceLabel:not(:last-child) { margin-bottom: 2px; }
 .selected .focusLabel { color: var(--accent-blue); font-weight: 700; }
+.selected .agentIdentity {
+  margin: var(--space-1) 0;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
 .selectedActions {
   display: grid;
   min-width: 96px;
@@ -249,7 +262,7 @@
   .title h1 { max-width: 42vw; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
   .navigation { gap: 9px; }
   .navigation a { font-size: 11px; }
-  .filters { top: 70px; right: 12px; left: 12px; width: auto; grid-template-columns: 1fr 1fr; gap: 8px; padding: 9px; }
+  .filters { top: 70px; right: 12px; left: 12px; width: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 9px; }
   .filters label > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .activity { top: auto; right: 0; bottom: 0; left: 0; width: 100%; height: 170px; border-width: 1px 0 0; border-radius: 0; }
   .panelHeading { padding: 9px 14px; }

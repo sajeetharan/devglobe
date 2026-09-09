@@ -39,6 +39,7 @@ The extension contributes these commands:
 | `DevGlobe: Open Agent Setup` | Opens the DevGlobe agent setup hub. |
 | `DevGlobe: Go Live on the Developer Globe` | Authenticates with GitHub and starts the opt-in heartbeat. |
 | `DevGlobe: Set My Coding Status` | Shares one bounded activity status while live. |
+| `DevGlobe: Share My Coding Agent and Model` | Explicitly shares or clears a self-declared coding agent and optional model. |
 | `DevGlobe: Start a Shared Focus Session` | Starts a 25- or 50-minute focus window visible on the globe. |
 | `DevGlobe: Stop Sharing Coding Presence` | Stops the heartbeat and removes current presence. |
 | `DevGlobe: View My Coding Stats` | Opens the authenticated, owner-only stats dashboard. |
@@ -57,6 +58,7 @@ The extension contributes these commands:
 - Presence is unique by verified GitHub login and session-aware so a stale editor cannot replace or remove a newer session.
 - Signed-in web users can send one wave per developer every ten minutes; the recipient sees the public sender identity in VS Code.
 - Optional statuses, focus timing, and end-of-session recap counts never include source or repository data.
+- Coding agent/model identity is off by default, self-declared, and never inferred from installed extensions, prompts, responses, or traffic.
 - Daily totals are derived server-side from consecutive valid heartbeats and retained for 400 days.
 
 ## Privacy and Security

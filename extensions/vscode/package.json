@@ -2,7 +2,7 @@
   "name": "devglobe-developer-discovery",
   "displayName": "DevGlobe: Live Coding Globe",
   "description": "Show up on the live developer globe while you code, track private coding stats, and discover developers.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "publisher": "devglobedev",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -90,6 +90,11 @@
         "category": "DevGlobe.dev"
       },
       {
+        "command": "devglobedev.setCodingAgent",
+        "title": "Share My Coding Agent and Model",
+        "category": "DevGlobe.dev"
+      },
+      {
         "command": "devglobedev.startFocusSession",
         "title": "Start a Shared Focus Session",
         "category": "DevGlobe.dev"
@@ -123,6 +128,23 @@
           "default": "",
           "maxLength": 80,
           "description": "Optional city and country used to place your live marker when your public profiles do not include a location."
+        },
+        "devglobedev.presence.shareCodingAgent": {
+          "type": "boolean",
+          "default": false,
+          "description": "Share the coding agent and optional model you explicitly select. DevGlobe does not detect agent usage automatically."
+        },
+        "devglobedev.presence.codingAgent": {
+          "type": "string",
+          "default": "",
+          "maxLength": 50,
+          "description": "Public coding agent name used only when agent sharing is enabled."
+        },
+        "devglobedev.presence.codingModel": {
+          "type": "string",
+          "default": "",
+          "maxLength": 80,
+          "description": "Optional public model name used only when agent sharing is enabled."
         },
         "devglobedev.presence.shareActiveLanguage": {
           "type": "boolean",
