@@ -38,6 +38,8 @@ The extension contributes these commands:
 | `DevGlobe: Copy MCP Configuration` | Copies a VS Code-compatible Streamable HTTP server configuration. |
 | `DevGlobe: Open Agent Setup` | Opens the DevGlobe agent setup hub. |
 | `DevGlobe: Go Live on the Developer Globe` | Authenticates with GitHub and starts the opt-in heartbeat. |
+| `DevGlobe: Set My Coding Status` | Shares one bounded activity status while live. |
+| `DevGlobe: Start a Shared Focus Session` | Starts a 25- or 50-minute focus window visible on the globe. |
 | `DevGlobe: Stop Sharing Coding Presence` | Stops the heartbeat and removes current presence. |
 | `DevGlobe: View My Coding Stats` | Opens the authenticated, owner-only stats dashboard. |
 
@@ -52,6 +54,9 @@ The extension contributes these commands:
 - MCP setup copies a configuration pointing to `/mcp`; it never handles agent credentials.
 - URL construction and response normalization are framework-independent and unit tested.
 - Presence uses a scoped token in VS Code `SecretStorage` and a 30-second heartbeat. A heartbeat is live for 90 seconds and remains visible as recently coding for up to 15 minutes.
+- Presence is unique by verified GitHub login and session-aware so a stale editor cannot replace or remove a newer session.
+- Signed-in web users can send one wave per developer every ten minutes; the recipient sees the public sender identity in VS Code.
+- Optional statuses, focus timing, and end-of-session recap counts never include source or repository data.
 - Daily totals are derived server-side from consecutive valid heartbeats and retained for 400 days.
 
 ## Privacy and Security
@@ -78,6 +83,8 @@ The extension contributes these commands:
 - A verified GitHub user can appear immediately without an existing DevGlobe directory profile.
 - Presence publishes `Ready to code` until a source-code file supplies a language.
 - Missing location data is collected in the editor with a bounded city/country prompt.
+- Duplicate legacy presence records collapse to the newest verified login marker.
+- A live developer can set a coding status, start a focus session, receive waves, and see a recap when stopping.
 
 ## Measures
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - 2026-09-09
+
+- Add optional coding statuses and shared 25- or 50-minute focus sessions.
+- Notify developers when another signed-in DevGlobe user waves from the live globe.
+- Show an end-of-session recap with time, nearby developers, countries, and waves.
+- Prevent older editor sessions and legacy duplicate records from creating stale markers.
+
 ## 0.4.0 - 2026-09-09
 
 - Let new installers appear immediately with their verified GitHub name, without requiring an existing DevGlobe profile.
