@@ -25,9 +25,23 @@ function configuration() {
     baseUrl: resolveBaseUrl(settings.get('baseUrl', 'https://www.devglobe.dev')),
     githubLogin: settings.get('githubLogin', ''),
     presenceEnabled: settings.get('presence.enabled', false),
+    codingAgent: settings.get('presence.codingAgent', ''),
+    codingModel: settings.get('presence.codingModel', ''),
     presenceLocation: settings.get('presence.location', ''),
+    shareCodingAgent: settings.get('presence.shareCodingAgent', false),
     shareActiveLanguage: settings.get('presence.shareActiveLanguage', true),
   };
+}
+
+function effectiveConfigurationTarget(settings, key) {
+  const inspected = settings.inspect(key);
+  if (inspected?.workspaceFolderValue !== undefined) return vscode.ConfigurationTarget.WorkspaceFolder;
+  if (inspected?.workspaceValue !== undefined) return vscode.ConfigurationTarget.Workspace;
+  return vscode.ConfigurationTarget.Global;
+}
+
+async function updateEffectiveSetting(settings, key, value) {
+  await settings.update(key, value, effectiveConfigurationTarget(settings, key));
 }
 
 const PRESENCE_TOKEN_KEY = 'devglobedev.livePresenceToken';
@@ -60,6 +74,8 @@ function createPresenceController(context) {
   let activeHeartbeatController = null;
   let activeHeartbeatDone = null;
   let stopping = false;
+  let agentRefreshTimer = null;
+  let lastPublishedAgentIdentity = null;
 
   function showOfflineStatus() {
     status.command = 'devglobedev.startPresence';
@@ -128,6 +144,10 @@ function createPresenceController(context) {
       return false;
     }
     const language = activeLanguage() || 'Ready to code';
+    const currentConfiguration = configuration();
+    const codingAgent = currentConfiguration.shareCodingAgent ? currentConfiguration.codingAgent : '';
+    const codingModel = currentConfiguration.shareCodingAgent ? currentConfiguration.codingModel : '';
+    const agentIdentity = `${codingAgent}\u0000${codingModel}`;
     sending = true;
     const controller = new AbortController();
     activeHeartbeatController = controller;
@@ -142,7 +162,9 @@ function createPresenceController(context) {
         method: 'POST',
         headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          activeLanguage: configuration().shareActiveLanguage ? language : 'Hidden',
+          activeLanguage: currentConfiguration.shareActiveLanguage ? language : 'Hidden',
+          codingAgent,
+          codingModel,
           codingStatus,
           editor: editorName(vscode.env.appName),
           focusEndsAt,
@@ -175,6 +197,7 @@ function createPresenceController(context) {
         throw error;
       }
       const payload = await response.json();
+      lastPublishedAgentIdentity = agentIdentity;
       for (const wave of Array.isArray(payload.waves) ? payload.waves : []) {
         lastWaveSeenAt = !lastWaveSeenAt || wave.sentAt > lastWaveSeenAt ? wave.sentAt : lastWaveSeenAt;
         await context.globalState.update(LAST_WAVE_SEEN_KEY, lastWaveSeenAt);
@@ -280,6 +303,31 @@ function createPresenceController(context) {
     return false;
   }
 
+  async function refreshAgentIdentity() {
+    if (activeHeartbeatDone) await activeHeartbeatDone;
+    const current = configuration();
+    const nextIdentity = current.shareCodingAgent
+      ? `${current.codingAgent}\u0000${current.codingModel}`
+      : '\u0000';
+    if (nextIdentity === lastPublishedAgentIdentity) return true;
+    lastActivityAt = Date.now();
+    if (current.presenceEnabled) return heartbeatWithRetry(false, true);
+    return false;
+  }
+
+  function scheduleAgentIdentityRefresh() {
+    if (agentRefreshTimer) clearTimeout(agentRefreshTimer);
+    agentRefreshTimer = setTimeout(() => {
+      agentRefreshTimer = null;
+      const current = configuration();
+      const nextIdentity = current.shareCodingAgent
+        ? `${current.codingAgent}\u0000${current.codingModel}`
+        : '\u0000';
+      if (nextIdentity === lastPublishedAgentIdentity) return;
+      refreshAgentIdentity().catch(handleBackgroundError);
+    }, 150);
+  }
+
   async function startFocus(minutes) {
     const now = new Date();
     focusStartedAt = now.toISOString();
@@ -305,12 +353,25 @@ function createPresenceController(context) {
     }),
     vscode.workspace.onDidChangeConfiguration(event => {
       if (!event.affectsConfiguration('devglobedev.presence')) return;
-      if (configuration().presenceEnabled) start(true).catch(handleBackgroundError);
-      else stop().catch(error => console.error('DevGlobe presence sign-off failed:', error));
+      const agentIdentityChanged = [
+        'devglobedev.presence.shareCodingAgent',
+        'devglobedev.presence.codingAgent',
+        'devglobedev.presence.codingModel',
+      ].some(key => event.affectsConfiguration(key));
+      if (agentIdentityChanged && configuration().presenceEnabled) scheduleAgentIdentityRefresh();
+      if (event.affectsConfiguration('devglobedev.presence.enabled')) {
+        if (configuration().presenceEnabled) start(true).catch(handleBackgroundError);
+        else stop().catch(error => console.error('DevGlobe presence sign-off failed:', error));
+      }
     }),
-    { dispose: () => stop(false, false) },
+    {
+      dispose: () => {
+        if (agentRefreshTimer) clearTimeout(agentRefreshTimer);
+        return stop(false, false);
+      },
+    },
   );
-  return { setCodingStatus, start, startFocus, stop };
+  return { refreshAgentIdentity, setCodingStatus, start, startFocus, stop };
 }
 
 async function openExternal(url) {
@@ -517,6 +578,70 @@ async function activate(context) {
     }
     await vscode.window.showInformationMessage(
       selected.value ? `DevGlobe status set to ${label}.` : 'DevGlobe status cleared.',
+    );
+  });
+  registerCommand(context, 'devglobedev.setCodingAgent', async () => {
+    const agents = [
+      'GitHub Copilot',
+      'Cursor Agent',
+      'Claude Code',
+      'OpenAI Codex',
+      'Gemini Code Assist',
+      'Windsurf Cascade',
+      'Cline',
+      'Roo Code',
+      'Continue',
+      'Amazon Q Developer',
+    ];
+    const selected = await vscode.window.showQuickPick([
+      ...agents.map(label => ({ label, value: label })),
+      { label: 'Enter another agent', value: 'custom' },
+      { label: 'Stop sharing agent and model', value: 'clear' },
+    ], {
+      placeHolder: 'Choose the coding agent you want to share',
+      title: 'Share coding agent on DevGlobe',
+    });
+    if (!selected) return;
+
+    const settings = vscode.workspace.getConfiguration('devglobedev');
+    if (selected.value === 'clear') {
+      await updateEffectiveSetting(settings, 'presence.shareCodingAgent', false);
+      await updateEffectiveSetting(settings, 'presence.codingAgent', '');
+      await updateEffectiveSetting(settings, 'presence.codingModel', '');
+      await presence.refreshAgentIdentity();
+      await vscode.window.showInformationMessage('DevGlobe stopped sharing your coding agent and model.');
+      return;
+    }
+
+    const agent = selected.value === 'custom'
+      ? await vscode.window.showInputBox({
+        title: 'Coding agent',
+        prompt: 'Enter the public name of the coding agent you are using.',
+        placeHolder: 'My coding agent',
+        ignoreFocusOut: true,
+        validateInput: value => value.trim().length > 50 ? 'Keep the agent name under 50 characters.' : null,
+      })
+      : selected.value;
+    if (!agent?.trim()) return;
+
+    const model = await vscode.window.showInputBox({
+      title: 'Optional model',
+      prompt: 'Enter the model name, or leave this blank if you prefer not to share it.',
+      placeHolder: 'Claude Sonnet, GPT, Gemini, or another model',
+      ignoreFocusOut: true,
+      validateInput: value => value.trim().length > 80 ? 'Keep the model name under 80 characters.' : null,
+    });
+    if (model === undefined) return;
+
+    await updateEffectiveSetting(settings, 'presence.codingAgent', agent.trim());
+    await updateEffectiveSetting(settings, 'presence.codingModel', model.trim());
+    await updateEffectiveSetting(settings, 'presence.shareCodingAgent', true);
+    const published = await presence.refreshAgentIdentity();
+    const identity = model.trim() ? `${agent.trim()} with ${model.trim()}` : agent.trim();
+    await vscode.window.showInformationMessage(
+      published
+        ? `DevGlobe is now showing ${identity}.`
+        : `Saved ${identity}. It will appear the next time you go live.`,
     );
   });
   registerCommand(context, 'devglobedev.startFocusSession', async () => {
