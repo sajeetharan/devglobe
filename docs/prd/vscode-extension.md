@@ -95,6 +95,6 @@ DevGlobe records first-party install-click, token, presence, sign-off, and stats
 ## Rollout
 
 1. Validate the VSIX locally and with Extension Development Host.
-2. Deploy the presence and coding-stats APIs before publishing extension version `0.3.0`.
+2. Deploy the presence and coding-stats APIs before publishing each extension release.
 3. Publish an unlisted marketplace preview and verify GitHub authentication, presence expiry, and VS Code forks.
 4. Publish publicly and measure install-to-presence activation and stats return usage.

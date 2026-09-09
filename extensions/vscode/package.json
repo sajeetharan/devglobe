@@ -2,7 +2,7 @@
   "name": "devglobe-developer-discovery",
   "displayName": "DevGlobe: Live Coding Globe",
   "description": "Show up on the live developer globe while you code, track private coding stats, and discover developers.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "devglobedev",
   "license": "MIT",
   "icon": "images/icon.png",
