@@ -9,6 +9,7 @@ import {
   normalizeLivePresence,
   presenceActivityState,
   presenceRetryAfter,
+  resolvePresenceProfile,
 } from '../lib/live-presence.js';
 
 const now = new Date('2026-09-07T18:00:00.000Z');
@@ -46,6 +47,45 @@ test('normalizes a heartbeat using profile-owned identity and coordinates', () =
 
 test('rejects presence without valid profile coordinates', () => {
   assert.equal(normalizeLivePresence({ heartbeat: {}, profile: { ...profile, lat: null }, now }), null);
+});
+
+test('geocodes a profile location when stored coordinates are missing', async () => {
+  const resolved = await resolvePresenceProfile({ ...profile, lat: null, lng: null }, {
+    geocode: async location => {
+      assert.equal(location, 'London, UK');
+      return { lat: 51.5, lng: -0.12 };
+    },
+  });
+  assert.deepEqual(resolved, { ...profile, lat: 51.5, lng: -0.12 });
+});
+
+test('uses the authenticated GitHub location when the profile location is unknown', async () => {
+  const resolved = await resolvePresenceProfile({
+    ...profile,
+    location: 'Unknown',
+    lat: null,
+    lng: null,
+  }, {
+    fallbackLocation: 'Colombo, Sri Lanka',
+    geocode: async location => {
+      assert.equal(location, 'Colombo, Sri Lanka');
+      return { lat: 6.9271, lng: 79.8612 };
+    },
+  });
+  assert.equal(resolved.location, 'Colombo, Sri Lanka');
+  assert.equal(resolved.lat, 6.9271);
+  assert.equal(resolved.lng, 79.8612);
+});
+
+test('reuses previous presence coordinates before calling the geocoder', async () => {
+  const resolved = await resolvePresenceProfile({ ...profile, lat: null, lng: null }, {
+    previousPresence: { lat: 51.4, lng: -0.1 },
+    geocode: async () => {
+      throw new Error('geocoder should not be called');
+    },
+  });
+  assert.equal(resolved.lat, 51.4);
+  assert.equal(resolved.lng, -0.1);
 });
 
 test('expires presence after the heartbeat window', () => {

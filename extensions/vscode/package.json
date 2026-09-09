@@ -75,6 +75,16 @@
         "category": "DevGlobe.dev"
       },
       {
+        "command": "devglobedev.completeProfile",
+        "title": "Complete My Globe Profile",
+        "category": "DevGlobe.dev"
+      },
+      {
+        "command": "devglobedev.updateGitHubLocation",
+        "title": "Update My GitHub Location",
+        "category": "DevGlobe.dev"
+      },
+      {
         "command": "devglobedev.startPresence",
         "title": "Go Live on the Developer Globe",
         "category": "DevGlobe.dev"

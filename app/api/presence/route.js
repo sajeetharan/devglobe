@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { verifySessionToken } from '../../../lib/auth.js';
 import { recordCodingHeartbeat } from '../../../lib/coding-stats-store.js';
 import { recordExtensionEvent } from '../../../lib/extension-telemetry.js';
-import { normalizeLivePresence, presenceRetryAfter } from '../../../lib/live-presence.js';
+import { normalizeLivePresence, presenceRetryAfter, resolvePresenceProfile } from '../../../lib/live-presence.js';
 import {
   findLivePresence,
   findPresenceProfile,
   removeLivePresence,
   saveLivePresence,
 } from '../../../lib/live-presence-store.js';
+import { geocodeLocation } from '../../../lib/nominate.js';
 
 async function authenticate(request) {
   const token = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
@@ -36,7 +37,12 @@ export async function POST(request) {
       });
     }
 
-    const presence = normalizeLivePresence({ heartbeat, profile });
+    const presenceProfile = await resolvePresenceProfile(profile, {
+      fallbackLocation: session.githubLocation,
+      previousPresence,
+      geocode: geocodeLocation,
+    });
+    const presence = normalizeLivePresence({ heartbeat, profile: presenceProfile });
     if (!presence) {
       return NextResponse.json({ error: 'A geocoded DevGlobe profile is required' }, { status: 422 });
     }
