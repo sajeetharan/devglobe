@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ContributionPreferenceError,
+  contributionFreshness,
   estimateContributionMinutes,
   isContributionReadyIssue,
   normalizeContributionPreferences,
@@ -22,6 +23,7 @@ function candidate(overrides = {}) {
       title: 'Improve documentation for setup',
       state: 'open',
       html_url: 'https://github.com/org/repo/issues/1',
+      created_at: '2026-08-01T12:00:00.000Z',
       updated_at: '2026-08-20T12:00:00.000Z',
       labels: [{ name: 'good first issue' }, { name: 'documentation' }],
       assignees: [],
@@ -35,9 +37,12 @@ function candidate(overrides = {}) {
       disabled: false,
       has_issues: true,
       stargazers_count: 50,
+      pushed_at: '2026-08-18T12:00:00.000Z',
       ...overrides.repository,
     },
     hasContributionGuide: overrides.hasContributionGuide ?? true,
+    recentlyMergedPullRequests: overrides.recentlyMergedPullRequests ?? 3,
+    lastMaintainerActivityAt: overrides.lastMaintainerActivityAt ?? '2026-08-18T12:00:00.000Z',
   };
 }
 
@@ -52,11 +57,39 @@ test('normalizes finite interests, languages, and difficulty', () => {
     difficulty: 'beginner',
     campaign: 'all',
     availableMinutes: 30,
+    minimumFreshnessScore: 40,
   });
   assert.throws(() => normalizeContributionPreferences({ interests: ['money'], languages: [], difficulty: 'easy' }), ContributionPreferenceError);
   assert.throws(() => normalizeContributionPreferences({ interests: [], languages: ['brainfuck'], difficulty: 'beginner' }), ContributionPreferenceError);
   assert.throws(() => normalizeContributionPreferences({ interests: [], languages: [], difficulty: 'beginner', campaign: 'october' }), ContributionPreferenceError);
   assert.throws(() => normalizeContributionPreferences({ interests: [], languages: [], difficulty: 'beginner', availableMinutes: 45 }), ContributionPreferenceError);
+  assert.throws(() => normalizeContributionPreferences({ interests: [], languages: [], difficulty: 'beginner', minimumFreshnessScore: 55 }), ContributionPreferenceError);
+});
+
+test('scores repository responsiveness and filters below the selected freshness threshold', () => {
+  const responsive = candidate();
+  const stale = candidate({
+    issue: { id: 2, created_at: '2026-02-01T12:00:00.000Z' },
+    lastMaintainerActivityAt: '2026-02-01T12:00:00.000Z',
+    recentlyMergedPullRequests: 0,
+  });
+  const preferences = {
+    interests: ['documentation'],
+    languages: ['javascript'],
+    difficulty: 'beginner',
+    campaign: 'all',
+    availableMinutes: 30,
+    minimumFreshnessScore: 60,
+  };
+
+  assert.deepEqual(contributionFreshness(responsive, now), {
+    score: 100,
+    level: 'high',
+    issueAgeDays: 20,
+    maintainerActivityDays: 3,
+    recentlyMergedPullRequests: 3,
+  });
+  assert.deepEqual(rankContributionOpportunities([stale, responsive], preferences, [], now).map(item => item.id), ['1']);
 });
 
 test('derives coarse scope and excludes issues above the available time', () => {
@@ -108,6 +141,10 @@ test('discovers public issues and verifies repository contribution guidance', as
       assignees: [],
     }] }), { status: 200 });
     if (url.endsWith('/community/profile')) return new Response(JSON.stringify({ files: { contributing: { html_url: 'guide' } } }), { status: 200 });
+    if (url.includes('/pulls?')) return new Response(JSON.stringify([{
+      merged_at: '2026-08-10T00:00:00.000Z',
+      labels: [{ name: 'good first issue' }],
+    }]), { status: 200 });
     return new Response(JSON.stringify({ full_name: 'org/repo', language: 'JavaScript', private: false }), { status: 200 });
   };
 
@@ -119,6 +156,8 @@ test('discovers public issues and verifies repository contribution guidance', as
 
   assert.equal(candidates.length, 1);
   assert.equal(candidates[0].hasContributionGuide, true);
+  assert.equal(candidates[0].recentlyMergedPullRequests, 1);
+  assert.equal(candidates[0].lastMaintainerActivityAt, '2026-08-10T00:00:00.000Z');
   assert.ok(requested[0].includes('language%3A%22JavaScript%22'));
   assert.ok(requested[0].includes('label%3A%22good%20first%20issue%22'));
 });

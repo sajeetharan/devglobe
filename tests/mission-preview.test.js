@@ -24,6 +24,7 @@ function candidate() {
       title: 'Improve README setup instructions',
       state: 'open',
       html_url: 'https://github.com/org/repo/issues/123',
+      created_at: '2026-08-01T12:00:00.000Z',
       updated_at: '2026-08-25T12:00:00.000Z',
       labels: [{ name: 'good first issue' }, { name: 'documentation' }],
       assignees: [],
@@ -36,8 +37,11 @@ function candidate() {
       disabled: false,
       has_issues: true,
       stargazers_count: 50,
+      pushed_at: '2026-08-25T12:00:00.000Z',
     },
     hasContributionGuide: true,
+    recentlyMergedPullRequests: 3,
+    lastMaintainerActivityAt: '2026-08-25T12:00:00.000Z',
   };
 }
 
@@ -54,6 +58,7 @@ test('uses profile languages and safe defaults for sparse profiles', () => {
     difficulty: 'beginner',
     campaign: 'all',
     availableMinutes: 30,
+    minimumFreshnessScore: 40,
   });
   assert.deepEqual(previewPreferences({}), {
     interests: [],
@@ -61,6 +66,7 @@ test('uses profile languages and safe defaults for sparse profiles', () => {
     difficulty: 'beginner',
     campaign: 'all',
     availableMinutes: 30,
+    minimumFreshnessScore: 40,
   });
 });
 

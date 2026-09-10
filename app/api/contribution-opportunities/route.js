@@ -5,6 +5,7 @@ import { isAllowedMutationOrigin } from '../../../lib/request-origin.js';
 import {
   CONTRIBUTION_CAMPAIGNS,
   CONTRIBUTION_DIFFICULTIES,
+  CONTRIBUTION_FRESHNESS_THRESHOLDS,
   CONTRIBUTION_INTERESTS,
   CONTRIBUTION_LANGUAGES,
   CONTRIBUTION_TIME_BUDGETS,
@@ -37,6 +38,7 @@ function options() {
     campaigns: CONTRIBUTION_CAMPAIGNS,
     interests: CONTRIBUTION_INTERESTS,
     difficulties: CONTRIBUTION_DIFFICULTIES,
+    freshnessThresholds: CONTRIBUTION_FRESHNESS_THRESHOLDS,
     languages: CONTRIBUTION_LANGUAGES,
     timeBudgets: CONTRIBUTION_TIME_BUDGETS,
   };
@@ -190,6 +192,9 @@ export async function PUT(request) {
       ...current,
       preferences,
       updatedAt: new Date().toISOString(),
+      cache: null,
+      dailyMissionPool: null,
+      dailyMission: current.dailyMission?.status === 'offered' ? null : current.dailyMission,
     }));
     return NextResponse.json({ preferences });
   } catch (error) {

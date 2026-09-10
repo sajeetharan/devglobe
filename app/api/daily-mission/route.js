@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { getSession } from '../../../lib/auth.js';
 import { getCosmosContainer } from '../../../lib/cosmos.js';
@@ -6,9 +7,13 @@ import { normalizeContributionPreferences, rankContributionOpportunities } from 
 import { ContributionOpportunitiesUnavailableError, fetchGitHubContributionCandidates } from '../../../lib/github-contribution-opportunities.js';
 import { acquireDailyMissionLease, getContributionOpportunityStateContainer, reserveGlobalRecommendationRefresh } from '../../../lib/contribution-opportunity-store.js';
 import { DailyMissionError, addCompletedMission, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../../../lib/daily-mission.js';
-import { MissionVerificationUnavailableError, verifyGitHubMissionCompletion } from '../../../lib/github-mission-verification.js';
+import { findFirstMaintainerReply, MissionVerificationUnavailableError, verifyGitHubMissionCompletion } from '../../../lib/github-mission-verification.js';
 import { saveActivities } from '../../../lib/activity-store.js';
 import { createPlatformActivity } from '../../../lib/platform-activity.js';
+
+const REPLY_WATCH_MS = 30 * 24 * 60 * 60 * 1000;
+const REPLY_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const REPLY_CHECK_LIMIT = 3;
 
 async function getOwner(container, login) {
   const { resources } = await container.items.query({
@@ -63,6 +68,74 @@ function completedMissions(state) {
   return Array.isArray(state?.completedMissions) ? state.completedMissions : [];
 }
 
+function replyWatchEligible(mission, now) {
+  const acceptedAt = Date.parse(mission?.acceptedAt);
+  return ['accepted', 'completed'].includes(mission?.status)
+    && !mission.maintainerReply
+    && Number.isFinite(acceptedAt)
+    && now.getTime() - acceptedAt <= REPLY_WATCH_MS;
+}
+
+async function refreshMaintainerReplies(container, developer, state, now) {
+  const candidates = [
+    ...(Array.isArray(state.replyWatchMissions) ? state.replyWatchMissions : []),
+    ...completedMissions(state),
+    state.dailyMission,
+  ];
+  const due = [...new Map(candidates.filter(Boolean).map(mission => [mission.id, mission])).values()]
+    .filter(mission => replyWatchEligible(mission, now))
+    .filter(mission => {
+      const checkedAt = Date.parse(mission.maintainerReplyCheckedAt);
+      return !Number.isFinite(checkedAt) || now.getTime() - checkedAt >= REPLY_CHECK_INTERVAL_MS;
+    })
+    .sort((left, right) => {
+      const leftCheckedAt = Date.parse(left.maintainerReplyCheckedAt);
+      const rightCheckedAt = Date.parse(right.maintainerReplyCheckedAt);
+      return (Number.isFinite(leftCheckedAt) ? leftCheckedAt : 0) - (Number.isFinite(rightCheckedAt) ? rightCheckedAt : 0);
+    })
+    .slice(0, REPLY_CHECK_LIMIT);
+  if (due.length === 0) return { state, replies: [] };
+
+  const checked = new Map();
+  for (const mission of due) {
+    try {
+      const reply = await findFirstMaintainerReply(mission, developer.login, { token: process.env.GITHUB_TOKEN });
+      checked.set(mission.id, {
+        ...mission,
+        maintainerReplyCheckedAt: now.toISOString(),
+        ...(reply ? {
+          maintainerReply: {
+            ...reply,
+            telemetryKey: createHash('sha256').update(mission.id).digest('base64url'),
+          },
+        } : {}),
+      });
+    } catch (error) {
+      if (!(error instanceof MissionVerificationUnavailableError)) throw error;
+      console.error('Maintainer reply check unavailable:', error.message);
+    }
+  }
+  if (checked.size === 0) return { state, replies: [] };
+
+  const applyChecked = mission => checked.get(mission?.id) || mission;
+  const updated = await patchMissionState(container, developer, current => ({
+    ...current,
+    dailyMission: applyChecked(current.dailyMission),
+    completedMissions: completedMissions(current).map(applyChecked),
+    replyWatchMissions: (current.replyWatchMissions || [])
+      .map(applyChecked)
+      .filter(mission => replyWatchEligible(mission, now))
+      .slice(0, 5),
+  }));
+  return {
+    state: updated,
+    replies: [...checked.values()].filter(mission => mission.maintainerReply).map(mission => ({
+      missionId: mission.id,
+      ...mission.maintainerReply,
+    })),
+  };
+}
+
 async function recordMissionAcceptanceActivity(developer, mission) {
   if (mission?.status !== 'accepted' || !mission.acceptedAt) return;
   try {
@@ -84,10 +157,15 @@ export async function GET() {
     if (owner.error) return owner.error;
     const now = new Date();
     const day = missionDay(now);
-    const state = owner.developer.contributionOpportunity || {};
+    const initialState = owner.developer.contributionOpportunity || {};
+    const refreshed = await refreshMaintainerReplies(owner.container, owner.developer, initialState, now);
+    const state = refreshed.state;
     if (state.dailyMission?.day === day && state.dailyMission.status !== 'passed') {
       await recordMissionAcceptanceActivity(owner.developer, state.dailyMission);
-      return missionResponse(state.dailyMission, { completedMissions: completedMissions(state) });
+      return missionResponse(state.dailyMission, {
+        completedMissions: completedMissions(state),
+        maintainerReplies: refreshed.replies,
+      });
     }
 
     let pool = state.dailyMissionPool?.day === day ? state.dailyMissionPool.opportunities : null;
@@ -106,13 +184,21 @@ export async function GET() {
       if (current.dailyMission?.day === day && current.dailyMission.status !== 'passed') return current;
       const excludedIssueIds = current.dailyMissionHistory?.day === day ? current.dailyMissionHistory.issueIds : [];
       const mission = selectDailyMission(pool, { login: owner.developer.login, now, excludedIssueIds });
+      const previousMission = current.dailyMission;
+      const replyWatchMissions = replyWatchEligible(previousMission, now)
+        ? [previousMission, ...(current.replyWatchMissions || []).filter(item => item.id !== previousMission.id)].slice(0, 5)
+        : current.replyWatchMissions || [];
       return {
         ...current,
         dailyMission: mission,
         dailyMissionPool: { day, opportunities: pool },
+        replyWatchMissions,
       };
     });
-    return missionResponse(updated.dailyMission, { completedMissions: completedMissions(updated) });
+    return missionResponse(updated.dailyMission, {
+      completedMissions: completedMissions(updated),
+      maintainerReplies: refreshed.replies,
+    });
   } catch (error) {
     if (error instanceof ContributionOpportunitiesUnavailableError) return missionResponse(null, { unavailable: true });
     console.error('Daily mission read failed:', error.message);
