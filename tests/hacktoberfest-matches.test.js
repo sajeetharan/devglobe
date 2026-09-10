@@ -25,6 +25,7 @@ function candidate(id) {
       title: `Improve TypeScript documentation example ${id}`,
       state: 'open',
       html_url: `https://github.com/org/repo/issues/${id}`,
+      created_at: '2026-08-01T12:00:00.000Z',
       updated_at: '2026-08-21T12:00:00.000Z',
       labels: [{ name: 'hacktoberfest' }, { name: 'good first issue' }, { name: 'documentation' }],
       assignees: [],
@@ -39,6 +40,8 @@ function candidate(id) {
       stargazers_count: 100,
     },
     hasContributionGuide: true,
+    lastMaintainerActivityAt: '2026-08-20T12:00:00.000Z',
+    recentlyMergedPullRequests: 3,
   };
 }
 
@@ -72,6 +75,7 @@ test('public matcher derives profile languages and returns three Hacktoberfest m
     interests: [],
     languages: ['typescript', 'javascript'],
     availableMinutes: 30,
+    minimumFreshnessScore: 40,
   });
   assert.equal(body.developer.login, 'octocat');
   assert.equal(body.matches.length, 3);

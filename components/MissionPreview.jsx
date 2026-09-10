@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { track } from '../lib/analytics.js';
+import MissionFreshness from './MissionFreshness.jsx';
 
 export default function MissionPreview({ signedIn = false, onOpenActivity }) {
   const [visible, setVisible] = useState(true);
@@ -92,6 +93,7 @@ export default function MissionPreview({ signedIn = false, onOpenActivity }) {
             </div>
             <span className="mission-preview__scope">Suggested scope · {result.mission.durationMinutes} min</span>
           </div>
+          <MissionFreshness freshness={result.mission.opportunity.freshness} />
           {result.mission.matchEvidence?.length > 0 && (
             <section className="mission-preview__evidence" aria-labelledby="mission-match-evidence-title">
               <h3 id="mission-match-evidence-title">Why this matched you</h3>

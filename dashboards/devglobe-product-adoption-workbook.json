@@ -249,7 +249,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let E=customEvents | where timestamp >= ago(30d) and isnotempty(session_Id); let S=E | summarize Preview=minif(timestamp, name in ('mission_preview_requested','mission_preview_shown')), Viewed=minif(timestamp, name == 'mission_viewed'), Accepted=minif(timestamp, name == 'mission_accepted'), Completed=minif(timestamp, name == 'mission_completed') by session_Id; union (S | summarize Sessions=countif(isnotnull(Preview)) | extend StepOrder=1, Stage='Preview'), (S | summarize Sessions=countif(isnotnull(Preview) and Viewed >= Preview) | extend StepOrder=2, Stage='Viewed'), (S | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed) | extend StepOrder=3, Stage='Accepted'), (S | summarize Sessions=countif(isnotnull(Accepted) and Completed >= Accepted) | extend StepOrder=4, Stage='Completed') | order by StepOrder asc | project Stage, Sessions",
+        "query": "let E=customEvents | where timestamp >= ago(30d) and isnotempty(session_Id); let S=E | summarize Preview=minif(timestamp, name in ('mission_preview_requested','mission_preview_shown')), Viewed=minif(timestamp, name == 'mission_viewed'), Accepted=minif(timestamp, name == 'mission_accepted'), Replied=minif(timestamp, name == 'mission_maintainer_replied'), Completed=minif(timestamp, name == 'mission_completed') by session_Id; union (S | summarize Sessions=countif(isnotnull(Preview)) | extend StepOrder=1, Stage='Preview'), (S | summarize Sessions=countif(isnotnull(Preview) and Viewed >= Preview) | extend StepOrder=2, Stage='Viewed'), (S | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed) | extend StepOrder=3, Stage='Accepted'), (S | summarize Sessions=countif(isnotnull(Accepted) and Replied >= Accepted) | extend StepOrder=4, Stage='Maintainer replied'), (S | summarize Sessions=countif(isnotnull(Accepted) and Completed >= Accepted) | extend StepOrder=5, Stage='Completed') | extend Sessions=iff(Sessions < 3, long(null), Sessions) | order by StepOrder asc | project Stage, Sessions",
         "size": 0,
         "title": "Daily mission funnel",
         "timeContext": {
@@ -261,6 +261,23 @@
       },
       "customWidth": "50",
       "name": "mission-funnel"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents | where timestamp >= ago(30d) and name == 'mission_maintainer_replied' | extend ResponseMinutes=todouble(customDimensions.responseMinutes), MissionKey=tostring(customDimensions.missionKey), PrivacyCohort=coalesce(user_Id, session_Id) | where isnotnull(ResponseMinutes) and isnotempty(MissionKey) | summarize arg_min(timestamp, ResponseMinutes, PrivacyCohort) by MissionKey | summarize PrivacyCohorts=dcount(PrivacyCohort), Missions=count(), MedianMinutes=round(percentile(ResponseMinutes, 50), 1), P75Minutes=round(percentile(ResponseMinutes, 75), 1), AverageMinutes=round(avg(ResponseMinutes), 1) | project Missions=iff(PrivacyCohorts < 3, long(null), Missions), MedianMinutes=iff(PrivacyCohorts < 3, real(null), MedianMinutes), P75Minutes=iff(PrivacyCohorts < 3, real(null), P75Minutes), AverageMinutes=iff(PrivacyCohorts < 3, real(null), AverageMinutes)",
+        "size": 0,
+        "title": "Mission start to first maintainer reply",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "30",
+      "name": "mission-response-time"
     },
     {
       "type": 3,

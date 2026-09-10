@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   MissionVerificationUnavailableError,
+  findFirstMaintainerReply,
   parseMissionIssueUrl,
   verifyGitHubMissionCompletion,
 } from '../lib/github-mission-verification.js';
@@ -68,4 +69,54 @@ test('does not treat an issue without a linked pull request as completed', async
   });
 
   assert.equal(result.completed, false);
+});
+
+test('measures the first maintainer reply after mission acceptance', async () => {
+  const result = await findFirstMaintainerReply(mission, 'octocat', {
+    fetchImpl: async () => Response.json([
+      { user: { login: 'octocat' }, author_association: 'NONE', created_at: '2026-08-25T08:05:00.000Z', html_url: 'contributor-comment' },
+      { user: { login: 'maintainer' }, author_association: 'MEMBER', created_at: '2026-08-25T08:42:00.000Z', html_url: 'maintainer-comment' },
+      { user: { login: 'owner' }, author_association: 'OWNER', created_at: '2026-08-25T09:00:00.000Z', html_url: 'owner-comment' },
+    ]),
+  });
+
+  assert.deepEqual(result, {
+    url: 'maintainer-comment',
+    repliedAt: '2026-08-25T08:42:00.000Z',
+    responseMinutes: 42,
+  });
+});
+
+test('ignores maintainer comments posted before the mission started', async () => {
+  const result = await findFirstMaintainerReply(mission, 'octocat', {
+    fetchImpl: async () => Response.json([
+      { user: { login: 'octocat' }, author_association: 'NONE', created_at: '2026-08-25T08:05:00.000Z' },
+      { user: { login: 'owner' }, author_association: 'OWNER', created_at: '2026-08-25T07:59:00.000Z', html_url: 'old-comment' },
+    ]),
+  });
+
+  assert.equal(result, null);
+});
+
+test('follows comment pagination to find a later maintainer reply', async () => {
+  const result = await findFirstMaintainerReply(mission, 'octocat', {
+    fetchImpl: async url => url.includes('page=2')
+      ? Response.json([{ user: { login: 'maintainer' }, author_association: 'COLLABORATOR', created_at: '2026-08-25T08:20:00.000Z', html_url: 'page-two-comment' }])
+      : new Response(JSON.stringify([{ user: { login: 'octocat' }, author_association: 'NONE', created_at: '2026-08-25T08:10:00.000Z' }]), {
+        headers: { Link: '<https://api.github.com/comments?page=2>; rel="next"' },
+      }),
+  });
+
+  assert.equal(result.url, 'page-two-comment');
+  assert.equal(result.responseMinutes, 20);
+});
+
+test('does not attribute unrelated maintainer discussion as a participant reply', async () => {
+  const result = await findFirstMaintainerReply(mission, 'octocat', {
+    fetchImpl: async () => Response.json([
+      { user: { login: 'maintainer' }, author_association: 'OWNER', created_at: '2026-08-25T08:20:00.000Z' },
+    ]),
+  });
+
+  assert.equal(result, null);
 });

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { track } from '../lib/analytics.js';
+import MissionFreshness from './MissionFreshness.jsx';
 
 const COMPLETED_PAGE_SIZE = 10;
 
@@ -16,6 +17,7 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const retryTimerRef = useRef(null);
   const requestVersionRef = useRef(0);
+  const trackedRepliesRef = useRef(new Set());
 
   async function load() {
     const requestVersion = ++requestVersionRef.current;
@@ -42,6 +44,15 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
       setCompletedMissions(Array.isArray(data.completedMissions) ? data.completedMissions : []);
       setHistoryLoaded(true);
       setStatus(data.unavailable ? 'unavailable' : data.mission ? 'ready' : 'empty');
+      for (const reply of data.maintainerReplies || []) {
+        if (trackedRepliesRef.current.has(reply.missionId)) continue;
+        trackedRepliesRef.current.add(reply.missionId);
+        track('mission_maintainer_replied', {
+          journey: 'daily_mission',
+          missionKey: reply.telemetryKey,
+          responseMinutes: String(reply.responseMinutes),
+        });
+      }
       if (data.unavailable) {
         track('mission_unavailable', { journey: 'daily_mission' });
         if (data.retryAfterSeconds) {
@@ -242,6 +253,7 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
               {mission.opportunity.reasons.map(reason => <li key={reason}>{reason}</li>)}
             </ul>
           )}
+          <MissionFreshness freshness={mission.opportunity.freshness} compact />
           <div className="today-mission__actions">
             {mission.status === 'offered' && <button type="button" className="today-mission__primary" onClick={() => update('accept')} disabled={updating}>Accept</button>}
             {mission.status === 'accepted' && <button type="button" className="today-mission__primary" onClick={() => update('complete')} disabled={updating}>Verify completion</button>}

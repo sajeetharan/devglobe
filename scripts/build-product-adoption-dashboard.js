@@ -68,7 +68,9 @@ const events = `let Events = () {
       Source=tostring(Document.properties.source),
       Journey=tostring(Document.properties.journey),
       Action=tostring(Document.properties.action),
-        Channel=tostring(Document.properties.channel),
+      Channel=tostring(Document.properties.channel),
+      MissionKey=tostring(Document.properties.missionKey),
+      ResponseMinutes=todouble(Document.properties.responseMinutes),
         SchemaVersion=toint(Document.schemaVersion),
         InstrumentationVersion=toint(Document.instrumentationVersion),
         ActorType=tostring(Document.actorType)
@@ -257,11 +259,17 @@ const funnelKpis = addQuery(`${events}
 let E=Events | where EventTime between (ago(30d) .. now());
 let Discovery=E | summarize Impression=minif(EventTime, EventName == "search_appearance"), View=minif(EventTime, EventName == "profile_viewed"), Card=minif(EventTime, EventName == "card_generated"), Share=minif(EventTime, EventName == "profile_shared") by SessionHash, TargetLogin;
 let D=Discovery | summarize Impressions=countif(isnotnull(Impression)), Views=countif(isnotnull(Impression) and View >= Impression), Cards=countif(isnotnull(Impression) and View >= Impression and Card >= View), Shares=countif(isnotnull(Impression) and View >= Impression and Card >= View and Share >= Card);
-D
-| extend ViewRate=iff(Impressions == 0, 0.0, round(100.0 * Views / Impressions, 1)), CardRate=iff(Impressions == 0, 0.0, round(100.0 * Cards / Impressions, 1)), ShareRate=iff(Impressions == 0, 0.0, round(100.0 * Shares / Impressions, 1))
-| project Metric=pack_array("Search-to-view %", "Search-to-card %", "Search-to-share %"), Value=pack_array(ViewRate, CardRate, ShareRate)
-| mv-expand Metric to typeof(string), Value to typeof(real)`);
-addTile(funnelsPageId, 'Discovery Conversion - Last 30 Days', 'multistat', funnelKpis, { x: 0, y, width: 18, height: 4 }, multistat(18));
+(D
+  | extend ViewRate=iff(Impressions == 0, 0.0, round(100.0 * Views / Impressions, 1)), CardRate=iff(Impressions == 0, 0.0, round(100.0 * Cards / Impressions, 1)), ShareRate=iff(Impressions == 0, 0.0, round(100.0 * Shares / Impressions, 1))
+  | project Metric=pack_array("Search-to-view %", "Search-to-card %", "Search-to-share %"), Value=pack_array(ViewRate, CardRate, ShareRate)
+  | mv-expand Metric to typeof(string), Value to typeof(real))
+| union (E
+  | where EventName == "mission_maintainer_replied" and isnotnull(ResponseMinutes) and isnotempty(MissionKey)
+  | summarize arg_min(EventTime, ResponseMinutes, PrivacyHash) by MissionKey
+  | summarize Cohorts=dcount(PrivacyHash), MedianMinutes=round(percentile(ResponseMinutes, 50), 1)
+  | extend Value=iff(Cohorts < 3, real(null), MedianMinutes), Metric="Median mission-to-reply min")
+| project Metric, Value`);
+addTile(funnelsPageId, 'Conversion and Response - Last 30 Days', 'multistat', funnelKpis, { x: 0, y, width: 18, height: 4 }, multistat(18));
 y += 4;
 const discoveryFunnel = addQuery(`${events}
 let E=Events | where EventTime between (ago(30d) .. now());
@@ -287,11 +295,13 @@ addTile(funnelsPageId, 'Exploration Funnel', 'bar', explorationFunnel, { x: 9, y
 y += 6;
 const missionFunnel = addQuery(`${events}
 let E=Events | where EventTime between (ago(30d) .. now());
-let T=E | summarize Viewed=minif(EventTime, EventName == "mission_viewed"), Accepted=minif(EventTime, EventName == "mission_accepted"), Completed=minif(EventTime, EventName == "mission_completed") by SessionHash;
+let T=E | summarize Viewed=minif(EventTime, EventName == "mission_viewed"), Accepted=minif(EventTime, EventName == "mission_accepted"), Replied=minif(EventTime, EventName == "mission_maintainer_replied"), Completed=minif(EventTime, EventName == "mission_completed") by SessionHash;
 union
   (T | summarize Sessions=countif(isnotnull(Viewed)) | extend StepOrder=1, Step="Mission viewed"),
   (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed) | extend StepOrder=2, Step="Mission accepted"),
-  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Completed >= Accepted) | extend StepOrder=3, Step="Mission completed")
+  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Replied >= Accepted) | extend StepOrder=3, Step="Maintainer replied"),
+  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Completed >= Accepted) | extend StepOrder=4, Step="Mission completed")
+| extend Sessions=iff(Sessions < 3, long(null), Sessions)
 | order by StepOrder asc
 | project Step, Sessions`);
 addTile(funnelsPageId, 'Daily Mission Funnel', 'bar', missionFunnel, { x: 0, y, width: 9, height: 6 }, chart('Step', ['Sessions'], { hideLegend: true }));

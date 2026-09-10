@@ -36,7 +36,34 @@ test('accepts privacy-safe daily mission funnel events without a target profile'
       targetLogin: null,
       properties: { journey: 'daily_mission' },
     });
+
   }
+});
+
+test('accepts a bounded mission reply key and rejects malformed response telemetry', () => {
+  const missionKey = 'a'.repeat(43);
+  assert.deepEqual(normalizeEngagementEvent({
+    eventName: 'mission_maintainer_replied',
+    properties: { journey: 'daily_mission', missionKey, responseMinutes: '42' },
+  }).properties, { journey: 'daily_mission', missionKey, responseMinutes: '42' });
+  assert.throws(() => normalizeEngagementEvent({
+    eventName: 'mission_maintainer_replied',
+    properties: { missionKey: 'raw-mission-id', responseMinutes: '42' },
+  }), EngagementValidationError);
+});
+
+test('keeps distinct mission replies separate within the same deduplication window', () => {
+  const options = { session: 'reply-session', secret: 'test-secret', now: '2026-08-21T10:05:00.000Z' };
+  const first = createEngagementEvent({
+    eventName: 'mission_maintainer_replied',
+    properties: { missionKey: 'a'.repeat(43), responseMinutes: '42' },
+  }, options);
+  const second = createEngagementEvent({
+    eventName: 'mission_maintainer_replied',
+    properties: { missionKey: 'b'.repeat(43), responseMinutes: '18' },
+  }, options);
+
+  assert.notEqual(first.id, second.id);
 });
 
 test('deduplicates rerenders inside a session window without storing raw sessions', () => {
@@ -168,6 +195,7 @@ test('aggregates mission conversion and seven-day returning sessions', () => {
     event('mission_accepted', '2026-08-18T12:01:00.000Z', 'returning'),
     event('mission_viewed', '2026-08-20T12:00:00.000Z', 'returning'),
     event('mission_completed', '2026-08-20T12:10:00.000Z', 'returning'),
+    { ...event('mission_maintainer_replied', '2026-08-20T12:05:00.000Z', 'returning'), privacyHash: 'reply-cohort', properties: { missionKey: 'a'.repeat(43), responseMinutes: '45' } },
     event('mission_viewed', '2026-08-21T12:00:00.000Z', 'passing'),
     event('mission_passed', '2026-08-21T12:01:00.000Z', 'passing'),
     event('mission_unavailable', '2026-08-21T13:00:00.000Z', 'unavailable'),
@@ -183,9 +211,12 @@ test('aggregates mission conversion and seven-day returning sessions', () => {
     uniqueAcceptors: 1,
     uniquePassers: 1,
     uniqueCompleters: 1,
+    uniqueMaintainerReplies: 1,
     acceptanceRate: 0.5,
     passRate: 0.5,
     completionRate: 1,
+    maintainerReplyRate: 1,
+    averageMinutesToMaintainerReply: 45,
     availabilityRate: 0.75,
     exhaustedPoolRate: 0.25,
     returningSessions: 1,

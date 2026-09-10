@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { track } from '../lib/analytics.js';
+import MissionFreshness from './MissionFreshness.jsx';
 
 const INTEREST_LABELS = {
   accessibility: 'Accessibility',
@@ -232,6 +233,12 @@ export default function ContributionOpportunitiesModal({ onClose }) {
                   {result.options.timeBudgets.map(minutes => <option value={minutes} key={minutes}>{minutes} minutes</option>)}
                 </select>
               </label>
+              <label className="contribution-preferences__field">
+                <strong>Minimum freshness</strong>
+                <select value={preferences.minimumFreshnessScore} onChange={event => setPreferences(current => ({ ...current, minimumFreshnessScore: Number(event.target.value) }))}>
+                  {result.options.freshnessThresholds.map(score => <option value={score} key={score}>{score === 0 ? 'Show all' : `${score}+ / 100`}</option>)}
+                </select>
+              </label>
               <div className="contribution-preferences__submit">
                 <span aria-live="polite">{hasPreferenceChanges ? 'Changes not applied' : notice}</span>
                 <button type="submit" className="btn contribution-preferences__save" disabled={status === 'saving' || !hasPreferenceChanges}>
@@ -292,6 +299,7 @@ export default function ContributionOpportunitiesModal({ onClose }) {
                     <div className="contribution-result__reasons">
                       {opportunity.reasons.map(reason => <span key={reason}>{reason}</span>)}
                     </div>
+                    <MissionFreshness freshness={opportunity.freshness} />
                   </div>
                   <div className="contribution-result__actions">
                     <a href={opportunity.url} target="_blank" rel="noopener noreferrer" onClick={() => track('next_action_selected', { action: 'open_contribution_issue', campaign: result.preferences.campaign, journey: 'contribution' })}>Open on GitHub</a>
