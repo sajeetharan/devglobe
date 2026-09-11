@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { track } from '../lib/analytics.js';
 import { getLanguageColor } from '../lib/language-colors.js';
+import LanguageBadge from './LanguageBadge.jsx';
 import { useLivePresence } from './useLivePresence.js';
 import styles from './LiveDeveloperSpace.module.css';
 
@@ -160,7 +161,11 @@ export default function LiveDeveloperSpace() {
               <img src={developer.avatarUrl || '/devglobe.png'} alt="" />
               <span>
                 <strong>{developer.name || developer.login}</strong>
-                <small><i style={{ background: getLanguageColor(developer.activeLanguage) || '#3b82f6' }} />{developer.activeLanguage} · {STATUS_LABELS[developer.codingStatus] || (developer.presenceState === 'live' ? 'Live now' : 'Recently coding')}</small>
+                <small>
+                  <LanguageBadge language={developer.activeLanguage} />
+                  <span aria-hidden="true">·</span>
+                  {STATUS_LABELS[developer.codingStatus] || (developer.presenceState === 'live' ? 'Live now' : 'Recently coding')}
+                </small>
                 {developer.codingAgent ? (
                   <small className={styles.agentIdentity}>{developer.codingAgent}{developer.codingModel ? ` · ${developer.codingModel}` : ''}</small>
                 ) : null}

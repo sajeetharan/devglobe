@@ -129,7 +129,6 @@
 .activityRow > span { min-width: 0; }
 .activityRow strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .activityRow small { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: var(--text-secondary); font-size: 11px; }
-.activityRow small i { width: 6px; height: 6px; border-radius: 50%; }
 .activityRow .agentIdentity {
   overflow: hidden;
   padding-left: 12px;

@@ -3818,16 +3818,31 @@ body {
 }
 
 .live-presence-row__identity small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--text-muted);
   font-size: 10px;
 }
 
-.live-presence-row__identity i {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 5px;
-  border-radius: 50%;
+.language-badge {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+}
+
+.language-badge svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.language-badge > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .live-presence-row time {

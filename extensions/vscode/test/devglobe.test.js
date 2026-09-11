@@ -66,13 +66,17 @@ test('builds attributed profile, card, setup, activation, and search URLs', () =
   assert.equal(search.searchParams.get('top'), '10');
 });
 
-test('normalizes source-code languages and identifies non-code editors', () => {
+test('normalizes active languages and identifies non-code editors', () => {
   assert.equal(normalizeActiveLanguage(), '');
   assert.equal(normalizeActiveLanguage('plaintext'), '');
-  assert.equal(normalizeActiveLanguage('markdown'), '');
   assert.equal(normalizeActiveLanguage('log'), '');
-  assert.equal(normalizeActiveLanguage(' TypeScript '), 'typescript');
-  assert.equal(normalizeActiveLanguage('python'), 'python');
+  assert.equal(normalizeActiveLanguage('markdown'), 'Markdown');
+  assert.equal(normalizeActiveLanguage(' TypeScript '), 'TypeScript');
+  assert.equal(normalizeActiveLanguage('typescriptreact'), 'TypeScript');
+  assert.equal(normalizeActiveLanguage('jsonc'), 'JSON');
+  assert.equal(normalizeActiveLanguage('shellscript'), 'Shell');
+  assert.equal(normalizeActiveLanguage('python'), 'Python');
+  assert.equal(normalizeActiveLanguage('terraform'), 'Terraform');
 });
 
 test('creates a VS Code Streamable HTTP MCP configuration', () => {

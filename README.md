@@ -279,7 +279,7 @@ npm run setup-live-presence-container
 npm run setup-coding-stats-container
 ```
 
-The [editor directory](https://www.devglobe.dev/plugins) provides tailored installation paths for VS Code, Cursor, Windsurf, VSCodium, Positron, Void, and Antigravity. Release `v0.4.0` is available from both the Marketplace and [GitHub Releases](https://github.com/sajeetharan/devglobe/releases/tag/v0.4.0). The same VSIX supports compatible VS Code forks; Open VSX publication requires the `devglobedev` namespace and an `OVSX_PAT` repository secret.
+The [editor directory](https://www.devglobe.dev/plugins) provides tailored installation paths for VS Code, Cursor, Windsurf, VSCodium, Positron, Void, and Antigravity. Release `v0.6.0` is available from both the Marketplace and [GitHub Releases](https://github.com/sajeetharan/devglobe/releases/tag/v0.6.0). The same VSIX supports compatible VS Code forks; Open VSX publication requires the `devglobedev` namespace and an `OVSX_PAT` repository secret.
 
 Run the **Publish editor extension** workflow manually to validate and package one artifact, then select GitHub Release, Visual Studio Marketplace, or Open VSX destinations. Store publisher credentials only in the `VSCE_PAT` and `OVSX_PAT` GitHub Actions secrets.
 

@@ -75,7 +75,9 @@ function createPresenceController(context) {
   let activeHeartbeatDone = null;
   let stopping = false;
   let agentRefreshTimer = null;
+  let languageRefreshTimer = null;
   let lastPublishedAgentIdentity = null;
+  let lastPublishedLanguage = null;
 
   function showOfflineStatus() {
     status.command = 'devglobedev.startPresence';
@@ -198,6 +200,7 @@ function createPresenceController(context) {
       }
       const payload = await response.json();
       lastPublishedAgentIdentity = agentIdentity;
+      lastPublishedLanguage = currentConfiguration.shareActiveLanguage ? language : 'Hidden';
       for (const wave of Array.isArray(payload.waves) ? payload.waves : []) {
         lastWaveSeenAt = !lastWaveSeenAt || wave.sentAt > lastWaveSeenAt ? wave.sentAt : lastWaveSeenAt;
         await context.globalState.update(LAST_WAVE_SEEN_KEY, lastWaveSeenAt);
@@ -328,6 +331,18 @@ function createPresenceController(context) {
     }, 150);
   }
 
+  function scheduleLanguageRefresh() {
+    if (languageRefreshTimer) clearTimeout(languageRefreshTimer);
+    languageRefreshTimer = setTimeout(() => {
+      languageRefreshTimer = null;
+      const current = configuration();
+      const language = current.shareActiveLanguage ? activeLanguage() || 'Ready to code' : 'Hidden';
+      if (language === lastPublishedLanguage || !current.presenceEnabled) return;
+      lastActivityAt = Date.now();
+      heartbeatWithRetry(false, true).catch(handleBackgroundError);
+    }, 150);
+  }
+
   async function startFocus(minutes) {
     const now = new Date();
     focusStartedAt = now.toISOString();
@@ -344,7 +359,10 @@ function createPresenceController(context) {
   }
 
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(recordActivity),
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      recordActivity();
+      scheduleLanguageRefresh();
+    }),
     vscode.window.onDidChangeTextEditorSelection(recordActivity),
     vscode.workspace.onDidChangeTextDocument(recordActivity),
     vscode.workspace.onDidSaveTextDocument(recordActivity),
@@ -367,6 +385,7 @@ function createPresenceController(context) {
     {
       dispose: () => {
         if (agentRefreshTimer) clearTimeout(agentRefreshTimer);
+        if (languageRefreshTimer) clearTimeout(languageRefreshTimer);
         return stop(false, false);
       },
     },
