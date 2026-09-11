@@ -1,7 +1,7 @@
 'use client';
 
 import { track } from '../lib/analytics.js';
-import { getLanguageColor } from '../lib/language-colors.js';
+import LanguageBadge from './LanguageBadge.jsx';
 
 const MARKETPLACE_URL = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
 
@@ -68,8 +68,9 @@ export default function LivePresencePanel({
             <span className="live-presence-row__identity">
               <strong>{developer.name || developer.login}</strong>
               <small>
-                <i style={{ background: getLanguageColor(developer.activeLanguage) || 'var(--accent-blue)' }} aria-hidden="true" />
-                {developer.activeLanguage} · {developer.presenceState === 'live' ? 'Live now' : 'Recently coding'}
+                <LanguageBadge language={developer.activeLanguage} />
+                <span aria-hidden="true">·</span>
+                {developer.presenceState === 'live' ? 'Live now' : 'Recently coding'}
               </small>
             </span>
             <time dateTime={developer.lastHeartbeat}>{relativeTime(developer.lastHeartbeat)}</time>

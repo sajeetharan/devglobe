@@ -5,10 +5,33 @@ const ATTRIBUTION = Object.freeze({
 const CODING_ACTIVITY_WINDOW_MS = 60_000;
 const NON_CODING_LANGUAGE_IDS = new Set([
   'log',
-  'markdown',
   'plaintext',
   'search-result',
 ]);
+const LANGUAGE_NAMES = Object.freeze({
+  c: 'C',
+  cpp: 'C++',
+  csharp: 'C#',
+  dockerfile: 'Dockerfile',
+  go: 'Go',
+  html: 'HTML',
+  java: 'Java',
+  javascript: 'JavaScript',
+  javascriptreact: 'JavaScript',
+  json: 'JSON',
+  jsonc: 'JSON',
+  kotlin: 'Kotlin',
+  markdown: 'Markdown',
+  php: 'PHP',
+  python: 'Python',
+  ruby: 'Ruby',
+  rust: 'Rust',
+  shellscript: 'Shell',
+  swift: 'Swift',
+  typescript: 'TypeScript',
+  typescriptreact: 'TypeScript',
+  yaml: 'YAML',
+});
 
 function isCodingActivityRecent(lastActivityAt, now = Date.now()) {
   return Number.isFinite(lastActivityAt)
@@ -123,7 +146,8 @@ function normalizeLogin(value) {
 
 function normalizeActiveLanguage(value) {
   const language = String(value || '').trim().toLowerCase();
-  return language && !NON_CODING_LANGUAGE_IDS.has(language) ? language : '';
+  if (!language || NON_CODING_LANGUAGE_IDS.has(language)) return '';
+  return LANGUAGE_NAMES[language] || `${language[0].toUpperCase()}${language.slice(1)}`;
 }
 
 function normalizeResults(payload) {

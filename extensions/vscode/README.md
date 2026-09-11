@@ -8,7 +8,7 @@ This extension connects exclusively to [devglobe.dev](https://www.devglobe.dev).
 
 Choose your editor in the [DevGlobe editor directory](https://www.devglobe.dev/plugins), or install [DevGlobe: Live Coding Globe from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery). Choose **Go Live Now** in the first-run prompt and approve GitHub authentication. Your verified GitHub name appears automatically on the [live globe](https://www.devglobe.dev/space); no separate DevGlobe profile is required. You can also use the Command Palette and run `DevGlobe.dev: Go Live on the Developer Globe`.
 
-Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS Code forks can install the same VSIX. Download the [version 0.4.0 release package](https://github.com/sajeetharan/devglobe/releases/download/v0.4.0/devglobe-developer-discovery-0.4.0.vsix), then use the editor's **Install from VSIX** action. Open VSX and vendor marketplace publication require their respective publisher credentials.
+Cursor, Windsurf, VSCodium, Positron, Void, Antigravity, and other compatible VS Code forks can install the same VSIX. Download the [version 0.6.0 release package](https://github.com/sajeetharan/devglobe/releases/download/v0.6.0/devglobe-developer-discovery-0.6.0.vsix), then use the editor's **Install from VSIX** action. Open VSX and vendor marketplace publication require their respective publisher credentials.
 
 ## Commands
 
