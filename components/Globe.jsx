@@ -2,11 +2,11 @@
 
 import React, { useEffect, useRef, useMemo, useState, forwardRef, useImperativeHandle, useCallback } from 'react';
 import GlobeGL from 'react-globe.gl';
-import * as d3 from 'd3';
 import { getPlatformColor } from '../lib/scoring.js';
 import { formatNum } from '../lib/format.js';
 import { extractCountry, countryKey } from '../lib/country.js';
 import { getLanguageColor } from '../lib/language-colors.js';
+import { getHighestScore, getScoreColor, SCORE_TIERS } from '../lib/globe-score.js';
 import { siAnthropic, siCursor, siGithubcopilot, siGooglegemini, siProbot, siWindsurf } from 'simple-icons';
 
 // Low-res Natural Earth countries (177 features), pinned to the commit that added
@@ -19,14 +19,6 @@ const COUNTRY_GEOJSON_URLS = [
 // Kept below the lowest developer point (0.01) so points stay hoverable
 const POLYGON_ALTITUDE = 0.003;
 const POLYGON_ALTITUDE_ACTIVE = 0.009;
-
-// Score-based color gradient (visual tiering only, not a judgment of skill)
-function getScoreColor(score) {
-  if (score >= 80) return '#fbbf24'; // gold — top of the indexed range
-  if (score >= 60) return '#34d399'; // emerald — upper-mid range
-  if (score >= 40) return '#3b82f6'; // blue — mid range
-  return '#6366f1'; // indigo — lower range
-}
 
 function featureName(feat) {
   return feat?.properties?.ADMIN || feat?.properties?.NAME || '';
@@ -84,11 +76,10 @@ const AGENT_ICONS = new Map([
 const HEX_ENTER_ALTITUDE = 1.8; // switch to hex bins above this altitude
 const HEX_EXIT_ALTITUDE = 1.5; // switch back to points below this altitude (lower than enter = hysteresis gap)
 const HEX_ZOOM_DEBOUNCE_MS = 150;
-const hexColorScale = d3.scaleSequentialSqrt(d3.interpolateYlOrRd).domain([0, 60]);
 const hexBinLat = d => d.lat;
 const hexBinLng = d => d.lng;
-const hexTopColor = bin => hexColorScale(bin.points.length);
-const hexSideColor = bin => hexColorScale(bin.points.length);
+const hexTopColor = bin => getScoreColor(getHighestScore(bin.points));
+const hexSideColor = bin => getScoreColor(getHighestScore(bin.points));
 const hexAltitude = bin => Math.min(0.35, 0.02 + Math.sqrt(bin.points.length) * 0.012);
 const hexLabel = bin => `${bin.points.length} developer${bin.points.length === 1 ? '' : 's'} in this area`;
 
@@ -1018,13 +1009,17 @@ const Globe = forwardRef(function Globe({
               </button>
             </div>
             <div className="globe-legend">
-              {hexModeActive ? (
+              {hexModeActive || colorMode === 'score' ? (
                 <>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(2) }} />Few developers</span>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: hexColorScale(60) }} />Many developers</span>
-                  <span className="globe-legend__item">Zoom in or click a cluster to see individual developers</span>
+                  {SCORE_TIERS.map(tier => (
+                    <span key={tier.label} className="globe-legend__item">
+                      <span className="globe-legend__dot" style={{ background: tier.color }} />
+                      {tier.label}
+                    </span>
+                  ))}
+                  {hexModeActive ? <span className="globe-legend__item">Click a cluster to see individual developers</span> : null}
                 </>
-              ) : colorMode === 'language' ? (
+              ) : (
                 topLanguagesPresent.length ? (
                   topLanguagesPresent.slice(0, 8).map(language => (
                     <span key={language} className="globe-legend__item">
@@ -1035,13 +1030,6 @@ const Globe = forwardRef(function Globe({
                 ) : (
                   <span className="globe-legend__item">No language data in view</span>
                 )
-              ) : (
-                <>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#fbbf24' }} />Elite (80+)</span>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#34d399' }} />Strong (60+)</span>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#3b82f6' }} />Solid (40+)</span>
-                  <span className="globe-legend__item"><span className="globe-legend__dot" style={{ background: '#6366f1' }} />Emerging</span>
-                </>
               )}
               {agentNetworkVisible && (
                 <>
