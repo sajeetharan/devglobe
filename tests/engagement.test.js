@@ -40,6 +40,25 @@ test('accepts privacy-safe daily mission funnel events without a target profile'
   }
 });
 
+test('accepts privacy-safe search funnel events without storing the query', () => {
+  for (const eventName of ['search_started', 'search_results_viewed', 'search_no_results', 'search_failed']) {
+    assert.deepEqual(normalizeEngagementEvent({
+      eventName,
+      properties: { action: 'text', source: 'autocomplete', query: 'private search text' },
+    }), {
+      eventName,
+      targetLogin: null,
+      properties: { action: 'text', source: 'autocomplete' },
+    });
+  }
+
+  assert.equal(normalizeEngagementEvent({
+    eventName: 'search_result_opened',
+    targetLogin: 'OctoCat',
+    properties: { action: 'text', source: 'autocomplete' },
+  }).targetLogin, 'octocat');
+});
+
 test('accepts a bounded mission reply key and rejects malformed response telemetry', () => {
   const missionKey = 'a'.repeat(43);
   assert.deepEqual(normalizeEngagementEvent({

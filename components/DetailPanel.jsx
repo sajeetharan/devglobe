@@ -12,6 +12,7 @@ import { AI_TOOLS } from '../lib/ai-profile.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { resolveReadmeAccess } from '../lib/profile-readme.js';
 import { PROFILE_PRIMARY_ACTIONS, resolveProfilePrimaryAction } from '../lib/profile-primary-action.js';
+import { recordRecentProfile } from '../lib/discovery-history.js';
 import { acquisitionAttributionProperties, attributedGlobePath, identityCardShareUrl } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
 import ReadmeGeneratorModal from './ReadmeGeneratorModal.jsx';
@@ -32,8 +33,9 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
 
   useEffect(() => {
     const attribution = acquisitionAttributionProperties(new URLSearchParams(window.location.search));
+    recordRecentProfile(dev);
     track('profile_viewed', { login: dev.login, ...attribution });
-  }, [dev.login]);
+  }, [dev.avatarUrl, dev.login, dev.name]);
 
   const recordCardGeneration = () => {
     if (cardGenerationRecordedRef.current) return;
@@ -93,7 +95,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
     return () => { cancelled = true; };
   }, [dev.login, user]);
 
-  const handleFollow = async () => {
+  const handleFollow = async (completeOnFollow = false) => {
     if (!user) {
       window.location.assign('/api/auth/github');
       return;
@@ -112,6 +114,13 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
       const following = result.developers.includes(dev.login.toLowerCase());
       setFollowState(following ? 'following' : 'not-following');
       track(following ? 'developer_followed' : 'developer_unfollowed', { login: dev.login });
+      if (following && completeOnFollow) {
+        track('primary_action_completed', {
+          login: dev.login,
+          action: PROFILE_PRIMARY_ACTIONS.FOLLOW,
+          journey: 'profile_primary_action',
+        });
+      }
     } catch (error) {
       setFollowState(wasFollowing ? 'following' : 'not-following');
       setFollowError(error.message);
@@ -141,6 +150,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
   const primaryAction = resolveProfilePrimaryAction({
     viewerLogin: user?.login,
     profileLogin: dev.login,
+    isClaimed: readmeClaimed,
     isFollowing: followState === 'following',
   });
 
@@ -164,9 +174,24 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
     });
   };
 
+  const completePrimaryAction = action => {
+    track('primary_action_completed', {
+      login: dev.login,
+      action,
+      journey: 'profile_primary_action',
+    });
+  };
+
   const handleOpenContributions = () => {
     selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.OPPORTUNITIES);
+    completePrimaryAction(PROFILE_PRIMARY_ACTIONS.OPPORTUNITIES);
     onOpenContributions?.();
+  };
+
+  const handleClaimProfile = async () => {
+    selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.CLAIM);
+    const result = await onClaim?.({ openCard: false });
+    if (result?.ok) completePrimaryAction(PROFILE_PRIMARY_ACTIONS.CLAIM);
   };
 
   const handleReadmeAccess = () => {
@@ -265,11 +290,19 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                   Find contribution opportunities
                 </button>
               )}
+              {primaryAction === PROFILE_PRIMARY_ACTIONS.CLAIM && (
+                <button type="button" className="profile-action profile-action--primary" onClick={handleClaimProfile}>
+                  Claim this profile
+                </button>
+              )}
               {primaryAction === PROFILE_PRIMARY_ACTIONS.IMPACT && (
                 <Link
                   className="profile-action profile-action--primary"
                   href={`/developer/${encodeURIComponent(dev.login)}`}
-                  onClick={() => selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.IMPACT)}
+                  onClick={() => {
+                    selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.IMPACT);
+                    completePrimaryAction(PROFILE_PRIMARY_ACTIONS.IMPACT);
+                  }}
                 >
                   View impact history
                 </Link>
@@ -287,7 +320,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                     className={`profile-action${primaryAction === PROFILE_PRIMARY_ACTIONS.FOLLOW ? ' profile-action--primary' : ''}${followState === 'following' ? ' profile-action--active' : ''}`}
                     onClick={() => {
                       if (primaryAction === PROFILE_PRIMARY_ACTIONS.FOLLOW) selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.FOLLOW);
-                      handleFollow();
+                      handleFollow(primaryAction === PROFILE_PRIMARY_ACTIONS.FOLLOW);
                     }}
                     disabled={followState === 'loading' || followState === 'saving'}
                     aria-pressed={followState === 'following'}

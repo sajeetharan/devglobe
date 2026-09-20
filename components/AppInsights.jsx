@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { shouldCollectBrowserTelemetry } from '../lib/automated-traffic.js';
 
 // Initializes Application Insights browser RUM (users, sessions, page views).
 // The connection string is fetched at runtime from /api/telemetry-config so it
@@ -8,6 +9,10 @@ import { useEffect } from 'react';
 export default function AppInsights({ connectionString: connectionStringProp }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!shouldCollectBrowserTelemetry({
+      hostname: window.location.hostname,
+      userAgent: window.navigator.userAgent,
+    })) return;
     let cancelled = false;
 
     (async () => {

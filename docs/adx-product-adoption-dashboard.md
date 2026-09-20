@@ -91,11 +91,11 @@ Import `dashboards/devglobe-product-adoption-dashboard.json` from **Azure Data E
 
 Repeated equivalent events are deduplicated by the application in 30-minute windows. The dashboard also deduplicates change-feed rows by event ID. Funnel and retention cohorts below three browsers are suppressed. Local, test, synthetic, and non-human events are excluded.
 
-The scorecard compares the latest rolling seven days with the immediately preceding seven days. Initial weekly targets are 100 visitors, 30 searches, 20 profile opens, 10 primary actions, 25% visitor-to-search, 50% search-to-profile, 15% profile-to-action, 20% seven-day return, and 10% thirty-day return. Recalibrate after four complete production weeks.
+The scorecard compares the latest rolling seven days with the immediately preceding seven days. Initial weekly targets are 100 visitors, 30 search-result sessions, 20 profile opens, 10 completed primary actions, 25% visitor-to-search, 50% search-to-profile, 15% profile-to-action, 20% seven-day return, and 10% thirty-day return. Recalibrate after four complete production weeks.
 
 ## Views and attribution limitations
 
-Instrumentation version 2 adds durable `site_visited` and `search_submitted` events. Periods before its deployment are incomplete and must not be treated as equivalent. The telemetry-health tiles alert when required funnel events are missing for seven days or stale for more than 24 hours.
+Instrumentation version 2 adds durable `site_visited` and search funnel events. Periods before its deployment are incomplete and must not be treated as equivalent. The telemetry-health tiles alert when required funnel events are missing for seven days or stale for more than 24 hours.
 
 Source, channel, journey, and action values are optional. The dashboard groups missing source values as **Unattributed** rather than inferring attribution. Session and privacy hashes are pseudonymous and must not be exported or used for individual tracking.
 
