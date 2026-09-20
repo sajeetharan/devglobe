@@ -18,7 +18,8 @@ test('ADX dashboard contains the complete privacy-safe adoption scorecard', () =
   assert.match(queryText, /SearchEvent >= Visit/);
   assert.match(queryText, /ProfileEvent >= Search/);
   assert.match(queryText, /ActionEvent >= Profile/);
-  assert.match(queryText, /Journey == "profile_primary_action"/);
+  assert.match(queryText, /EventName == "primary_action_completed"/);
+  assert.match(queryText, /EventName == "search_results_viewed"/);
   assert.match(queryText, /EventTime >= Start and EventTime < End/);
   assert.match(queryText, /EventTime >= ago\(180d\)/);
 });
@@ -36,7 +37,8 @@ test('Azure Monitor workbook contains production-filtered scorecard and telemetr
   assert.match(queryText, /SearchEvent>=Visit/);
   assert.match(queryText, /ProfileEvent>=Search/);
   assert.match(queryText, /ActionEvent>=Profile/);
-  assert.match(queryText, /Journey=='profile_primary_action'/);
+  assert.match(queryText, /name=='primary_action_completed'/);
+  assert.match(queryText, /name=='search_results_viewed'/);
   assert.match(queryText, /timestamp>=Start and timestamp<End/);
   assert.match(queryText, /timestamp >= ago\(180d\)/);
 });

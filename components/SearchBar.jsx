@@ -7,6 +7,12 @@ import { countryKey } from '../lib/country.js';
 import { findExactLoginResult, normalizeTextSearchQuery } from '../lib/developer-search.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { attachSearchMatches } from '../lib/search-match.js';
+import {
+  DISCOVERY_HISTORY_EVENT,
+  readDiscoveryHistory,
+  recordRecentProfile,
+  recordRecentSearch,
+} from '../lib/discovery-history.js';
 import MissionPreview from './MissionPreview.jsx';
 
 const SAMPLES_BY_MODE = {
@@ -40,9 +46,11 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const [singleResult, setSingleResult] = useState(null);
   const [searchError, setSearchError] = useState('');
   const [agentPromptDismissed, setAgentPromptDismissed] = useState(false);
+  const [history, setHistory] = useState({ searches: [], profiles: [] });
   const inputRef = useRef(null);
   const abortRef = useRef(null);
   const timerRef = useRef(null);
+  const searchStartedRef = useRef(false);
   const agentPromptViewedRef = useRef('');
   const agentPromptKey = currentUsername
     ? `devglobe-agent-prompt-dismissed:v1:${currentUsername.toLowerCase()}`
@@ -61,6 +69,13 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   }, [agentPromptKey]);
 
   useEffect(() => {
+    const refreshHistory = () => setHistory(readDiscoveryHistory());
+    refreshHistory();
+    window.addEventListener(DISCOVERY_HISTORY_EVENT, refreshHistory);
+    return () => window.removeEventListener(DISCOVERY_HISTORY_EVENT, refreshHistory);
+  }, []);
+
+  useEffect(() => {
     if (!showAgentPrompt || agentPromptDismissed || !agentPromptKey || agentPromptViewedRef.current === agentPromptKey) return;
     agentPromptViewedRef.current = agentPromptKey;
     track('agent_setup_viewed', { action: 'profile_tools_prompt', source: 'homepage_prompt' });
@@ -73,6 +88,13 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   }, [agentPromptKey]);
 
   const openSearchResult = useCallback((developer, source) => {
+    recordRecentProfile(developer);
+    track('search_result_opened', {
+      login: developer.login,
+      action: mode,
+      journey: 'developer_discovery',
+      source,
+    });
     track('personalized_profile_viewed', {
       login: developer.login,
       journey: 'username_profile',
@@ -95,9 +117,17 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       source,
     });
     onSelectDeveloper(developer);
-  }, [onSelectDeveloper]);
+  }, [mode, onSelectDeveloper]);
 
-  const doSearch = useCallback(async (q, m, { openExact = false } = {}) => {
+  const recordSearchOutcome = useCallback((results, searchMode, source) => {
+    track(results.length > 0 ? 'search_results_viewed' : 'search_no_results', {
+      action: searchMode,
+      journey: 'developer_discovery',
+      source,
+    });
+  }, []);
+
+  const doSearch = useCallback(async (q, m, { openExact = false, remember = false, source = 'autocomplete' } = {}) => {
     if (abortRef.current) {
       abortRef.current.abort();
       abortRef.current = null;
@@ -139,6 +169,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         } catch (error) {
           if (error.name === 'AbortError') return;
           console.error('Text search fallback failed:', error);
+          track('search_failed', { action: m, journey: 'developer_discovery', source });
         } finally {
           if (!controller.signal.aborted) setSearching(false);
         }
@@ -152,6 +183,8 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       setResultCount(results.length);
       setVisibleResults(results.slice(0, 3));
       setSingleResult(results.length === 1 ? results[0] : null);
+      if (remember) recordRecentSearch({ query: q, mode: m });
+      recordSearchOutcome(results, m, source);
       trackSearchAppearances(results.map(result => result.login), m);
       onSearchState?.({ query: q.trim(), results });
       const exactResult = openExact ? findExactLoginResult(q, results) : null;
@@ -179,6 +212,8 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           ? developers.find(developer => developer.login === results[0].login) || results[0]
           : null;
         setSingleResult(matchedDeveloper);
+        if (remember) recordRecentSearch({ query: q, mode: m });
+        recordSearchOutcome(results, m, source);
         trackSearchAppearances(results.map(result => result.login), m);
         onSearchState?.({ query: q.trim(), results });
         const exactResult = openExact ? findExactLoginResult(q, results) : null;
@@ -188,18 +223,23 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       if (e.name !== 'AbortError') {
         console.error('Search failed:', e);
         setSearchError(e.message || 'Search is unavailable.');
+        track('search_failed', { action: m, journey: 'developer_discovery', source });
       }
     } finally {
       if (!controller.signal.aborted) setSearching(false);
     }
-  }, [developers, onResults, onReset, onSearchState, openSearchResult, topN]);
+  }, [developers, onResults, onReset, onSearchState, openSearchResult, recordSearchOutcome, topN]);
 
   const handleInput = (e) => {
     const val = e.target.value;
+    if (val.trim() && !searchStartedRef.current) {
+      searchStartedRef.current = true;
+      track('search_started', { action: mode, journey: 'developer_discovery', source: 'search_input' });
+    }
     setQuery(val);
     setSingleResult(null);
     clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => doSearch(val, mode), 400);
+    timerRef.current = setTimeout(() => doSearch(val, mode, { source: 'autocomplete' }), 400);
   };
 
   const handleKeyDown = (e) => {
@@ -209,7 +249,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
         track('search_submitted', { action: mode, journey: 'developer_discovery', source: 'search_enter' });
         track('activation_started', { journey: 'username_profile', source: 'search_enter' });
       }
-      doSearch(query, mode, { openExact: true });
+      doSearch(query, mode, { openExact: true, remember: true, source: 'search_enter' });
     }
     if (e.key === 'Escape') {
       handleClear();
@@ -219,25 +259,25 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const handleModeChange = (e) => {
     const m = e.target.value;
     setMode(m);
-    if (query.trim()) doSearch(query, m);
+    if (query.trim()) doSearch(query, m, { source: 'mode_change' });
   };
 
   const handleUseTextSearch = () => {
     setMode('text');
     setSearchError('');
-    doSearch(query, 'text');
+    doSearch(query, 'text', { remember: true, source: 'text_fallback' });
   };
 
   const handleTopNChange = (e) => {
     const n = parseInt(e.target.value);
     setTopN(n);
-    if (query.trim()) doSearch(query, mode);
+    if (query.trim()) doSearch(query, mode, { source: 'result_limit_change' });
   };
 
   const handleSample = (q) => {
     setQuery(q);
     track('search_submitted', { action: mode, journey: 'developer_discovery', source: 'sample' });
-    doSearch(q, mode, { openExact: true });
+    doSearch(q, mode, { openExact: true, remember: true, source: 'sample' });
     inputRef.current?.focus();
   };
 
@@ -249,12 +289,28 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     setVisibleResults([]);
     setSingleResult(null);
     setSearchError('');
+    searchStartedRef.current = false;
     onReset();
     inputRef.current?.focus();
   };
 
   const handleSelectResult = (developer) => {
     openSearchResult(developer, mode);
+  };
+
+  const handleRecentSearch = recent => {
+    setMode(recent.mode);
+    setQuery(recent.query);
+    searchStartedRef.current = true;
+    track('search_started', { action: recent.mode, journey: 'developer_discovery', source: 'recent_search' });
+    doSearch(recent.query, recent.mode, { openExact: true, remember: true, source: 'recent_search' });
+  };
+
+  const handleRecentProfile = profile => {
+    setMode('text');
+    setQuery(profile.login);
+    searchStartedRef.current = true;
+    doSearch(profile.login, 'text', { openExact: true, source: 'recent_profile' });
   };
 
   return (
@@ -322,7 +378,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           aria-label="Search developers"
           name="developer-search"
           type="text"
-          placeholder={mode === 'text' ? (signedIn ? 'Search GitHub usernames, names, or locations' : 'GitHub username, name, or location') : mode === 'vector' ? 'Describe your ideal developer or agent collaborator…' : 'Combine skills, interests, and location…'}
+          placeholder={mode === 'text' ? 'Search by skill, location, or GitHub username' : mode === 'vector' ? 'Describe your ideal developer or agent collaborator…' : 'Combine skills, interests, and location…'}
           autoComplete="off"
           spellCheck="false"
           value={query}
@@ -344,22 +400,32 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
             clearTimeout(timerRef.current);
             track('search_submitted', { action: mode, journey: 'developer_discovery', source: 'search_button' });
             track('activation_started', { journey: 'username_profile', source: 'search_button' });
-            doSearch(query, mode, { openExact: true });
+            doSearch(query, mode, { openExact: true, remember: true, source: 'search_button' });
           }}
         >
-          {mode === 'text' ? 'Find profile' : 'Search'}
+          {mode === 'text' ? 'Find developers' : 'Search'}
         </button>
-        <select value={mode} onChange={handleModeChange} title="Search mode">
-          <option value="text">Text</option>
-          <option value="vector">Vector (AI)</option>
-          <option value="hybrid">Hybrid</option>
-        </select>
-        <select value={topN} onChange={handleTopNChange} title="Max results">
-          <option value={10}>Top 10</option>
-          <option value={20}>Top 20</option>
-          <option value={50}>Top 50</option>
-        </select>
-        <div className="search-bar__features" role="group" aria-label="Developer tools">
+      </div>
+      <details className="search-bar__advanced">
+        <summary>Search options and tools</summary>
+        <div className="search-bar__advanced-content">
+          <label>
+            Search mode
+            <select value={mode} onChange={handleModeChange}>
+              <option value="text">Text</option>
+              <option value="vector">Vector (AI)</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </label>
+          <label>
+            Results
+            <select value={topN} onChange={handleTopNChange}>
+              <option value={10}>Top 10</option>
+              <option value={20}>Top 20</option>
+              <option value={50}>Top 50</option>
+            </select>
+          </label>
+          <div className="search-bar__features" role="group" aria-label="Developer tools">
           <button
             type="button"
             className="feature-action feature-action--card"
@@ -403,7 +469,8 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
             {compareCount > 0 && <strong>{compareCount}/2</strong>}
           </button>
         </div>
-      </div>
+        </div>
+      </details>
       {searchError && query && (
         <div className="search-bar__error" role="alert">
           <span>AI search is temporarily unavailable.</span>
@@ -413,7 +480,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       {resultCount !== null && query && (
         <div className="search-bar__feedback">
           <div className="search-bar__results">
-            <span>{resultCount === 0 ? 'No developers found' : `${resultCount} developer${resultCount !== 1 ? 's' : ''} found`}</span>
+            <span>{resultCount === 0 ? 'No matches yet. Try a broader skill, location, or GitHub username.' : `${resultCount} developer${resultCount !== 1 ? 's' : ''} found`}</span>
             <button className="search-bar__reset" onClick={handleClear} title="Clear filter and show all">
               ✕ Clear
             </button>
@@ -483,6 +550,34 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           </button>
         ))}
       </div>
+      {!query && (history.searches.length > 0 || history.profiles.length > 0) && (
+        <details className="search-bar__history">
+          <summary>Pick up where you left off</summary>
+          <div className="search-bar__history-content" aria-label="Recent discovery">
+            {history.profiles.length > 0 && (
+              <div>
+                <span>Recently viewed</span>
+                {history.profiles.slice(0, 3).map(profile => (
+                  <button type="button" key={profile.login} onClick={() => handleRecentProfile(profile)}>
+                    {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" /> : null}
+                    @{profile.login}
+                  </button>
+                ))}
+              </div>
+            )}
+            {history.searches.length > 0 && (
+              <div>
+                <span>Recent searches</span>
+                {history.searches.slice(0, 3).map(recent => (
+                  <button type="button" key={`${recent.mode}:${recent.query}`} onClick={() => handleRecentSearch(recent)}>
+                    {recent.query}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </details>
+      )}
       {showMissionPreview && <MissionPreview signedIn={signedIn} onOpenActivity={onOpenActivity} />}
     </div>
   );

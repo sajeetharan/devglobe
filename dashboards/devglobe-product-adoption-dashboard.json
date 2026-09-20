@@ -1,15 +1,15 @@
 {
   "$schema": "https://dataexplorer.azure.com/static/d/schema/75/dashboard.json",
-  "id": "341b8a0d-d633-4b0a-9b0c-0da33c1fa178",
-  "eTag": "13aee919-5b87-401d-9353-80005b8f9995",
+  "id": "0600631e-7a99-4690-8992-c44758aafb87",
+  "eTag": "2d02b7a8-f344-474c-a74a-e4376f58ca2a",
   "title": "DevGlobe Product Adoption",
   "schema_version": 75,
   "tiles": [
     {
-      "id": "e1279ebf-f2b1-44c9-9d7a-ec0f1266a66d",
+      "id": "e89d5970-c236-4188-81b8-378911ed8ac5",
       "title": "Product Adoption Overview",
       "visualType": "markdownCard",
-      "pageId": "47252421-c576-457b-a369-dcd42e31021c",
+      "pageId": "fd42f71f-c30e-434b-b30a-6138c2128c75",
       "layout": {
         "x": 0,
         "y": 0,
@@ -20,10 +20,10 @@
       "visualOptions": {}
     },
     {
-      "id": "2818e035-f3df-4478-83c0-829f9c736ab0",
+      "id": "69f4fe5f-0dc8-4c1e-978a-8e7df9908dbb",
       "title": "Last 30 Days",
       "visualType": "multistat",
-      "pageId": "47252421-c576-457b-a369-dcd42e31021c",
+      "pageId": "fd42f71f-c30e-434b-b30a-6138c2128c75",
       "layout": {
         "x": 0,
         "y": 2,
@@ -32,7 +32,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "9714cb12-6a82-4300-bb7b-cafeafd61071"
+        "queryId": "97f68bc7-3d89-4c86-942f-b8faee6a46ff"
       },
       "visualOptions": {
         "multiStat__textSize": "auto",
@@ -48,10 +48,10 @@
       }
     },
     {
-      "id": "a50d0e81-1057-443b-8361-d1586ecdc917",
+      "id": "ded4a4a6-3ffe-4189-8e09-0da486aaae5c",
       "title": "Daily Active and Engaged Sessions",
       "visualType": "line",
-      "pageId": "47252421-c576-457b-a369-dcd42e31021c",
+      "pageId": "fd42f71f-c30e-434b-b30a-6138c2128c75",
       "layout": {
         "x": 0,
         "y": 6,
@@ -60,7 +60,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "4e732982-27bf-4285-bb12-3ea54dc21cad"
+        "queryId": "efed6d90-131f-4fb5-8b40-67b01276a880"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -96,10 +96,10 @@
       }
     },
     {
-      "id": "5b1065c7-2436-4144-94d8-3e412a2a5a58",
+      "id": "3263cb89-87be-468b-bb18-aa7ec42a26b6",
       "title": "Adoption Health",
       "visualType": "multistat",
-      "pageId": "47252421-c576-457b-a369-dcd42e31021c",
+      "pageId": "fd42f71f-c30e-434b-b30a-6138c2128c75",
       "layout": {
         "x": 12,
         "y": 6,
@@ -108,7 +108,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "c34c7a35-7d62-40df-b7de-3466c2eb6069"
+        "queryId": "2962a9cc-3a71-4914-a455-0fed07638ee5"
       },
       "visualOptions": {
         "multiStat__textSize": "auto",
@@ -124,10 +124,10 @@
       }
     },
     {
-      "id": "6a91a8a4-b3fc-41db-a61a-335fd165d52b",
+      "id": "1724edd9-fae7-480d-8c8e-932350ef2d5c",
       "title": "Completed Weekly Adoption",
       "visualType": "column",
-      "pageId": "47252421-c576-457b-a369-dcd42e31021c",
+      "pageId": "fd42f71f-c30e-434b-b30a-6138c2128c75",
       "layout": {
         "x": 0,
         "y": 12,
@@ -136,7 +136,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "9219a348-fafc-490b-93f0-c0009ee31189"
+        "queryId": "09aa5abb-5c11-455d-a0ea-1a84ec530c2c"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -172,10 +172,10 @@
       }
     },
     {
-      "id": "f0c9eddb-0c2a-4c55-81ea-a7ba9b8fc4a0",
+      "id": "470eac96-8849-423d-bf2a-1057f64f8c49",
       "title": "Value Actions",
       "visualType": "table",
-      "pageId": "47252421-c576-457b-a369-dcd42e31021c",
+      "pageId": "fd42f71f-c30e-434b-b30a-6138c2128c75",
       "layout": {
         "x": 12,
         "y": 12,
@@ -184,7 +184,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "b0a533dc-3ef4-45cb-8a4f-374a66d0b83d"
+        "queryId": "16813f42-09a0-475b-abd9-03ea02a6c82f"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -198,10 +198,10 @@
       }
     },
     {
-      "id": "0ab981de-8b19-43f1-bf6b-7e7f16011a37",
+      "id": "82e0730c-6113-430c-adc3-85e6b10e9dba",
       "title": "Usage and Acquisition",
       "visualType": "markdownCard",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 0,
         "y": 0,
@@ -212,10 +212,10 @@
       "visualOptions": {}
     },
     {
-      "id": "a9ced95e-7c35-45c1-8189-d38905d0ac4e",
+      "id": "6a497710-3e89-4aa0-ac16-586f56494729",
       "title": "Usage KPIs - Last 30 Days",
       "visualType": "multistat",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 0,
         "y": 2,
@@ -224,7 +224,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "c5795cb4-3aa0-4068-a400-b249c38e2909"
+        "queryId": "c21f8aeb-4030-41df-bfc3-3360e64c620e"
       },
       "visualOptions": {
         "multiStat__textSize": "auto",
@@ -240,10 +240,10 @@
       }
     },
     {
-      "id": "743c23ad-cd1a-438c-b6b2-325faececa65",
+      "id": "75479a62-64f9-48b9-a35e-32ac436ab7bc",
       "title": "Daily Usage by Product Area",
       "visualType": "column",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 0,
         "y": 6,
@@ -252,7 +252,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "000a37d5-cdfc-4a95-baa3-eba7dd7ea5fa"
+        "queryId": "d9358c86-bbc4-451e-9b65-95e0f0798f74"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -289,10 +289,10 @@
       }
     },
     {
-      "id": "8f53b764-e2a7-4416-a557-b23c6f13bbf1",
+      "id": "c0707eb6-0aaf-4fcf-be8f-11289759ea7a",
       "title": "Acquisition Sources",
       "visualType": "pie",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 12,
         "y": 6,
@@ -301,7 +301,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "6504edff-b9e2-4cca-9bd0-7baf16d3c51d"
+        "queryId": "bcad70f4-0f85-4d84-b38d-30f0174d09aa"
       },
       "visualOptions": {
         "hideLegend": false,
@@ -331,10 +331,10 @@
       }
     },
     {
-      "id": "281358f0-804a-4e5c-a1f5-9b696029dfa3",
+      "id": "a8c91cfd-75bd-4f4f-9048-c0d5904b33e8",
       "title": "Feature Adoption",
       "visualType": "bar",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 0,
         "y": 12,
@@ -343,7 +343,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "a852cd9c-2f42-4c18-b80b-f5f2f3871fd1"
+        "queryId": "0fb6b96d-aae2-4e60-bbf9-41a57e47be5c"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -378,10 +378,10 @@
       }
     },
     {
-      "id": "839984da-d49d-4ef7-9f65-aecaa3624564",
+      "id": "9553db8e-4173-4b12-8cd9-85a5aae7aa3b",
       "title": "Journey Performance",
       "visualType": "table",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 12,
         "y": 12,
@@ -390,7 +390,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "dfa6810c-12da-4f32-adf9-1ba779bad13b"
+        "queryId": "de2f5798-b5b1-4af8-bc22-c3fa4243e677"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -404,10 +404,10 @@
       }
     },
     {
-      "id": "5c1e7488-23ae-46dd-8cbf-814b67967a20",
+      "id": "3b2d3504-838d-482f-914e-abdac26e1d52",
       "title": "Sharing Channels",
       "visualType": "table",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 0,
         "y": 19,
@@ -416,7 +416,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "9a77e114-0afb-4e17-bbec-eb3afdaa2222"
+        "queryId": "363aadea-0e9a-4141-b9e8-34c2a931b0b2"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -430,10 +430,10 @@
       }
     },
     {
-      "id": "3a45456b-bf82-489d-aac2-08532e93e9b0",
+      "id": "a5771b70-3f16-4d58-9963-8043b6c2a53a",
       "title": "Most Viewed Profiles",
       "visualType": "table",
-      "pageId": "49db76f1-3a15-4127-b7f0-fb4263b23890",
+      "pageId": "42a4af60-a978-4125-89a3-1fafd9debe78",
       "layout": {
         "x": 9,
         "y": 19,
@@ -442,7 +442,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "4ce07c94-faef-41aa-9fd2-efc7b0c20266"
+        "queryId": "e048a375-9ba9-4b29-951b-3db0c64cdb51"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -456,24 +456,24 @@
       }
     },
     {
-      "id": "ecfb6661-52fe-415f-8a01-8de6094ed714",
+      "id": "0b7d0ced-c6de-42d7-b7ab-a98959ef40c3",
       "title": "Funnels and Retention",
       "visualType": "markdownCard",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 0,
         "width": 18,
         "height": 3
       },
-      "markdownText": "## Adoption and retention scorecard\nCurrent seven-day metrics compare with the immediately preceding seven days. Counts below three privacy cohorts are suppressed. Targets are weekly product goals, not historical guarantees. `site_visited` and `search_submitted` begin with instrumentation version 2; earlier periods are incomplete.",
+      "markdownText": "## Adoption and retention scorecard\nCurrent seven-day metrics compare with the immediately preceding seven days. Counts below three privacy cohorts are suppressed. Targets are weekly product goals, not historical guarantees. The activation funnel uses search results shown and completed primary actions so autocomplete and failed actions are measured accurately.",
       "visualOptions": {}
     },
     {
-      "id": "df3be581-764c-4353-8b39-19c5f102a696",
+      "id": "0639979e-116d-4091-908f-6c75c64d1836",
       "title": "Weekly Product Scorecard",
       "visualType": "table",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 3,
@@ -482,7 +482,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "fe6c2531-0ebb-4d60-9869-c7a5c70fe295"
+        "queryId": "3db9de3c-5e57-4697-8ca1-4a961f06c554"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -496,10 +496,10 @@
       }
     },
     {
-      "id": "27979fd2-bb2f-429f-8dd6-b82e70abbf84",
+      "id": "613721af-31c6-4018-af05-2459d7bc6762",
       "title": "Visitor to Value Funnel - Last 7 Days",
       "visualType": "bar",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 10,
@@ -508,7 +508,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "b1a161b0-5b96-4827-97db-55e14eb222f0"
+        "queryId": "99307e40-239a-410d-b5dc-f8159b85e7ac"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -543,10 +543,10 @@
       }
     },
     {
-      "id": "c5f5b70e-f299-4f34-8ce6-b636c350e7b0",
+      "id": "2100087f-b5b8-4591-9e37-5294c266e8ce",
       "title": "Telemetry Health and Gaps",
       "visualType": "table",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 12,
         "y": 10,
@@ -555,7 +555,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "9c102aea-c0fd-4a90-aa24-bbf019cba039"
+        "queryId": "ffe8f4b6-5503-40ab-b1b0-92993adec919"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -569,10 +569,10 @@
       }
     },
     {
-      "id": "f4f2cb85-d285-4d6c-a348-d8790972b7cd",
+      "id": "75d97801-a297-4dfb-a037-505c493e5014",
       "title": "Conversion and Response - Last 30 Days",
       "visualType": "multistat",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 16,
@@ -581,7 +581,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "e5a1f6ca-9e76-4f1b-961b-0470f18d30ad"
+        "queryId": "a435fe17-94f7-43bb-964c-a2be60483f17"
       },
       "visualOptions": {
         "multiStat__textSize": "auto",
@@ -597,10 +597,10 @@
       }
     },
     {
-      "id": "573d2f81-6f8e-4cdc-8303-d4c6f2acfaf2",
+      "id": "500369a8-3c4d-403b-8f5f-f9c84f23742e",
       "title": "Discovery to Sharing Funnel",
       "visualType": "bar",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 20,
@@ -609,7 +609,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "aad5b945-3cd3-4ea2-9495-8ecfc0c92f65"
+        "queryId": "71b728f0-47c3-4d06-8c66-3f705910916a"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -644,10 +644,10 @@
       }
     },
     {
-      "id": "5085a874-b387-4d3b-88fe-95d505618a85",
+      "id": "448ded70-32ef-4ade-8818-69e7f6293528",
       "title": "Exploration Funnel",
       "visualType": "bar",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 9,
         "y": 20,
@@ -656,7 +656,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "ec43d55a-61d4-42e7-b04f-68720e5aa0ce"
+        "queryId": "ce152f94-0306-49d0-81f1-6b87bdba3281"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -691,10 +691,10 @@
       }
     },
     {
-      "id": "74e821f2-276f-4986-bc9c-3d923daaef95",
+      "id": "129fb26a-d242-4e36-842a-c0c9e0ce98a6",
       "title": "Daily Mission Funnel",
       "visualType": "bar",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 26,
@@ -703,7 +703,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "d32c7883-b7a1-41c3-bc06-778703b5acbd"
+        "queryId": "661bc350-9df2-4ead-b5ac-320810490589"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -738,10 +738,10 @@
       }
     },
     {
-      "id": "466a9a09-613a-4995-b9a3-1fac15b35764",
+      "id": "5b20a4e0-75e4-4ad4-b20d-4f1c24b23df2",
       "title": "New vs Returning Browsers",
       "visualType": "line",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 9,
         "y": 26,
@@ -750,7 +750,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "4de5dcc7-3008-4272-8772-1416e4009773"
+        "queryId": "522099ed-eff1-471f-b2a4-aa0334e75890"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -786,10 +786,10 @@
       }
     },
     {
-      "id": "f05e6bb2-a3fa-4919-b314-2266c607ea9d",
+      "id": "4be3faf2-211e-4d75-ac69-a7b807d69beb",
       "title": "7/30-Day Browser Retention",
       "visualType": "table",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 32,
@@ -798,7 +798,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "53d8c397-c83d-433c-9ac7-c57e9339eabf"
+        "queryId": "32244a96-c3e7-49b8-898c-aa638765d74a"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -812,10 +812,10 @@
       }
     },
     {
-      "id": "1fa71a38-0817-4807-9dc4-f95651d40aa1",
+      "id": "e8afd3e4-8037-433f-830f-8b7d26693c59",
       "title": "Route and Source Breakdown",
       "visualType": "table",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 9,
         "y": 32,
@@ -824,7 +824,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "582bc7be-56b7-49e3-8c19-3178d391f442"
+        "queryId": "8c94c1b8-52e2-4b80-b573-986a65578d1a"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -838,10 +838,10 @@
       }
     },
     {
-      "id": "5ddeca54-d074-4c30-9aa3-96ab156e16d8",
+      "id": "16a5c8ef-6429-479a-8256-8a02523f4d2c",
       "title": "Session Engagement Depth",
       "visualType": "pie",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 37,
@@ -850,7 +850,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "fa47c7f3-f602-4a20-828f-3939e90d8075"
+        "queryId": "4ff5093c-db4b-4dda-81c9-7982b9a7c5d9"
       },
       "visualOptions": {
         "hideLegend": false,
@@ -880,10 +880,10 @@
       }
     },
     {
-      "id": "db95ed8e-8035-42a6-9053-478ff995ec05",
+      "id": "20b6c983-3988-4b39-abe2-0afa4703ad81",
       "title": "Journey Conversion",
       "visualType": "table",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 6,
         "y": 37,
@@ -892,7 +892,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "70c2cc54-9248-4464-b3b9-ece95e3d165b"
+        "queryId": "cc37c996-56a5-4d77-87c4-13376f5cef59"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -906,10 +906,10 @@
       }
     },
     {
-      "id": "5f7d4a85-77fb-4649-bf3c-cfa23466389d",
+      "id": "05e5bb12-d92a-4682-8309-9631f51f7394",
       "title": "Weekly Successful Discovery",
       "visualType": "line",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 0,
         "y": 42,
@@ -918,7 +918,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "95306681-bdc2-4bda-b6e8-1ec557c78e41"
+        "queryId": "9a9c04c2-e885-452f-81b6-43c87adaad5b"
       },
       "visualOptions": {
         "multipleYAxes": {
@@ -954,10 +954,10 @@
       }
     },
     {
-      "id": "d49ee590-f311-4a2d-96ec-90912a230878",
+      "id": "9b5245a7-5da7-4574-859b-d41769453cbd",
       "title": "Campaign to Value Conversion",
       "visualType": "table",
-      "pageId": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5",
+      "pageId": "d1dbd99d-0053-40cc-b57a-51164d0b07b3",
       "layout": {
         "x": 9,
         "y": 42,
@@ -966,7 +966,7 @@
       },
       "queryRef": {
         "kind": "query",
-        "queryId": "5b95db2c-be89-414e-b675-860fb7aa6f71"
+        "queryId": "f591f447-10e7-48af-a32e-e31bd70f8300"
       },
       "visualOptions": {
         "table__enableRenderLinks": false,
@@ -983,20 +983,20 @@
   "pages": [
     {
       "name": "Adoption Overview",
-      "id": "47252421-c576-457b-a369-dcd42e31021c"
+      "id": "fd42f71f-c30e-434b-b30a-6138c2128c75"
     },
     {
       "name": "Usage & Acquisition",
-      "id": "49db76f1-3a15-4127-b7f0-fb4263b23890"
+      "id": "42a4af60-a978-4125-89a3-1fafd9debe78"
     },
     {
       "name": "Funnels & Retention",
-      "id": "d0c237ca-d99d-4d92-b0ea-a5df5e1a8ed5"
+      "id": "d1dbd99d-0053-40cc-b57a-51164d0b07b3"
     }
   ],
   "dataSources": [
     {
-      "id": "6522c807-a10f-402e-9276-d47d42db2d06",
+      "id": "53a05735-b69f-4878-a891-4a771df38c68",
       "kind": "manual-kusto",
       "name": "DevGlobe Product Analytics",
       "clusterUri": "https://devlglobe.eastus2.kusto.windows.net",
@@ -1007,235 +1007,235 @@
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet S=E | summarize EventTypes=dcount(EventName), HasValue=countif(EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")) > 0 by SessionHash;\nunion\n  (S | summarize Value=count() | extend Metric=\"Active sessions\"),\n  (S | where EventTypes >= 2 | summarize Value=count() | extend Metric=\"Engaged sessions\"),\n  (S | where HasValue | summarize Value=count() | extend Metric=\"Value sessions\"),\n  (E | where EventName == \"profile_viewed\" | summarize Value=count() | extend Metric=\"Profile views\"),\n  (E | summarize Value=dcount(TargetLogin) | extend Metric=\"Profiles reached\")\n| project Metric, Value",
-      "id": "9714cb12-6a82-4300-bb7b-cafeafd61071",
+      "id": "97f68bc7-3d89-4c86-942f-b8faee6a46ff",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(90d) .. now())\n| summarize Events=count(), EventTypes=dcount(EventName) by Day=startofday(EventTime), SessionHash\n| summarize ActiveSessions=count(), EngagedSessions=countif(EventTypes >= 2), Events=sum(Events) by Day\n| order by Day asc",
-      "id": "4e732982-27bf-4285-bb12-3ea54dc21cad",
+      "id": "efed6d90-131f-4fb5-8b40-67b01276a880",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet S=E | summarize EventTypes=dcount(EventName), Events=count(), HasValue=countif(EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")) > 0 by SessionHash;\nlet Totals=S | summarize Active=count(), Engaged=countif(EventTypes >= 2), ValueSessions=countif(HasValue), AvgEvents=round(avg(Events), 2);\nTotals\n| extend EngagementRate=iff(Active == 0, 0.0, round(100.0 * Engaged / Active, 1)), ValueRate=iff(Active == 0, 0.0, round(100.0 * ValueSessions / Active, 1))\n| project Metric=pack_array(\"Engagement rate\", \"Value-session rate\", \"Events per session\"), Value=pack_array(EngagementRate, ValueRate, AvgEvents)\n| mv-expand Metric to typeof(string), Value to typeof(real)",
-      "id": "c34c7a35-7d62-40df-b7de-3466c2eb6069",
+      "id": "2962a9cc-3a71-4914-a455-0fed07638ee5",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(180d) .. now())\n| summarize ActiveSessions=dcount(SessionHash), ValueSessions=dcountif(SessionHash, EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")) by Week=startofweek(EventTime)\n| where Week < startofweek(now())\n| order by Week asc",
-      "id": "9219a348-fafc-490b-93f0-c0009ee31189",
+      "id": "09aa5abb-5c11-455d-a0ea-1a84ec530c2c",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| where EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\", \"mission_completed\", \"next_action_selected\")\n| summarize Events=count(), Sessions=dcount(SessionHash) by EventName\n| extend Event=strcat_array(split(EventName, \"_\"), \" \")\n| project Event, Events, Sessions\n| order by Sessions desc",
-      "id": "b0a533dc-3ef4-45cb-8a4f-374a66d0b83d",
+      "id": "16813f42-09a0-475b-abd9-03ea02a6c82f",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nunion\n  (E | summarize Value=count() | extend Metric=\"Tracked actions\"),\n  (E | summarize Value=dcount(SessionHash) | extend Metric=\"Active sessions\"),\n  (E | where EventName == \"profile_viewed\" | summarize Value=dcount(TargetLogin) | extend Metric=\"Profiles viewed\"),\n  (E | where isnotempty(Source) | summarize Value=dcount(SessionHash) | extend Metric=\"Attributed sessions\")\n| project Metric, Value",
-      "id": "c5795cb4-3aa0-4068-a400-b249c38e2909",
+      "id": "c21f8aeb-4030-41df-bfc3-3360e64c620e",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(60d) .. now())\n| extend EventGroup=case(\n    EventName in (\"search_appearance\", \"profile_viewed\"), \"Discovery\",\n    EventName in (\"card_generated\", \"profile_shared\", \"profile_claimed\"), \"Identity & sharing\",\n    EventName startswith \"mission_\", \"Missions\",\n    EventName in (\"recommendation_opened\", \"next_action_selected\", \"comparison_started\"), \"Exploration\",\n    \"Other\")\n| summarize Actions=count() by Day=startofday(EventTime), EventGroup\n| order by Day asc",
-      "id": "000a37d5-cdfc-4a95-baa3-eba7dd7ea5fa",
+      "id": "d9358c86-bbc4-451e-9b65-95e0f0798f74",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| extend AcquisitionSource=iff(isempty(Source), \"Unattributed\", Source)\n| summarize Value=dcount(SessionHash) by AcquisitionSource\n| top 10 by Value desc",
-      "id": "6504edff-b9e2-4cca-9bd0-7baf16d3c51d",
+      "id": "bcad70f4-0f85-4d84-b38d-30f0174d09aa",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| summarize Sessions=dcount(SessionHash), Actions=count() by EventName\n| extend Feature=strcat_array(split(EventName, \"_\"), \" \")\n| project Feature, Sessions, Actions\n| top 15 by Sessions desc",
-      "id": "a852cd9c-2f42-4c18-b80b-f5f2f3871fd1",
+      "id": "0fb6b96d-aae2-4e60-bbf9-41a57e47be5c",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| where isnotempty(Journey)\n| summarize Sessions=dcount(SessionHash), Actions=count(), ValueSessions=dcountif(SessionHash, EventName in (\"mission_completed\", \"next_action_selected\", \"profile_shared\")) by Journey\n| extend ValueRate=round(100.0 * ValueSessions / Sessions, 1)\n| project Journey, Sessions, Actions, ValueSessions, ValueRate\n| order by Sessions desc",
-      "id": "dfa6810c-12da-4f32-adf9-1ba779bad13b",
+      "id": "de2f5798-b5b1-4af8-bc22-c3fa4243e677",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now()) and EventName == \"profile_shared\"\n| extend ShareChannel=iff(isempty(Channel), \"Unspecified\", Channel)\n| summarize Shares=count(), Sharers=dcount(SessionHash) by ShareChannel\n| order by Shares desc",
-      "id": "9a77e114-0afb-4e17-bbec-eb3afdaa2222",
+      "id": "363aadea-0e9a-4141-b9e8-34c2a931b0b2",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now()) and isnotempty(TargetLogin)\n| summarize Views=countif(EventName == \"profile_viewed\"), Cards=countif(EventName == \"card_generated\"), Shares=countif(EventName == \"profile_shared\") by TargetLogin\n| where Views + Cards + Shares > 0\n| top 20 by Views desc",
-      "id": "4ce07c94-faef-41aa-9fd2-efc7b0c20266",
+      "id": "e048a375-9ba9-4b29-951b-3db0c64cdb51",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
-      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet MinimumCohort=3;\nlet Boundary=ago(7d);\nlet CurrentEnd=now();\nlet PreviousStart=Boundary-7d;\nlet Cohorts=(Start:datetime, End:datetime) {\n  let Period=Events | where EventTime >= Start and EventTime < End;\n  let Visits=Period | where EventName == \"site_visited\" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;\n  let Searches=Visits | join kind=leftouter (Period | where EventName == \"search_submitted\" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;\n  let Profiles=Searches | join kind=leftouter (Period | where EventName == \"profile_viewed\" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;\n  Profiles | join kind=leftouter (Period | where EventName == \"next_action_selected\" and Journey == \"profile_primary_action\" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash\n};\nlet C=Cohorts(Boundary,CurrentEnd);\nlet P=Cohorts(PreviousStart,Boundary);\nlet CV=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit)))); let CVP=toscalar(C | where isnotnull(Visit) | summarize dcount(Privacy));\nlet PV=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit)))); let PVP=toscalar(P | where isnotnull(Visit) | summarize dcount(Privacy));\nlet CS=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit))); let CSP=toscalar(C | where isnotnull(Visit) and Search>=Visit | summarize dcount(Privacy));\nlet PS=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit))); let PSP=toscalar(P | where isnotnull(Visit) and Search>=Visit | summarize dcount(Privacy));\nlet CP=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search))); let CPP=toscalar(C | where isnotnull(Visit) and Search>=Visit and Profile>=Search | summarize dcount(Privacy));\nlet PP=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search))); let PPP=toscalar(P | where isnotnull(Visit) and Search>=Visit and Profile>=Search | summarize dcount(Privacy));\nlet CA=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile))); let CAP=toscalar(C | where isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile | summarize dcount(Privacy));\nlet PA=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile))); let PAP=toscalar(P | where isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile | summarize dcount(Privacy));\nunion\n  (print Metric=\"Visitors\", Current7d=iff(CVP<MinimumCohort,real(null),CV), Previous7d=iff(PVP<MinimumCohort,real(null),PV), WeeklyTarget=100.0),\n  (print Metric=\"Search submissions\", Current7d=iff(CSP<MinimumCohort,real(null),CS), Previous7d=iff(PSP<MinimumCohort,real(null),PS), WeeklyTarget=30.0),\n  (print Metric=\"Profile opens\", Current7d=iff(CPP<MinimumCohort,real(null),CP), Previous7d=iff(PPP<MinimumCohort,real(null),PP), WeeklyTarget=20.0),\n  (print Metric=\"Primary actions\", Current7d=iff(CAP<MinimumCohort,real(null),CA), Previous7d=iff(PAP<MinimumCohort,real(null),PA), WeeklyTarget=10.0),\n  (print Metric=\"Visitor to search %\", Current7d=iff(CVP<MinimumCohort,real(null),round(100.0*CS/CV,1)), Previous7d=iff(PVP<MinimumCohort,real(null),round(100.0*PS/PV,1)), WeeklyTarget=25.0),\n  (print Metric=\"Search to profile %\", Current7d=iff(CSP<MinimumCohort,real(null),round(100.0*CP/CS,1)), Previous7d=iff(PSP<MinimumCohort,real(null),round(100.0*PP/PS,1)), WeeklyTarget=50.0),\n  (print Metric=\"Profile to action %\", Current7d=iff(CPP<MinimumCohort,real(null),round(100.0*CA/CP,1)), Previous7d=iff(PPP<MinimumCohort,real(null),round(100.0*PA/PP,1)), WeeklyTarget=15.0)\n| extend Change=round(Current7d-Previous7d,1), Status=case(isnull(Current7d),\"Privacy suppressed\",Current7d>=WeeklyTarget,\"On target\",\"Below target\")",
-      "id": "fe6c2531-0ebb-4d60-9869-c7a5c70fe295",
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet MinimumCohort=3;\nlet Boundary=ago(7d);\nlet CurrentEnd=now();\nlet PreviousStart=Boundary-7d;\nlet Cohorts=(Start:datetime, End:datetime) {\n  let Period=Events | where EventTime >= Start and EventTime < End;\n  let Visits=Period | where EventName == \"site_visited\" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;\n  let Searches=Visits | join kind=leftouter (Period | where EventName == \"search_results_viewed\" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;\n  let Profiles=Searches | join kind=leftouter (Period | where EventName == \"profile_viewed\" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;\n  Profiles | join kind=leftouter (Period | where EventName == \"primary_action_completed\" and Journey == \"profile_primary_action\" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash\n};\nlet C=Cohorts(Boundary,CurrentEnd);\nlet P=Cohorts(PreviousStart,Boundary);\nlet CV=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit)))); let CVP=toscalar(C | where isnotnull(Visit) | summarize dcount(Privacy));\nlet PV=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit)))); let PVP=toscalar(P | where isnotnull(Visit) | summarize dcount(Privacy));\nlet CS=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit))); let CSP=toscalar(C | where isnotnull(Visit) and Search>=Visit | summarize dcount(Privacy));\nlet PS=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit))); let PSP=toscalar(P | where isnotnull(Visit) and Search>=Visit | summarize dcount(Privacy));\nlet CP=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search))); let CPP=toscalar(C | where isnotnull(Visit) and Search>=Visit and Profile>=Search | summarize dcount(Privacy));\nlet PP=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search))); let PPP=toscalar(P | where isnotnull(Visit) and Search>=Visit and Profile>=Search | summarize dcount(Privacy));\nlet CA=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile))); let CAP=toscalar(C | where isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile | summarize dcount(Privacy));\nlet PA=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile))); let PAP=toscalar(P | where isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile | summarize dcount(Privacy));\nunion\n  (print Metric=\"Visitors\", Current7d=iff(CVP<MinimumCohort,real(null),CV), Previous7d=iff(PVP<MinimumCohort,real(null),PV), WeeklyTarget=100.0),\n  (print Metric=\"Search result sessions\", Current7d=iff(CSP<MinimumCohort,real(null),CS), Previous7d=iff(PSP<MinimumCohort,real(null),PS), WeeklyTarget=30.0),\n  (print Metric=\"Profile opens\", Current7d=iff(CPP<MinimumCohort,real(null),CP), Previous7d=iff(PPP<MinimumCohort,real(null),PP), WeeklyTarget=20.0),\n  (print Metric=\"Primary actions\", Current7d=iff(CAP<MinimumCohort,real(null),CA), Previous7d=iff(PAP<MinimumCohort,real(null),PA), WeeklyTarget=10.0),\n  (print Metric=\"Visitor to search %\", Current7d=iff(CVP<MinimumCohort,real(null),round(100.0*CS/CV,1)), Previous7d=iff(PVP<MinimumCohort,real(null),round(100.0*PS/PV,1)), WeeklyTarget=25.0),\n  (print Metric=\"Search to profile %\", Current7d=iff(CSP<MinimumCohort,real(null),round(100.0*CP/CS,1)), Previous7d=iff(PSP<MinimumCohort,real(null),round(100.0*PP/PS,1)), WeeklyTarget=50.0),\n  (print Metric=\"Profile to action %\", Current7d=iff(CPP<MinimumCohort,real(null),round(100.0*CA/CP,1)), Previous7d=iff(PPP<MinimumCohort,real(null),round(100.0*PA/PP,1)), WeeklyTarget=15.0)\n| extend Change=round(Current7d-Previous7d,1), Status=case(isnull(Current7d),\"Privacy suppressed\",Current7d>=WeeklyTarget,\"On target\",\"Below target\")",
+      "id": "3db9de3c-5e57-4697-8ca1-4a961f06c554",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
-      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet MinimumCohort=3;\nlet E=Events | where EventTime >= ago(7d) and EventTime < now();\nlet Visits=E | where EventName == \"site_visited\" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;\nlet Searches=Visits | join kind=leftouter (E | where EventName == \"search_submitted\" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;\nlet Profiles=Searches | join kind=leftouter (E | where EventName == \"profile_viewed\" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;\nlet S=Profiles | join kind=leftouter (E | where EventName == \"next_action_selected\" and Journey == \"profile_primary_action\" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash;\nunion\n  (S | summarize Browsers=countif(isnotnull(Visit)), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit)) | extend StepOrder=1, Stage=\"Visitors\"),\n  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit) | extend StepOrder=2, Stage=\"Search submitted\"),\n  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search) | extend StepOrder=3, Stage=\"Profile opened\"),\n  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile) | extend StepOrder=4, Stage=\"Primary action completed\")\n| extend Browsers=iff(PrivacyCohorts < MinimumCohort, long(null), Browsers)\n| order by StepOrder asc\n| project Stage, Browsers",
-      "id": "b1a161b0-5b96-4827-97db-55e14eb222f0",
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet MinimumCohort=3;\nlet E=Events | where EventTime >= ago(7d) and EventTime < now();\nlet Visits=E | where EventName == \"site_visited\" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;\nlet Searches=Visits | join kind=leftouter (E | where EventName == \"search_results_viewed\" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;\nlet Profiles=Searches | join kind=leftouter (E | where EventName == \"profile_viewed\" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;\nlet S=Profiles | join kind=leftouter (E | where EventName == \"primary_action_completed\" and Journey == \"profile_primary_action\" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash;\nunion\n  (S | summarize Browsers=countif(isnotnull(Visit)), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit)) | extend StepOrder=1, Stage=\"Visitors\"),\n  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit) | extend StepOrder=2, Stage=\"Search results shown\"),\n  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search) | extend StepOrder=3, Stage=\"Profile opened\"),\n  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile) | extend StepOrder=4, Stage=\"Primary action completed\")\n| extend Browsers=iff(PrivacyCohorts < MinimumCohort, long(null), Browsers)\n| order by StepOrder asc\n| project Stage, Browsers",
+      "id": "99307e40-239a-410d-b5dc-f8159b85e7ac",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
-      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet Required=datatable(EventName:string)[\"site_visited\", \"search_submitted\", \"profile_viewed\", \"next_action_selected\"];\nlet Recent=Events | where EventTime >= ago(7d) | where EventName != \"next_action_selected\" or Journey == \"profile_primary_action\";\nRequired\n| join kind=leftouter (Recent | summarize Events=count(), LastSeen=max(EventTime), Versions=make_set(InstrumentationVersion) by EventName) on EventName\n| extend Events=toint(coalesce(Events, 0))\n| extend Status=case(isnull(LastSeen) or Events == 0, \"ALERT: missing\", LastSeen < ago(24h), \"ALERT: stale\", \"Healthy\")\n| project EventName, Events, LastSeen, Versions, Status",
-      "id": "9c102aea-c0fd-4a90-aa24-bbf019cba039",
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet Required=datatable(EventName:string)[\"site_visited\", \"search_started\", \"search_results_viewed\", \"profile_viewed\", \"primary_action_completed\"];\nlet Recent=Events | where EventTime >= ago(7d) | where EventName != \"primary_action_completed\" or Journey == \"profile_primary_action\";\nRequired\n| join kind=leftouter (Recent | summarize Events=count(), LastSeen=max(EventTime), Versions=make_set(InstrumentationVersion) by EventName) on EventName\n| extend Events=toint(coalesce(Events, 0))\n| extend Status=case(isnull(LastSeen) or Events == 0, \"ALERT: missing\", LastSeen < ago(24h), \"ALERT: stale\", \"Healthy\")\n| project EventName, Events, LastSeen, Versions, Status",
+      "id": "ffe8f4b6-5503-40ab-b1b0-92993adec919",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet Discovery=E | summarize Impression=minif(EventTime, EventName == \"search_appearance\"), View=minif(EventTime, EventName == \"profile_viewed\"), Card=minif(EventTime, EventName == \"card_generated\"), Share=minif(EventTime, EventName == \"profile_shared\") by SessionHash, TargetLogin;\nlet D=Discovery | summarize Impressions=countif(isnotnull(Impression)), Views=countif(isnotnull(Impression) and View >= Impression), Cards=countif(isnotnull(Impression) and View >= Impression and Card >= View), Shares=countif(isnotnull(Impression) and View >= Impression and Card >= View and Share >= Card);\n(D\n  | extend ViewRate=iff(Impressions == 0, 0.0, round(100.0 * Views / Impressions, 1)), CardRate=iff(Impressions == 0, 0.0, round(100.0 * Cards / Impressions, 1)), ShareRate=iff(Impressions == 0, 0.0, round(100.0 * Shares / Impressions, 1))\n  | project Metric=pack_array(\"Search-to-view %\", \"Search-to-card %\", \"Search-to-share %\"), Value=pack_array(ViewRate, CardRate, ShareRate)\n  | mv-expand Metric to typeof(string), Value to typeof(real))\n| union (E\n  | where EventName == \"mission_maintainer_replied\" and isnotnull(ResponseMinutes) and isnotempty(MissionKey)\n  | summarize arg_min(EventTime, ResponseMinutes, PrivacyHash) by MissionKey\n  | summarize Cohorts=dcount(PrivacyHash), MedianMinutes=round(percentile(ResponseMinutes, 50), 1)\n  | extend Value=iff(Cohorts < 3, real(null), MedianMinutes), Metric=\"Median mission-to-reply min\")\n| project Metric, Value",
-      "id": "e5a1f6ca-9e76-4f1b-961b-0470f18d30ad",
+      "id": "a435fe17-94f7-43bb-964c-a2be60483f17",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet T=E | summarize Impression=minif(EventTime, EventName == \"search_appearance\"), View=minif(EventTime, EventName == \"profile_viewed\"), Card=minif(EventTime, EventName == \"card_generated\"), Share=minif(EventTime, EventName == \"profile_shared\") by SessionHash, TargetLogin;\nunion\n  (T | summarize Sessions=countif(isnotnull(Impression)) | extend StepOrder=1, Step=\"Search appearance\"),\n  (T | summarize Sessions=countif(isnotnull(Impression) and View >= Impression) | extend StepOrder=2, Step=\"Profile viewed\"),\n  (T | summarize Sessions=countif(isnotnull(Impression) and View >= Impression and Card >= View) | extend StepOrder=3, Step=\"Card generated\"),\n  (T | summarize Sessions=countif(isnotnull(Impression) and View >= Impression and Card >= View and Share >= Card) | extend StepOrder=4, Step=\"Profile shared\")\n| order by StepOrder asc\n| project Step, Sessions",
-      "id": "aad5b945-3cd3-4ea2-9495-8ecfc0c92f65",
+      "id": "71b728f0-47c3-4d06-8c66-3f705910916a",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet T=E | summarize Profile=minif(EventTime, EventName == \"profile_viewed\"), Recommendation=minif(EventTime, EventName == \"recommendation_opened\"), Action=minif(EventTime, EventName == \"next_action_selected\") by SessionHash;\nunion\n  (T | summarize Sessions=countif(isnotnull(Profile)) | extend StepOrder=1, Step=\"Profile viewed\"),\n  (T | summarize Sessions=countif(isnotnull(Profile) and Recommendation >= Profile) | extend StepOrder=2, Step=\"Recommendation opened\"),\n  (T | summarize Sessions=countif(isnotnull(Profile) and Recommendation >= Profile and Action >= Recommendation) | extend StepOrder=3, Step=\"Next action selected\")\n| order by StepOrder asc\n| project Step, Sessions",
-      "id": "ec43d55a-61d4-42e7-b04f-68720e5aa0ce",
+      "id": "ce152f94-0306-49d0-81f1-6b87bdba3281",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet T=E | summarize Viewed=minif(EventTime, EventName == \"mission_viewed\"), Accepted=minif(EventTime, EventName == \"mission_accepted\"), Replied=minif(EventTime, EventName == \"mission_maintainer_replied\"), Completed=minif(EventTime, EventName == \"mission_completed\") by SessionHash;\nunion\n  (T | summarize Sessions=countif(isnotnull(Viewed)) | extend StepOrder=1, Step=\"Mission viewed\"),\n  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed) | extend StepOrder=2, Step=\"Mission accepted\"),\n  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Replied >= Accepted) | extend StepOrder=3, Step=\"Maintainer replied\"),\n  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Completed >= Accepted) | extend StepOrder=4, Step=\"Mission completed\")\n| extend Sessions=iff(Sessions < 3, long(null), Sessions)\n| order by StepOrder asc\n| project Step, Sessions",
-      "id": "d32c7883-b7a1-41c3-bc06-778703b5acbd",
+      "id": "661bc350-9df2-4ead-b5ac-320810490589",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(180d) .. now());\nlet FirstSeen=E | summarize FirstSeen=min(EventTime) by SessionHash;\nE\n| where EventTime between (ago(60d) .. now())\n| extend Day=startofday(EventTime)\n| join kind=leftouter FirstSeen on SessionHash\n| summarize ActiveBrowsers=dcount(SessionHash), NewBrowsers=dcountif(SessionHash, FirstSeen >= Day and FirstSeen < Day + 1d), ReturningBrowsers=dcountif(SessionHash, FirstSeen < Day) by Day\n| order by Day asc",
-      "id": "4de5dcc7-3008-4272-8772-1416e4009773",
+      "id": "522099ed-eff1-471f-b2a4-aa0334e75890",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet MinimumCohort=3;\nlet Visits=Events | where EventName == \"site_visited\" and EventTime >= ago(180d) | summarize FirstSeen=min(EventTime), LastSeen=max(EventTime) by SessionHash;\nunion\n  (Visits | summarize Eligible=countif(FirstSeen < ago(7d)), Returned=countif(FirstSeen < ago(7d) and LastSeen >= ago(7d)) | extend Window=\"7-day\"),\n  (Visits | summarize Eligible=countif(FirstSeen < ago(30d)), Returned=countif(FirstSeen < ago(30d) and LastSeen >= ago(30d)) | extend Window=\"30-day\")\n| extend ReturnRate=iff(Eligible < MinimumCohort or Returned < MinimumCohort, real(null), round(100.0 * Returned / Eligible, 1)), Target=case(Window == \"7-day\", 20.0, 10.0)\n| project Window, Eligible=iff(Eligible < MinimumCohort, long(null), Eligible), Returned=iff(Returned < MinimumCohort, long(null), Returned), ReturnRate, Target, Status=case(isnull(ReturnRate), \"Privacy suppressed\", ReturnRate >= Target, \"On target\", \"Below target\")",
-      "id": "53d8c397-c83d-433c-9ac7-c57e9339eabf",
+      "id": "32244a96-c3e7-49b8-898c-aa638765d74a",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime >= ago(30d) and EventName == \"site_visited\"\n| extend Route=iff(isempty(Journey), \"unknown\", Journey), AcquisitionSource=iff(isempty(Source), \"unattributed\", Source)\n| summarize Visitors=dcount(SessionHash) by Route, AcquisitionSource\n| where Visitors >= 3\n| order by Visitors desc",
-      "id": "582bc7be-56b7-49e3-8c19-3178d391f442",
+      "id": "8c94c1b8-52e2-4b80-b573-986a65578d1a",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now())\n| summarize EventTypes=dcount(EventName) by SessionHash\n| extend Depth=case(EventTypes == 1, \"1 event type\", EventTypes between (2 .. 3), \"2-3 event types\", \"4+ event types\")\n| summarize Value=count() by Depth",
-      "id": "fa47c7f3-f602-4a20-828f-3939e90d8075",
+      "id": "4ff5093c-db4b-4dda-81c9-7982b9a7c5d9",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nEvents\n| where EventTime between (ago(30d) .. now()) and isnotempty(Journey)\n| summarize Sessions=dcount(SessionHash), Completed=dcountif(SessionHash, EventName in (\"mission_completed\", \"next_action_selected\", \"profile_shared\")) by Journey\n| extend ConversionRate=round(100.0 * Completed / Sessions, 1)\n| project Journey, Sessions, Completed, ConversionRate\n| order by Sessions desc",
-      "id": "70c2cc54-9248-4464-b3b9-ece95e3d165b",
+      "id": "cc37c996-56a5-4d77-87c4-13376f5cef59",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
-      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(90d) .. now());\nlet Searches=E | where EventName == \"search_submitted\" | summarize Search=min(EventTime), Privacy=take_any(PrivacyHash) by Week=startofweek(EventTime), SessionHash;\nlet Profiles=Searches | join kind=leftouter (E | where EventName == \"profile_viewed\" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=minif(ProfileEvent, ProfileEvent >= Search) by Week, SessionHash;\nlet Outcomes=Profiles | join kind=leftouter (E | where EventName in (\"card_generated\", \"mission_completed\", \"next_action_selected\", \"profile_claimed\", \"profile_shared\", \"repository_match_generated\") | project SessionHash, OutcomeEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=take_any(Profile), Outcome=minif(OutcomeEvent, OutcomeEvent >= Profile) by Week, SessionHash;\nOutcomes\n| summarize SearchSessions=count(), SuccessfulSessions=countif(isnotnull(Profile) and isnotnull(Outcome)), PrivacyCohorts=dcount(Privacy) by Week\n| extend SuccessRate=iff(PrivacyCohorts < 3, real(null), round(100.0 * SuccessfulSessions / SearchSessions, 1))\n| project Week, SearchSessions=iff(PrivacyCohorts < 3, long(null), SearchSessions), SuccessfulSessions=iff(PrivacyCohorts < 3, long(null), SuccessfulSessions), SuccessRate\n| order by Week asc",
-      "id": "95306681-bdc2-4bda-b6e8-1ec557c78e41",
+      "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(90d) .. now());\nlet Searches=E | where EventName == \"search_results_viewed\" | summarize Search=min(EventTime), Privacy=take_any(PrivacyHash) by Week=startofweek(EventTime), SessionHash;\nlet Profiles=Searches | join kind=leftouter (E | where EventName == \"profile_viewed\" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=minif(ProfileEvent, ProfileEvent >= Search) by Week, SessionHash;\nlet Outcomes=Profiles | join kind=leftouter (E | where EventName in (\"card_generated\", \"mission_completed\", \"next_action_selected\", \"profile_claimed\", \"profile_shared\", \"repository_match_generated\") | project SessionHash, OutcomeEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=take_any(Profile), Outcome=minif(OutcomeEvent, OutcomeEvent >= Profile) by Week, SessionHash;\nOutcomes\n| summarize SearchSessions=count(), SuccessfulSessions=countif(isnotnull(Profile) and isnotnull(Outcome)), PrivacyCohorts=dcount(Privacy) by Week\n| extend SuccessRate=iff(PrivacyCohorts < 3, real(null), round(100.0 * SuccessfulSessions / SearchSessions, 1))\n| project Week, SearchSessions=iff(PrivacyCohorts < 3, long(null), SearchSessions), SuccessfulSessions=iff(PrivacyCohorts < 3, long(null), SuccessfulSessions), SuccessRate\n| order by Week asc",
+      "id": "9a9c04c2-e885-452f-81b6-43c87adaad5b",
       "usedVariables": []
     },
     {
       "dataSource": {
         "kind": "inline",
-        "dataSourceId": "6522c807-a10f-402e-9276-d47d42db2d06"
+        "dataSourceId": "53a05735-b69f-4878-a891-4a771df38c68"
       },
       "text": "let Events = () {\n  DevGlobeEngagementRaw\n  | extend EventId=tostring(Document.id), IngestedAt=coalesce(CosmosTimestamp, unixtime_seconds_todatetime(tolong(Document._ts)))\n  | where isnotempty(EventId)\n  | summarize arg_max(IngestedAt, *) by EventId\n  | extend\n      EventTime=todatetime(Document.createdAt),\n      EventName=tostring(Document.eventName),\n      SessionHash=tostring(Document.sessionHash),\n      PrivacyHash=tostring(Document.privacyHash),\n      TargetLogin=tostring(Document.targetLogin),\n      Source=tostring(Document.properties.source),\n      Journey=tostring(Document.properties.journey),\n      Action=tostring(Document.properties.action),\n      Channel=tostring(Document.properties.channel),\n      MissionKey=tostring(Document.properties.missionKey),\n      ResponseMinutes=todouble(Document.properties.responseMinutes),\n        SchemaVersion=toint(Document.schemaVersion),\n        InstrumentationVersion=toint(Document.instrumentationVersion),\n        ActorType=tostring(Document.actorType)\n      | where isnotnull(EventTime) and isnotempty(EventName) and isnotempty(SessionHash)\n      | where ActorType == \"human\" and Source !in (\"local\", \"synthetic\", \"test\");\n};\nlet E=Events | where EventTime between (ago(30d) .. now());\nlet Arrivals=E | where EventName == \"site_visited\" and isnotempty(Source) and isnotempty(Campaign) | summarize Arrived=min(EventTime), Source=take_any(Source), Campaign=take_any(Campaign), Privacy=take_any(PrivacyHash) by SessionHash;\nlet Outcomes=Arrivals | join kind=leftouter (E | where EventName in (\"card_generated\", \"mission_completed\", \"next_action_selected\", \"profile_claimed\", \"profile_shared\", \"repository_match_generated\") | project SessionHash, OutcomeEvent=EventTime) on SessionHash | summarize Arrived=take_any(Arrived), Privacy=take_any(Privacy), Outcome=minif(OutcomeEvent, OutcomeEvent >= Arrived) by Source, Campaign, SessionHash;\nOutcomes\n| summarize Sessions=count(), SuccessfulSessions=countif(isnotnull(Outcome)), PrivacyCohorts=dcount(Privacy) by Source, Campaign\n| where PrivacyCohorts >= 3\n| extend SuccessRate=round(100.0 * SuccessfulSessions / Sessions, 1)\n| project Source, Campaign, Sessions, SuccessfulSessions, SuccessRate\n| order by SuccessfulSessions desc",
-      "id": "5b95db2c-be89-414e-b675-860fb7aa6f71",
+      "id": "f591f447-10e7-48af-a32e-e31bd70f8300",
       "usedVariables": []
     }
   ],

@@ -194,7 +194,7 @@ Events
 addTile(usagePageId, 'Most Viewed Profiles', 'table', topProfiles, { x: 9, y, width: 9, height: 5 }, table());
 
 y = 0;
-addMarkdown(funnelsPageId, 'Funnels and Retention', '## Adoption and retention scorecard\nCurrent seven-day metrics compare with the immediately preceding seven days. Counts below three privacy cohorts are suppressed. Targets are weekly product goals, not historical guarantees. `site_visited` and `search_submitted` begin with instrumentation version 2; earlier periods are incomplete.', y, 3);
+addMarkdown(funnelsPageId, 'Funnels and Retention', '## Adoption and retention scorecard\nCurrent seven-day metrics compare with the immediately preceding seven days. Counts below three privacy cohorts are suppressed. Targets are weekly product goals, not historical guarantees. The activation funnel uses search results shown and completed primary actions so autocomplete and failed actions are measured accurately.', y, 3);
 y += 3;
 const productScorecard = addQuery(`${events}
 let MinimumCohort=3;
@@ -204,9 +204,9 @@ let PreviousStart=Boundary-7d;
 let Cohorts=(Start:datetime, End:datetime) {
   let Period=Events | where EventTime >= Start and EventTime < End;
   let Visits=Period | where EventName == "site_visited" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;
-  let Searches=Visits | join kind=leftouter (Period | where EventName == "search_submitted" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;
+  let Searches=Visits | join kind=leftouter (Period | where EventName == "search_results_viewed" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;
   let Profiles=Searches | join kind=leftouter (Period | where EventName == "profile_viewed" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;
-  Profiles | join kind=leftouter (Period | where EventName == "next_action_selected" and Journey == "profile_primary_action" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash
+  Profiles | join kind=leftouter (Period | where EventName == "primary_action_completed" and Journey == "profile_primary_action" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash
 };
 let C=Cohorts(Boundary,CurrentEnd);
 let P=Cohorts(PreviousStart,Boundary);
@@ -220,7 +220,7 @@ let CA=todouble(toscalar(C | summarize dcountif(SessionHash,isnotnull(Visit) and
 let PA=todouble(toscalar(P | summarize dcountif(SessionHash,isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile))); let PAP=toscalar(P | where isnotnull(Visit) and Search>=Visit and Profile>=Search and Action>=Profile | summarize dcount(Privacy));
 union
   (print Metric="Visitors", Current7d=iff(CVP<MinimumCohort,real(null),CV), Previous7d=iff(PVP<MinimumCohort,real(null),PV), WeeklyTarget=100.0),
-  (print Metric="Search submissions", Current7d=iff(CSP<MinimumCohort,real(null),CS), Previous7d=iff(PSP<MinimumCohort,real(null),PS), WeeklyTarget=30.0),
+  (print Metric="Search result sessions", Current7d=iff(CSP<MinimumCohort,real(null),CS), Previous7d=iff(PSP<MinimumCohort,real(null),PS), WeeklyTarget=30.0),
   (print Metric="Profile opens", Current7d=iff(CPP<MinimumCohort,real(null),CP), Previous7d=iff(PPP<MinimumCohort,real(null),PP), WeeklyTarget=20.0),
   (print Metric="Primary actions", Current7d=iff(CAP<MinimumCohort,real(null),CA), Previous7d=iff(PAP<MinimumCohort,real(null),PA), WeeklyTarget=10.0),
   (print Metric="Visitor to search %", Current7d=iff(CVP<MinimumCohort,real(null),round(100.0*CS/CV,1)), Previous7d=iff(PVP<MinimumCohort,real(null),round(100.0*PS/PV,1)), WeeklyTarget=25.0),
@@ -233,12 +233,12 @@ const adoptionFunnel = addQuery(`${events}
 let MinimumCohort=3;
 let E=Events | where EventTime >= ago(7d) and EventTime < now();
 let Visits=E | where EventName == "site_visited" | summarize Visit=min(EventTime), Privacy=take_any(PrivacyHash) by SessionHash;
-let Searches=Visits | join kind=leftouter (E | where EventName == "search_submitted" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;
+let Searches=Visits | join kind=leftouter (E | where EventName == "search_results_viewed" | project SessionHash, SearchEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=minif(SearchEvent, SearchEvent >= Visit) by SessionHash;
 let Profiles=Searches | join kind=leftouter (E | where EventName == "profile_viewed" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=minif(ProfileEvent, ProfileEvent >= Search) by SessionHash;
-let S=Profiles | join kind=leftouter (E | where EventName == "next_action_selected" and Journey == "profile_primary_action" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash;
+let S=Profiles | join kind=leftouter (E | where EventName == "primary_action_completed" and Journey == "profile_primary_action" | project SessionHash, ActionEvent=EventTime) on SessionHash | summarize Visit=take_any(Visit), Privacy=take_any(Privacy), Search=take_any(Search), Profile=take_any(Profile), Action=minif(ActionEvent, ActionEvent >= Profile) by SessionHash;
 union
   (S | summarize Browsers=countif(isnotnull(Visit)), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit)) | extend StepOrder=1, Stage="Visitors"),
-  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit) | extend StepOrder=2, Stage="Search submitted"),
+  (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit) | extend StepOrder=2, Stage="Search results shown"),
   (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search) | extend StepOrder=3, Stage="Profile opened"),
   (S | summarize Browsers=countif(isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile), PrivacyCohorts=dcountif(Privacy,isnotnull(Visit) and Search >= Visit and Profile >= Search and Action >= Profile) | extend StepOrder=4, Stage="Primary action completed")
 | extend Browsers=iff(PrivacyCohorts < MinimumCohort, long(null), Browsers)
@@ -246,8 +246,8 @@ union
 | project Stage, Browsers`);
 addTile(funnelsPageId, 'Visitor to Value Funnel - Last 7 Days', 'bar', adoptionFunnel, { x: 0, y, width: 12, height: 6 }, chart('Stage', ['Browsers'], { hideLegend: true }));
 const telemetryHealth = addQuery(`${events}
-let Required=datatable(EventName:string)["site_visited", "search_submitted", "profile_viewed", "next_action_selected"];
-let Recent=Events | where EventTime >= ago(7d) | where EventName != "next_action_selected" or Journey == "profile_primary_action";
+let Required=datatable(EventName:string)["site_visited", "search_started", "search_results_viewed", "profile_viewed", "primary_action_completed"];
+let Recent=Events | where EventTime >= ago(7d) | where EventName != "primary_action_completed" or Journey == "profile_primary_action";
 Required
 | join kind=leftouter (Recent | summarize Events=count(), LastSeen=max(EventTime), Versions=make_set(InstrumentationVersion) by EventName) on EventName
 | extend Events=toint(coalesce(Events, 0))
@@ -352,7 +352,7 @@ addTile(funnelsPageId, 'Journey Conversion', 'table', journeyConversion, { x: 6,
 y += 5;
 const successfulDiscovery = addQuery(`${events}
 let E=Events | where EventTime between (ago(90d) .. now());
-let Searches=E | where EventName == "search_submitted" | summarize Search=min(EventTime), Privacy=take_any(PrivacyHash) by Week=startofweek(EventTime), SessionHash;
+let Searches=E | where EventName == "search_results_viewed" | summarize Search=min(EventTime), Privacy=take_any(PrivacyHash) by Week=startofweek(EventTime), SessionHash;
 let Profiles=Searches | join kind=leftouter (E | where EventName == "profile_viewed" | project SessionHash, ProfileEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=minif(ProfileEvent, ProfileEvent >= Search) by Week, SessionHash;
 let Outcomes=Profiles | join kind=leftouter (E | where EventName in ("card_generated", "mission_completed", "next_action_selected", "profile_claimed", "profile_shared", "repository_match_generated") | project SessionHash, OutcomeEvent=EventTime) on SessionHash | summarize Search=take_any(Search), Privacy=take_any(Privacy), Profile=take_any(Profile), Outcome=minif(OutcomeEvent, OutcomeEvent >= Profile) by Week, SessionHash;
 Outcomes

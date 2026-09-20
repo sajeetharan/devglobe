@@ -9,6 +9,14 @@ test('gives profile owners contribution opportunities as their primary action', 
   }), PROFILE_PRIMARY_ACTIONS.OPPORTUNITIES);
 });
 
+test('gives unclaimed profile owners a claim action first', () => {
+  assert.equal(resolveProfilePrimaryAction({
+    viewerLogin: 'OctoCat',
+    profileLogin: 'octocat',
+    isClaimed: false,
+  }), PROFILE_PRIMARY_ACTIONS.CLAIM);
+});
+
 test('gives signed-out and signed-in visitors follow as their primary action', () => {
   assert.equal(resolveProfilePrimaryAction({
     profileLogin: 'octocat',
