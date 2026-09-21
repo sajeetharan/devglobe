@@ -34,7 +34,7 @@ function relativeTime(timestamp) {
   return `${hours}h ago`;
 }
 
-export default function GlobalActivityFeed({ active, onOpenContributions, onCreateCard }) {
+export default function GlobalActivityFeed({ active, missionRefreshRequest = 0, onOpenContributions, onCreateCard }) {
   const [selectedView, setSelectedView] = useState('today');
   const [completedCount, setCompletedCount] = useState(null);
   const [selectedSource, setSelectedSource] = useState('devglobe');
@@ -102,6 +102,7 @@ export default function GlobalActivityFeed({ active, onOpenContributions, onCrea
         <div id={`activity-${selectedView}`} role="tabpanel" aria-labelledby={`activity-tab-${selectedView}`} className="global-activity__panel">
           <TodayMission
             active={active}
+            refreshRequest={missionRefreshRequest}
             view={selectedView}
             onOpenContributions={onOpenContributions}
             onCompletedCountChange={setCompletedCount}

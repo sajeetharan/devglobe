@@ -1336,6 +1336,23 @@ body {
 .mission-preview__form button { align-self: stretch; padding: 0 13px; border-width: 0 0 0 1px; border-radius: 0 5px 5px 0; background: #0891b2; color: #fff; }
 .mission-preview__form button:disabled { cursor: wait; opacity: 0.65; }
 .mission-preview__state { grid-column: 1 / -1; padding-top: 8px; border-top: 1px solid var(--border); }
+.mission-preview__state--action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mission-preview__state--action a {
+  min-height: 44px;
+  padding: 0 12px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--mission-link);
+  font-weight: 700;
+  text-decoration: none;
+}
 .mission-preview__result { display: grid; grid-column: 1 / -1; grid-template-columns: 180px minmax(0, 1fr); gap: 10px 18px; padding-top: 12px; border-top: 1px solid var(--border); }
 .mission-preview__identity { display: flex; align-items: center; gap: 8px; }
 .mission-preview__identity img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
@@ -1370,6 +1387,7 @@ body {
     overflow-y: auto;
   }
   .mission-preview__intro p { display: none; }
+  .mission-preview__state--action { align-items: stretch; flex-direction: column; }
   .mission-preview__result { grid-template-columns: minmax(0, 1fr); }
   .mission-preview__evidence { grid-template-columns: minmax(0, 1fr); gap: 7px; }
   .mission-preview__evidence dl { grid-template-columns: minmax(0, 1fr); }
@@ -4400,6 +4418,17 @@ body {
 .today-mission__actions :is(button, a):focus-visible,
 .today-mission__state :is(button, a):focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
 .today-mission__actions button:disabled { cursor: wait; opacity: 0.6; }
+
+.today-mission__notice {
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 5px;
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.45;
+}
 
 .today-mission__state {
   display: grid;

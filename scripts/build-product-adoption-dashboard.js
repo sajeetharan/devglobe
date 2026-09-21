@@ -295,16 +295,17 @@ addTile(funnelsPageId, 'Exploration Funnel', 'bar', explorationFunnel, { x: 9, y
 y += 6;
 const missionFunnel = addQuery(`${events}
 let E=Events | where EventTime between (ago(30d) .. now());
-let T=E | summarize Viewed=minif(EventTime, EventName == "mission_viewed"), Accepted=minif(EventTime, EventName == "mission_accepted"), Replied=minif(EventTime, EventName == "mission_maintainer_replied"), Completed=minif(EventTime, EventName == "mission_completed") by SessionHash;
+let T=E | summarize Requested=minif(EventTime, EventName == "mission_preview_requested"), Matched=minif(EventTime, EventName == "mission_preview_shown"), Restored=minif(EventTime, EventName == "mission_preview_restored"), Accepted=minif(EventTime, EventName == "mission_accepted"), Completed=minif(EventTime, EventName == "mission_completed") by SessionHash;
 union
-  (T | summarize Sessions=countif(isnotnull(Viewed)) | extend StepOrder=1, Step="Mission viewed"),
-  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed) | extend StepOrder=2, Step="Mission accepted"),
-  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Replied >= Accepted) | extend StepOrder=3, Step="Maintainer replied"),
-  (T | summarize Sessions=countif(isnotnull(Viewed) and Accepted >= Viewed and Completed >= Accepted) | extend StepOrder=4, Step="Mission completed")
+  (T | summarize Sessions=countif(isnotnull(Requested)) | extend StepOrder=1, Step="Preview requested"),
+  (T | summarize Sessions=countif(isnotnull(Requested) and Matched >= Requested) | extend StepOrder=2, Step="Match shown"),
+  (T | summarize Sessions=countif(isnotnull(Matched) and Restored >= Matched) | extend StepOrder=3, Step="Preview restored"),
+  (T | summarize Sessions=countif(isnotnull(Restored) and Accepted >= Restored) | extend StepOrder=4, Step="Mission accepted"),
+  (T | summarize Sessions=countif(isnotnull(Accepted) and Completed >= Accepted) | extend StepOrder=5, Step="Mission completed")
 | extend Sessions=iff(Sessions < 3, long(null), Sessions)
 | order by StepOrder asc
 | project Step, Sessions`);
-addTile(funnelsPageId, 'Daily Mission Funnel', 'bar', missionFunnel, { x: 0, y, width: 9, height: 6 }, chart('Step', ['Sessions'], { hideLegend: true }));
+addTile(funnelsPageId, 'Mission Preview Conversion', 'bar', missionFunnel, { x: 0, y, width: 9, height: 6 }, chart('Step', ['Sessions'], { hideLegend: true }));
 const returningTrend = addQuery(`${events}
 let E=Events | where EventTime between (ago(180d) .. now());
 let FirstSeen=E | summarize FirstSeen=min(EventTime) by SessionHash;

@@ -55,14 +55,14 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
           type="button"
           className={`btn btn--activity${activityOpen ? ' btn--active' : ''}`}
           onClick={onOpenActivity}
-          aria-label={activityOpen ? 'Close live activity' : 'Open live activity'}
+          aria-label={activityOpen ? 'Close today’s mission and activity' : 'Open today’s mission and activity'}
           aria-expanded={activityOpen}
-          title="Live developer activity"
+          title="Today’s mission and community activity"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M3 12h4l2-7 4 14 2-7h6" />
           </svg>
-          <span className="btn__label">Activity</span>
+          <span className="btn__label">Mission</span>
         </button>
         <button
           type="button"

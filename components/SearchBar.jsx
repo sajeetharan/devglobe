@@ -36,7 +36,7 @@ const SAMPLES_BY_MODE = {
   ],
 };
 
-export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, currentUsername = '', profileOpen = false, onOpenActivity, showAgentPrompt = false, onOpenAgentProfile, onOpenAgentNetwork, showMissionPreview = true }) {
+export default function SearchBar({ developers, onResults, onReset, onSelectDeveloper, onGenerateCard, onSearchState, onOpenCardFeature, onOpenReadmeFeature, readmeTooltip = 'Generate a README for your GitHub profile', onOpenCompareFeature, compareCount = 0, signedIn = false, currentUsername = '', profileOpen = false, onStartMission, showAgentPrompt = false, onOpenAgentProfile, onOpenAgentNetwork, showMissionPreview = true }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('text');
   const [topN, setTopN] = useState(20);
@@ -578,7 +578,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           </div>
         </details>
       )}
-      {showMissionPreview && <MissionPreview signedIn={signedIn} onOpenActivity={onOpenActivity} />}
+      {showMissionPreview && <MissionPreview signedIn={signedIn} currentUsername={currentUsername} onStartMission={onStartMission} />}
     </div>
   );
 }

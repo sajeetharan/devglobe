@@ -179,8 +179,11 @@ Public preview throttling uses the existing contribution-opportunity state conta
 Add allow-listed durable events:
 
 - `mission_preview_requested`
+- `mission_preview_no_match`
 - `mission_preview_shown`
 - `mission_preview_signin_selected`
+- `mission_preview_restored`
+- `mission_preview_restore_failed`
 - `mission_onboarding_completed`
 
 All use journey `mission_preview` or `daily_mission`. Do not include login, issue ID, title, repository, language, or raw preference values in analytics properties.

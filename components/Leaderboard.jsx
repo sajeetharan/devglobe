@@ -40,6 +40,7 @@ export default function Leaderboard({
   datasetLoading = false,
   onOpenContributions,
   onCreateCard,
+  missionRefreshRequest = 0,
   liveDevelopers = [],
   liveConnection = 'idle',
   liveLanguage = '',
@@ -359,7 +360,7 @@ export default function Leaderboard({
       </ul>
         </>
       )}
-      {activeView === 'activity' && <GlobalActivityFeed active onOpenContributions={onOpenContributions} onCreateCard={onCreateCard} />}
+      {activeView === 'activity' && <GlobalActivityFeed active missionRefreshRequest={missionRefreshRequest} onOpenContributions={onOpenContributions} onCreateCard={onCreateCard} />}
       {activeView === 'live' && (
         <LivePresencePanel
           developers={liveDevelopers}
