@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 - 2026-09-21
+
+- Create a shareable Vibe Card when a live coding session ends.
+- Include session duration, language, opted-in coding agent, nearby developers, countries, and waves.
+- Offer one-click sharing from the session recap and remember the last Vibe Card in the Command Palette.
+- Keep source code, file names, repositories, prompts, and responses out of cards.
+
 ## 0.6.0 - 2026-09-09
 
 - Let developers explicitly share a coding agent and optional model while live.

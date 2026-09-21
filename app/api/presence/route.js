@@ -21,6 +21,7 @@ import {
   saveLivePresence,
 } from '../../../lib/live-presence-store.js';
 import { geocodeLocation } from '../../../lib/nominate.js';
+import { saveVibeCard } from '../../../lib/vibe-card-store.js';
 
 async function authenticate(request) {
   const token = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
@@ -131,16 +132,35 @@ export async function DELETE(request) {
         headers: { 'Cache-Control': 'no-store' },
       });
     }
+    const recap = presence ? buildPresenceRecap(presence, peers) : null;
+    let shareUrl = '';
+    if (presence && recap) {
+      await saveVibeCard(presence, recap)
+        .then(card => {
+          shareUrl = new URL(
+            `/vibe/${encodeURIComponent(card.login)}/${encodeURIComponent(card.vibeId)}`,
+            request.url,
+          ).toString();
+        })
+        .catch(error => {
+          console.error('Vibe Card creation failed:', error.message);
+        });
+    }
     await recordExtensionEvent('presence_stopped', session.login, { source: 'vscode_extension' }).catch(error => {
       console.error('Presence sign-off telemetry failed:', error.message);
     });
+    if (shareUrl) {
+      await recordExtensionEvent('vibe_card_created', session.login, { source: 'vscode_extension' }).catch(error => {
+        console.error('Vibe Card telemetry failed:', error.message);
+      });
+    }
     if (presence) {
       await saveExtensionUser(presence).catch(error => {
         console.error('Extension user history sign-off update failed:', error.message);
       });
     }
     return NextResponse.json({
-      recap: presence ? buildPresenceRecap(presence, peers) : null,
+      recap: recap ? { ...recap, shareUrl } : null,
     }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('Live presence sign-off failed:', error.message);
