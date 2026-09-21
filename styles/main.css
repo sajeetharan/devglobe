@@ -3919,6 +3919,10 @@ body {
   box-shadow: inset 3px 0 var(--accent-github);
 }
 
+.live-presence-row[data-presence='installed'] {
+  box-shadow: inset 3px 0 color-mix(in srgb, var(--accent-blue) 45%, transparent);
+}
+
 .live-presence-row > img {
   width: 36px;
   height: 36px;
@@ -3974,6 +3978,7 @@ body {
 .live-presence-row time {
   color: var(--text-muted);
   font-size: 10px;
+  white-space: nowrap;
 }
 
 .live-presence-panel__empty {
@@ -3981,6 +3986,15 @@ body {
   color: var(--text-muted);
   font-size: 12px;
   line-height: 1.5;
+}
+
+.live-presence-panel__notice {
+  margin: 0;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .live-presence-panel__join {

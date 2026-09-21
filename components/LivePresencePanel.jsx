@@ -6,8 +6,15 @@ import LanguageBadge from './LanguageBadge.jsx';
 const MARKETPLACE_URL = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
 
 function relativeTime(value) {
-  const seconds = Math.max(0, Math.round((Date.now() - Date.parse(value)) / 1000));
-  return seconds < 45 ? 'now' : `${Math.floor(seconds / 60)}m`;
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return 'Unknown';
+  const seconds = Math.max(0, Math.round((Date.now() - timestamp) / 1000));
+  if (seconds < 45) return 'now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
 
 export default function LivePresencePanel({
@@ -20,9 +27,10 @@ export default function LivePresencePanel({
   onLanguageChange,
   onPlatformChange,
   onSelectLogin,
+  historyConnection = 'idle',
 }) {
   const liveCount = developers.filter(developer => developer.presenceState === 'live').length;
-  const recentCount = developers.length - liveCount;
+  const extensionUserCount = developers.length;
 
   return (
     <section className="live-presence-panel" aria-label="Developers coding now">
@@ -31,7 +39,9 @@ export default function LivePresencePanel({
           <h2>Live coding</h2>
           <p role="status" aria-live="polite">
             {connection === 'live'
-              ? `${liveCount} live, ${recentCount} recent`
+              ? historyConnection === 'loading'
+                ? `${liveCount} live · Loading extension users`
+                : `${liveCount} live · ${extensionUserCount} extension users`
               : connection === 'unavailable' ? 'Live presence is unavailable' : 'Connecting to live presence'}
           </p>
         </div>
@@ -70,10 +80,19 @@ export default function LivePresencePanel({
               <small>
                 <LanguageBadge language={developer.activeLanguage} />
                 <span aria-hidden="true">·</span>
-                {developer.presenceState === 'live' ? 'Live now' : 'Recently coding'}
+                {developer.presenceState === 'live'
+                  ? 'Live now'
+                  : developer.presenceState === 'recent' ? 'Recently coding' : 'VS Code extension'}
               </small>
             </span>
-            <time dateTime={developer.lastHeartbeat}>{relativeTime(developer.lastHeartbeat)}</time>
+            <time
+              dateTime={developer.lastHeartbeat}
+              title={Number.isFinite(Date.parse(developer.lastHeartbeat))
+                ? new Date(developer.lastHeartbeat).toLocaleString()
+                : undefined}
+            >
+              {relativeTime(developer.lastHeartbeat)}
+            </time>
           </button>
         ))}
         {connection === 'live' && developers.length === 0 ? (
@@ -81,6 +100,9 @@ export default function LivePresencePanel({
         ) : null}
         {connection === 'unavailable' ? (
           <p className="live-presence-panel__empty">Live presence is temporarily unavailable. Try again shortly.</p>
+        ) : null}
+        {historyConnection === 'unavailable' ? (
+          <p className="live-presence-panel__notice">Past extension users are temporarily unavailable.</p>
         ) : null}
       </div>
 

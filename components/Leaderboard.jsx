@@ -47,6 +47,7 @@ export default function Leaderboard({
   livePlatform = '',
   liveLanguages = [],
   livePlatforms = [],
+  liveHistoryConnection = 'idle',
   onLiveLanguageChange,
   onLivePlatformChange,
 }) {
@@ -369,6 +370,7 @@ export default function Leaderboard({
           platform={livePlatform}
           languages={liveLanguages}
           platforms={livePlatforms}
+          historyConnection={liveHistoryConnection}
           onLanguageChange={onLiveLanguageChange}
           onPlatformChange={onLivePlatformChange}
           onSelectLogin={onSelectDevByLogin}

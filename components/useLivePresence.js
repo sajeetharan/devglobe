@@ -74,4 +74,35 @@ export function useLivePresence(enabled = true) {
   return { developers, connection };
 }
 
+export function useExtensionUsers(enabled = true) {
+  const [developers, setDevelopers] = useState([]);
+  const [connection, setConnection] = useState(enabled ? 'loading' : 'idle');
+
+  useEffect(() => {
+    if (!enabled) {
+      setConnection('idle');
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setConnection('loading');
+    fetch('/api/presence/installers', { cache: 'no-store', signal: controller.signal })
+      .then(async response => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Extension user history is unavailable');
+        setDevelopers(deduplicateDevelopers(payload.developers));
+        setConnection('ready');
+      })
+      .catch(error => {
+        if (error.name !== 'AbortError') {
+          console.error('Extension user history failed:', error.message);
+          setConnection('unavailable');
+        }
+      });
+    return () => controller.abort();
+  }, [enabled]);
+
+  return { developers, connection };
+}
+
 export { deduplicateDevelopers };
