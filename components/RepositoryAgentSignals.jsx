@@ -28,12 +28,16 @@ export default function RepositoryAgentSignals({ login }) {
     return () => controller.abort();
   }, [login, requestVersion]);
 
+  const repositoryCount = result
+    ? new Set(result.signals.flatMap(signal => signal.repositories.map(repository => repository.name))).size
+    : 0;
+
   return (
     <section className="repository-agents" aria-labelledby="repository-agents-title">
       <div className="repository-agents__heading">
         <div>
           <span>PUBLIC REPOSITORY SIGNALS</span>
-          <h3 id="repository-agents-title">Agent configurations</h3>
+          <h3 id="repository-agents-title">AI agent tooling</h3>
         </div>
         {status === 'ready' && <strong>{result.signals.length} detected</strong>}
       </div>
@@ -49,29 +53,34 @@ export default function RepositoryAgentSignals({ login }) {
         <p className="repository-agents__status">No recognized agent configuration files found in {result.scannedRepositories} recent public repositories.</p>
       )}
       {status === 'ready' && result.signals.length > 0 && (
-        <div className="repository-agents__signals">
-          {result.signals.map(signal => (
-            <details
-              key={signal.id}
-              onToggle={event => {
-                if (event.currentTarget.open) track('repository_agent_signal_opened', { action: signal.id, source: 'public_repositories' });
-              }}
-            >
-              <summary>
-                <span>{signal.name}</span>
-                <small>{signal.repositories.length} {signal.repositories.length === 1 ? 'repository' : 'repositories'}</small>
-              </summary>
-              <ul>
-                {signal.repositories.map(repository => (
-                  <li key={repository.name}>
-                    <a href={repository.url} target="_blank" rel="noopener noreferrer">{repository.name}</a>
-                    <span>{repository.paths.join(' · ')}</span>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ))}
-        </div>
+        <>
+          <p className="repository-agents__summary">
+            Found {result.signals.length} {result.signals.length === 1 ? 'tooling pattern' : 'tooling patterns'} across {repositoryCount} public {repositoryCount === 1 ? 'repository' : 'repositories'}. Expand a pattern to inspect the filename evidence.
+          </p>
+          <div className="repository-agents__signals">
+            {result.signals.map(signal => (
+              <details
+                key={signal.id}
+                onToggle={event => {
+                  if (event.currentTarget.open) track('repository_agent_signal_opened', { action: signal.id, source: 'public_repositories' });
+                }}
+              >
+                <summary>
+                  <span>{signal.name}</span>
+                  <small>View {signal.repositories.length} {signal.repositories.length === 1 ? 'repository' : 'repositories'}</small>
+                </summary>
+                <ul>
+                  {signal.repositories.map(repository => (
+                    <li key={repository.name}>
+                      <a href={repository.url} target="_blank" rel="noopener noreferrer">{repository.name}</a>
+                      <span>{repository.paths.join(' · ')}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+          </div>
+        </>
       )}
       <p className="repository-agents__note">Detected from filenames only. This does not confirm personal usage.</p>
     </section>

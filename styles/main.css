@@ -5376,7 +5376,45 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 7px;
-  margin-top: 12px;
+  margin-top: 8px;
+}
+
+.profile-primary-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.36);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.profile-primary-cta__copy {
+  min-width: 0;
+}
+
+.profile-primary-cta__copy > span {
+  display: block;
+  color: #60a5fa;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.profile-primary-cta__copy p {
+  max-width: 52ch;
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.profile-primary-cta .profile-action {
+  flex: 0 0 auto;
+  min-height: 44px;
 }
 
 .profile-action {
@@ -5465,6 +5503,15 @@ body {
   border-color: #2563eb;
   background: #2563eb;
   color: #ffffff;
+}
+
+:root[data-theme='light'] .profile-primary-cta {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+:root[data-theme='light'] .profile-primary-cta__copy > span {
+  color: #1d4ed8;
 }
 
 .detail-header__follow-error {
@@ -5620,11 +5667,16 @@ body {
 }
 
 .repository-agents__status,
+.repository-agents__summary,
 .repository-agents__note {
   margin: 11px 0 0;
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1.5;
+}
+
+.repository-agents__summary {
+  color: var(--text-secondary);
 }
 
 .repository-agents__signals {
@@ -6917,6 +6969,13 @@ body {
 }
 
 @media (max-width: 768px) {
+  .profile-primary-cta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .profile-primary-cta .profile-action {
+    width: 100%;
+  }
   .detail-header__links {
     align-items: stretch;
   }
