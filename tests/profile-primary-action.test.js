@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PROFILE_PRIMARY_ACTIONS, resolveProfilePrimaryAction } from '../lib/profile-primary-action.js';
+import {
+  getProfilePrimaryActionCopy,
+  PROFILE_PRIMARY_ACTIONS,
+  resolveProfilePrimaryAction,
+} from '../lib/profile-primary-action.js';
 
 test('gives profile owners contribution opportunities as their primary action', () => {
   assert.equal(resolveProfilePrimaryAction({
@@ -33,4 +37,19 @@ test('gives followers impact history as their next primary action', () => {
     profileLogin: 'octocat',
     isFollowing: true,
   }), PROFILE_PRIMARY_ACTIONS.IMPACT);
+});
+
+test('explains the follow action differently before sign in', () => {
+  assert.match(
+    getProfilePrimaryActionCopy(PROFILE_PRIMARY_ACTIONS.FOLLOW).description,
+    /Sign in with GitHub/,
+  );
+  assert.doesNotMatch(
+    getProfilePrimaryActionCopy(PROFILE_PRIMARY_ACTIONS.FOLLOW, { signedIn: true }).description,
+    /Sign in/,
+  );
+});
+
+test('rejects unknown primary actions instead of hiding configuration mistakes', () => {
+  assert.throws(() => getProfilePrimaryActionCopy('unknown'), /Unknown profile primary action/);
 });

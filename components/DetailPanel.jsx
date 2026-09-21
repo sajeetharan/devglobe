@@ -11,7 +11,11 @@ import { classifyAgent } from '../lib/agent-class.js';
 import { AI_TOOLS } from '../lib/ai-profile.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { resolveReadmeAccess } from '../lib/profile-readme.js';
-import { PROFILE_PRIMARY_ACTIONS, resolveProfilePrimaryAction } from '../lib/profile-primary-action.js';
+import {
+  getProfilePrimaryActionCopy,
+  PROFILE_PRIMARY_ACTIONS,
+  resolveProfilePrimaryAction,
+} from '../lib/profile-primary-action.js';
 import { recordRecentProfile } from '../lib/discovery-history.js';
 import { acquisitionAttributionProperties, attributedGlobePath, identityCardShareUrl } from '../lib/share-attribution.js';
 import SpecialTags from './SpecialTags.jsx';
@@ -153,6 +157,7 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
     isClaimed: readmeClaimed,
     isFollowing: followState === 'following',
   });
+  const primaryActionCopy = getProfilePrimaryActionCopy(primaryAction, { signedIn: Boolean(user) });
 
   useEffect(() => {
     if (user && !isOwner && ['idle', 'loading'].includes(followState)) return;
@@ -284,7 +289,11 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
             <p className="detail-header__score-note">
               {SCORE_METHODOLOGY.short}
             </p>
-            <div className="detail-header__links">
+            <div className="profile-primary-cta">
+              <div className="profile-primary-cta__copy">
+                <span>{primaryActionCopy.eyebrow}</span>
+                <p>{primaryActionCopy.description}</p>
+              </div>
               {primaryAction === PROFILE_PRIMARY_ACTIONS.OPPORTUNITIES && (
                 <button type="button" className="profile-action profile-action--primary" onClick={handleOpenContributions}>
                   Find contribution opportunities
@@ -307,13 +316,31 @@ export default function DetailPanel({ dev, onClose, onCardGenerated, onReadmeGen
                   View impact history
                 </Link>
               )}
+              {primaryAction === PROFILE_PRIMARY_ACTIONS.FOLLOW && (
+                <button
+                  type="button"
+                  className="profile-action profile-action--primary"
+                  onClick={() => {
+                    selectPrimaryAction(PROFILE_PRIMARY_ACTIONS.FOLLOW);
+                    handleFollow(true);
+                  }}
+                  disabled={followState === 'loading' || followState === 'saving'}
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M15 19a6 6 0 00-12 0" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" />
+                  </svg>
+                  {followState === 'saving' ? 'Saving...' : user ? 'Follow updates' : 'Sign in to follow'}
+                </button>
+              )}
+            </div>
+            <div className="detail-header__links">
               <button type="button" className="profile-action" onClick={() => onOpenSimilar(dev.login)}>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2" /><path d="M2 19a6 6 0 0112 0M14 18a4 4 0 018 0" />
                 </svg>
                 Similar developers
               </button>
-              {!isOwner && (
+              {!isOwner && primaryAction !== PROFILE_PRIMARY_ACTIONS.FOLLOW && (
                 <>
                   <button
                     type="button"
