@@ -6,14 +6,25 @@ import { isAllowedMutationOrigin } from '../../../lib/request-origin.js';
 import { normalizeContributionPreferences, rankContributionOpportunities } from '../../../lib/contribution-opportunities.js';
 import { ContributionOpportunitiesUnavailableError, fetchGitHubContributionCandidates } from '../../../lib/github-contribution-opportunities.js';
 import { acquireDailyMissionLease, getContributionOpportunityStateContainer, reserveGlobalRecommendationRefresh } from '../../../lib/contribution-opportunity-store.js';
-import { DailyMissionError, addCompletedMission, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../../../lib/daily-mission.js';
+import {
+  DailyMissionError,
+  addCompletedMission,
+  applyMissionAction,
+  cachedMissionPool,
+  missionDay,
+  prioritizeMissionOpportunity,
+  selectDailyMission,
+} from '../../../lib/daily-mission.js';
 import { findFirstMaintainerReply, MissionVerificationUnavailableError, verifyGitHubMissionCompletion } from '../../../lib/github-mission-verification.js';
 import { saveActivities } from '../../../lib/activity-store.js';
 import { createPlatformActivity } from '../../../lib/platform-activity.js';
+import { previewPreferences } from '../../../lib/mission-preview.js';
+import { readMissionPreviewPool } from '../../../lib/mission-preview-pool.js';
 
 const REPLY_WATCH_MS = 30 * 24 * 60 * 60 * 1000;
 const REPLY_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const REPLY_CHECK_LIMIT = 3;
+const PREVIEW_ISSUE_ID_PATTERN = /^[a-z\d:_-]{1,120}$/i;
 
 async function getOwner(container, login) {
   const { resources } = await container.items.query({
@@ -151,20 +162,31 @@ async function recordMissionAcceptanceActivity(developer, mission) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
     const owner = await loadOwner();
     if (owner.error) return owner.error;
     const now = new Date();
     const day = missionDay(now);
+    const requestUrl = new URL(request.url);
+    const previewLogin = requestUrl.searchParams.get('previewLogin')?.trim().toLowerCase() || '';
+    const previewIssueId = requestUrl.searchParams.get('previewIssueId')?.trim() || '';
+    const canRestorePreview = previewLogin === owner.developer.login.toLowerCase()
+      && PREVIEW_ISSUE_ID_PATTERN.test(previewIssueId);
     const initialState = owner.developer.contributionOpportunity || {};
     const refreshed = await refreshMaintainerReplies(owner.container, owner.developer, initialState, now);
     const state = refreshed.state;
-    if (state.dailyMission?.day === day && state.dailyMission.status !== 'passed') {
+    const activeMission = state.dailyMission?.day === day && state.dailyMission.status !== 'passed'
+      ? state.dailyMission
+      : null;
+    const canReplaceActiveMission = canRestorePreview && activeMission?.status === 'offered';
+    if (activeMission && !canReplaceActiveMission) {
       await recordMissionAcceptanceActivity(owner.developer, state.dailyMission);
       return missionResponse(state.dailyMission, {
         completedMissions: completedMissions(state),
         maintainerReplies: refreshed.replies,
+        restoredPreview: canRestorePreview && state.dailyMission.issueId === previewIssueId,
+        previewRestoreAttempted: canRestorePreview,
       });
     }
 
@@ -179,11 +201,22 @@ export async function GET() {
       const candidates = await fetchGitHubContributionCandidates(missionPreferences, { token: process.env.GITHUB_TOKEN, now });
       pool = rankContributionOpportunities(candidates, missionPreferences, [], now);
     }
+    const previewPool = canRestorePreview
+      ? await readMissionPreviewPool(owner.stateContainer, previewPreferences(owner.developer), now)
+      : null;
+    const previewOpportunity = previewPool?.find(opportunity => String(opportunity?.id) === previewIssueId);
+    const eligiblePool = previewOpportunity
+      ? [previewOpportunity, ...pool.filter(opportunity => String(opportunity?.id) !== previewIssueId)]
+      : pool;
+    const prioritizedPool = canRestorePreview ? prioritizeMissionOpportunity(eligiblePool, previewIssueId) : eligiblePool;
 
     const updated = await patchMissionState(owner.container, owner.developer, current => {
-      if (current.dailyMission?.day === day && current.dailyMission.status !== 'passed') return current;
+      const currentMission = current.dailyMission?.day === day && current.dailyMission.status !== 'passed'
+        ? current.dailyMission
+        : null;
+      if (currentMission && !(canRestorePreview && currentMission.status === 'offered')) return current;
       const excludedIssueIds = current.dailyMissionHistory?.day === day ? current.dailyMissionHistory.issueIds : [];
-      const mission = selectDailyMission(pool, { login: owner.developer.login, now, excludedIssueIds });
+      const mission = selectDailyMission(prioritizedPool, { login: owner.developer.login, now, excludedIssueIds });
       const previousMission = current.dailyMission;
       const replyWatchMissions = replyWatchEligible(previousMission, now)
         ? [previousMission, ...(current.replyWatchMissions || []).filter(item => item.id !== previousMission.id)].slice(0, 5)
@@ -191,13 +224,15 @@ export async function GET() {
       return {
         ...current,
         dailyMission: mission,
-        dailyMissionPool: { day, opportunities: pool },
+        dailyMissionPool: { day, opportunities: prioritizedPool },
         replyWatchMissions,
       };
     });
     return missionResponse(updated.dailyMission, {
       completedMissions: completedMissions(updated),
       maintainerReplies: refreshed.replies,
+      restoredPreview: canRestorePreview && updated.dailyMission?.issueId === previewIssueId,
+      previewRestoreAttempted: canRestorePreview,
     });
   } catch (error) {
     if (error instanceof ContributionOpportunitiesUnavailableError) return missionResponse(null, { unavailable: true });

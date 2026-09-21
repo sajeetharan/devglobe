@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { track } from '../lib/analytics.js';
+import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
 import MissionFreshness from './MissionFreshness.jsx';
 
 const COMPLETED_PAGE_SIZE = 10;
 
-export default function TodayMission({ active, onOpenContributions, view = 'today', onCompletedCountChange }) {
+export default function TodayMission({ active, refreshRequest = 0, onOpenContributions, view = 'today', onCompletedCountChange }) {
   const [mission, setMission] = useState(null);
   const [completedMissions, setCompletedMissions] = useState([]);
   const [visibleCompletedCount, setVisibleCompletedCount] = useState(COMPLETED_PAGE_SIZE);
@@ -15,6 +16,7 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
   const [claimLogin, setClaimLogin] = useState('');
   const [updating, setUpdating] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [restoreNotice, setRestoreNotice] = useState('');
   const retryTimerRef = useRef(null);
   const requestVersionRef = useRef(0);
   const trackedRepliesRef = useRef(new Set());
@@ -24,8 +26,16 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
     clearTimeout(retryTimerRef.current);
     setStatus('loading');
     setMessage('');
+    setRestoreNotice('');
     try {
-      const response = await fetch('/api/daily-mission', { cache: 'no-store', credentials: 'same-origin' });
+      let pendingMission = null;
+      try { pendingMission = parsePendingMission(localStorage.getItem(PENDING_MISSION_KEY)); } catch { /* Mission loading does not require storage. */ }
+      const requestUrl = new URL('/api/daily-mission', window.location.origin);
+      if (pendingMission) {
+        requestUrl.searchParams.set('previewLogin', pendingMission.login);
+        requestUrl.searchParams.set('previewIssueId', pendingMission.issueId);
+      }
+      const response = await fetch(`${requestUrl.pathname}${requestUrl.search}`, { cache: 'no-store', credentials: 'same-origin' });
       const data = await response.json();
       if (requestVersion !== requestVersionRef.current) return;
       if (response.status === 401) {
@@ -44,6 +54,14 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
       setCompletedMissions(Array.isArray(data.completedMissions) ? data.completedMissions : []);
       setHistoryLoaded(true);
       setStatus(data.unavailable ? 'unavailable' : data.mission ? 'ready' : 'empty');
+      if (pendingMission && response.ok && !data.unavailable) {
+        try { localStorage.removeItem(PENDING_MISSION_KEY); } catch { /* Stale intent expires automatically. */ }
+        if (data.restoredPreview) track('mission_preview_restored', { journey: 'daily_mission' });
+        else if (data.previewRestoreAttempted) {
+          setRestoreNotice('That preview is no longer available, so we loaded your strongest current match instead.');
+          track('mission_preview_restore_failed', { journey: 'daily_mission' });
+        }
+      }
       for (const reply of data.maintainerReplies || []) {
         if (trackedRepliesRef.current.has(reply.missionId)) continue;
         trackedRepliesRef.current.add(reply.missionId);
@@ -86,7 +104,7 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
       clearTimeout(dayTimer);
       clearTimeout(retryTimerRef.current);
     };
-  }, [active]);
+  }, [active, refreshRequest]);
 
   useEffect(() => {
     if (historyLoaded) onCompletedCountChange?.(completedMissions.length);
@@ -208,12 +226,12 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
     <section className="today-mission" aria-labelledby="today-mission-title" aria-busy={status === 'loading' || updating}>
       <div className="today-mission__heading">
         <div>
-          <span>FOLLOW THE SUN</span>
+          <span>ONE FOCUSED CONTRIBUTION</span>
           <h2 id="today-mission-title">Today’s Mission</h2>
         </div>
         <div className="today-mission__heading-actions">
           <strong>{mission?.durationMinutes || 15} min</strong>
-          {onOpenContributions && !['signed-out', 'claim-required'].includes(status) && <button type="button" onClick={onOpenContributions}>Tune mission</button>}
+          {onOpenContributions && !['signed-out', 'claim-required'].includes(status) && <button type="button" onClick={onOpenContributions}>Adjust matching</button>}
         </div>
       </div>
 
@@ -234,14 +252,19 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
         <div className="today-mission__state" role={status === 'error' ? 'alert' : 'status'}>
           <span>{message || 'Mission matching is taking a break.'}</span>
           <button type="button" onClick={load}>Try again</button>
+          {onOpenContributions && <button type="button" onClick={onOpenContributions}>Browse opportunities</button>}
         </div>
       )}
       {status === 'empty' && (
-        <p className="today-mission__state">You’ve explored today’s available matches. A fresh mission arrives tomorrow.</p>
+        <div className="today-mission__state">
+          <span>You’ve explored today’s strongest matches. A fresh mission arrives tomorrow.</span>
+          {onOpenContributions && <button type="button" onClick={onOpenContributions}>Browse more opportunities</button>}
+        </div>
       )}
 
       {status === 'ready' && mission && (
         <div className="today-mission__content">
+          {restoreNotice && <p className="today-mission__notice" role="status">{restoreNotice}</p>}
           <div className="today-mission__meta">
             <span>{mission.type}</span>
             <span className={`today-mission__status today-mission__status--${mission.status}`} aria-live="polite">{updating ? 'checking' : mission.status}</span>
@@ -255,10 +278,10 @@ export default function TodayMission({ active, onOpenContributions, view = 'toda
           )}
           <MissionFreshness freshness={mission.opportunity.freshness} compact />
           <div className="today-mission__actions">
-            {mission.status === 'offered' && <button type="button" className="today-mission__primary" onClick={() => update('accept')} disabled={updating}>Accept</button>}
+            {mission.status === 'offered' && <button type="button" className="today-mission__primary" onClick={() => update('accept')} disabled={updating}>Accept this mission</button>}
             {mission.status === 'accepted' && <button type="button" className="today-mission__primary" onClick={() => update('complete')} disabled={updating}>Verify completion</button>}
-            {['offered', 'accepted'].includes(mission.status) && <button type="button" onClick={() => update('pass')} disabled={updating}>Pass</button>}
-            <a href={mission.opportunity.url} target="_blank" rel="noopener noreferrer" onClick={() => track('next_action_selected', { action: 'open_daily_mission', journey: 'daily_mission' })}>Open issue</a>
+            {['offered', 'accepted'].includes(mission.status) && <button type="button" onClick={() => update('pass')} disabled={updating}>Show another</button>}
+            <a href={mission.opportunity.url} target="_blank" rel="noopener noreferrer" onClick={() => track('next_action_selected', { action: 'open_daily_mission', journey: 'daily_mission' })}>Review issue</a>
             {mission.status === 'completed' && mission.completionEvidence?.url && <a href={mission.completionEvidence.url} target="_blank" rel="noopener noreferrer">View merged PR</a>}
           </div>
           {message && <p className="today-mission__error" role="alert">{message}</p>}

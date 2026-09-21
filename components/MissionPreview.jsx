@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { track } from '../lib/analytics.js';
+import { createPendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
 import MissionFreshness from './MissionFreshness.jsx';
 
-export default function MissionPreview({ signedIn = false, onOpenActivity }) {
+export default function MissionPreview({ signedIn = false, currentUsername = '', onStartMission }) {
   const [visible, setVisible] = useState(true);
   const [login, setLogin] = useState('');
   const [status, setStatus] = useState('idle');
@@ -28,17 +29,31 @@ export default function MissionPreview({ signedIn = false, onOpenActivity }) {
       setResult(data);
       setStatus('ready');
       if (data.mission) track('mission_preview_shown', { journey: 'mission_preview' });
+      else track('mission_preview_no_match', { journey: 'mission_preview' });
     } catch (previewError) {
       setError(previewError.message);
       setStatus('error');
     }
   }
 
-  function handleSignIn() {
-    track('mission_preview_signin_selected', { journey: 'mission_preview' });
+  function rememberMission() {
+    const pending = createPendingMission({
+      login: result?.profile?.login,
+      issueId: result?.mission?.opportunity?.id,
+    });
+    if (!pending) return;
+    try { localStorage.setItem(PENDING_MISSION_KEY, JSON.stringify(pending)); } catch { /* OAuth can continue without persistence. */ }
+  }
+
+  function handleStartMission() {
+    rememberMission();
+    if (!signedIn) track('mission_preview_signin_selected', { journey: 'mission_preview' });
+    else onStartMission?.();
   }
 
   if (!visible) return null;
+  const previewBelongsToViewer = !signedIn
+    || result?.profile?.login?.toLowerCase() === currentUsername.toLowerCase();
 
   return (
     <section className="mission-preview" aria-labelledby="mission-preview-title">
@@ -54,9 +69,9 @@ export default function MissionPreview({ signedIn = false, onOpenActivity }) {
         </svg>
       </button>
       <div className="mission-preview__intro">
-        <span>NEW TO OPEN SOURCE?</span>
-        <h2 id="mission-preview-title">Preview your mission</h2>
-        <p>Enter your GitHub username. DevGlobe will choose one contribution-ready issue from your public language signals.</p>
+        <span>ONE ISSUE MATCHED TO YOU</span>
+        <h2 id="mission-preview-title">Find a contribution for today</h2>
+        <p>Enter your GitHub username. DevGlobe will find one fresh issue that fits your public language signals and available time.</p>
       </div>
       <form className="mission-preview__form" onSubmit={preview}>
         <label htmlFor="mission-preview-login">GitHub username</label>
@@ -78,7 +93,10 @@ export default function MissionPreview({ signedIn = false, onOpenActivity }) {
 
       {status === 'error' && <p className="mission-preview__state" role="alert">{error}</p>}
       {status === 'ready' && !result?.mission && (
-        <p className="mission-preview__state" role="status">No contribution-ready match is available for this profile right now.</p>
+        <div className="mission-preview__state mission-preview__state--action" role="status">
+          <span>No strong match is available for this profile right now.</span>
+          <a href="/hacktoberfest">Browse contribution opportunities</a>
+        </div>
       )}
       {result?.mission && (
         <article className="mission-preview__result" aria-live="polite">
@@ -109,11 +127,26 @@ export default function MissionPreview({ signedIn = false, onOpenActivity }) {
           )}
           <div className="mission-preview__actions">
             <p>Previewing does not reserve this issue. Actual effort depends on repository context and maintainer feedback.</p>
-            <a href={result.mission.opportunity.url} target="_blank" rel="noopener noreferrer">Open issue</a>
-            {signedIn ? (
-              <button type="button" onClick={onOpenActivity}>Open Today’s Mission</button>
+            <a
+              href={result.mission.opportunity.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track('next_action_selected', { action: 'review_preview_issue', journey: 'mission_preview' })}
+            >
+              Review issue
+            </a>
+            {signedIn && previewBelongsToViewer ? (
+              <button type="button" className="mission-preview__primary" onClick={handleStartMission}>Start this mission</button>
+            ) : signedIn ? (
+              <button type="button" className="mission-preview__primary" onClick={onStartMission}>Open my mission</button>
             ) : (
-              <a className="mission-preview__primary" href="/api/auth/github" onClick={handleSignIn}>Sign in to accept missions</a>
+              <a
+                className="mission-preview__primary"
+                href={`/api/auth/github?login=${encodeURIComponent(result.profile.login)}`}
+                onClick={handleStartMission}
+              >
+                Start this mission
+              </a>
             )}
           </div>
         </article>

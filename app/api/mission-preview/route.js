@@ -1,4 +1,4 @@
-import { createHash, createHmac } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { NextResponse } from 'next/server.js';
 import { getCosmosContainer } from '../../../lib/cosmos.js';
 import { rankContributionOpportunities } from '../../../lib/contribution-opportunities.js';
@@ -12,10 +12,9 @@ import {
   fetchGitHubContributionCandidates,
 } from '../../../lib/github-contribution-opportunities.js';
 import { MissionPreviewError, buildMissionPreview, normalizePreviewLogin, previewPreferences } from '../../../lib/mission-preview.js';
+import { readMissionPreviewPool, writeMissionPreviewPool } from '../../../lib/mission-preview-pool.js';
 import { verifyMcpPreviewIdentity } from '../../../lib/mcp-preview-identity.js';
 import { isAllowedMutationOrigin } from '../../../lib/request-origin.js';
-
-const CACHE_MS = 15 * 60 * 1000;
 
 function retryResponse(retryAfterSeconds) {
   return NextResponse.json(
@@ -42,33 +41,6 @@ async function getPublicProfile(container, login) {
     parameters: [{ name: '@login', value: login }],
   }).fetchAll();
   return resources[0] || null;
-}
-
-function poolId(preferences) {
-  const key = createHash('sha256').update(JSON.stringify(preferences)).digest('base64url').slice(0, 24);
-  return `mission-preview-pool:${key}`;
-}
-
-async function readCachedPool(container, id, now) {
-  try {
-    const { resource } = await container.item(id, id).read();
-    return Date.parse(resource?.expiresAt) > now.getTime() && Array.isArray(resource?.opportunities)
-      ? resource.opportunities
-      : null;
-  } catch (error) {
-    if (error.code === 404 || error.statusCode === 404) return null;
-    throw error;
-  }
-}
-
-async function writeCachedPool(container, id, opportunities, now) {
-  await container.items.upsert({
-    id,
-    documentType: 'mission-preview-pool',
-    expiresAt: new Date(now.getTime() + CACHE_MS).toISOString(),
-    opportunities,
-    ttl: Math.ceil(CACHE_MS / 1000) * 2,
-  });
 }
 
 export function createMissionPreviewHandler(dependencies = {}) {
@@ -103,14 +75,13 @@ export function createMissionPreviewHandler(dependencies = {}) {
 
     const preferences = previewPreferences(profile);
     const requestedAt = now();
-    const cacheId = poolId(preferences);
-    let opportunities = await readCachedPool(stateContainer, cacheId, requestedAt);
+    let opportunities = await readMissionPreviewPool(stateContainer, preferences, requestedAt);
     if (opportunities === null) {
       const globalRetryAfter = await reserveRefresh(stateContainer, requestedAt);
       if (globalRetryAfter > 0) return retryResponse(globalRetryAfter);
       const candidates = await fetchCandidates(preferences, { token: process.env.GITHUB_TOKEN, now: requestedAt });
       opportunities = rankContributionOpportunities(candidates, preferences, [], requestedAt);
-      await writeCachedPool(stateContainer, cacheId, opportunities, requestedAt);
+      await writeMissionPreviewPool(stateContainer, preferences, opportunities, requestedAt);
     }
 
     return NextResponse.json({

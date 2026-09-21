@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DailyMissionError, addCompletedMission, applyMissionAction, cachedMissionPool, missionDay, selectDailyMission } from '../lib/daily-mission.js';
+import {
+  DailyMissionError,
+  addCompletedMission,
+  applyMissionAction,
+  cachedMissionPool,
+  missionDay,
+  prioritizeMissionOpportunity,
+  selectDailyMission,
+} from '../lib/daily-mission.js';
 
 const NOW = new Date('2026-08-25T08:30:00.000Z');
 const opportunities = [
@@ -22,6 +30,14 @@ test('uses the ranked opportunity scope when available', () => {
   const mission = selectDailyMission([{ ...opportunities[0], estimatedMinutes: 30 }], { login: 'octocat', now: NOW });
 
   assert.equal(mission.durationMinutes, 30);
+});
+
+test('prioritizes a valid preview issue without admitting an unknown issue', () => {
+  assert.deepEqual(
+    prioritizeMissionOpportunity(opportunities, '102').map(opportunity => opportunity.id),
+    ['102', '101'],
+  );
+  assert.equal(prioritizeMissionOpportunity(opportunities, 'unknown'), opportunities);
 });
 
 test('moves a mission through accept and complete states', () => {

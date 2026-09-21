@@ -22,6 +22,7 @@ import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import { acquisitionAttributionProperties, socialAttributionProperties } from '../lib/share-attribution.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
+import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
 import { useLivePresence } from '../components/useLivePresence.js';
 import dynamic from 'next/dynamic';
 
@@ -79,6 +80,7 @@ export default function Home() {
   const [tourStep, setTourStep] = useState(null);
   const [liveLanguage, setLiveLanguage] = useState('');
   const [livePlatform, setLivePlatform] = useState('');
+  const [missionRefreshRequest, setMissionRefreshRequest] = useState(0);
   const globeRef = useRef(null);
   const liveViewActive = sidebarView === 'live';
   const { developers: liveDevelopers, connection: liveConnection } = useLivePresence(liveViewActive);
@@ -191,15 +193,24 @@ export default function Home() {
         if (data.user) {
           setUser(data.user);
           const url = new URL(window.location.href);
-          if (url.searchParams.get('auth') === 'success') {
+          const authSucceeded = url.searchParams.get('auth') === 'success';
+          if (authSucceeded) {
             let source = 'signin';
             try {
               if (localStorage.getItem(PENDING_CLAIM_KEY)) source = 'claim';
+              else if (parsePendingMission(localStorage.getItem(PENDING_MISSION_KEY))) source = 'mission_preview';
             } catch { /* localStorage is optional for attribution. */ }
             track('github_auth_completed', { source });
             url.searchParams.delete('auth');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
           }
+          try {
+            if (authSucceeded && parsePendingMission(localStorage.getItem(PENDING_MISSION_KEY))) {
+              setSidebarView('activity');
+              setSidebarOpen(true);
+              setMissionRefreshRequest(request => request + 1);
+            }
+          } catch { /* The user can still open the mission view manually. */ }
           let destination = url.searchParams.get('open');
           if (!destination) {
             try {
@@ -754,6 +765,12 @@ export default function Home() {
     setSidebarOpen(true);
   }, [sidebarView]);
 
+  const handleStartMission = useCallback(() => {
+    setSidebarView('activity');
+    setSidebarOpen(true);
+    setMissionRefreshRequest(request => request + 1);
+  }, []);
+
   const handleOpenLive = useCallback(() => {
     if (sidebarView === 'live') {
       setSidebarOpen(false);
@@ -949,7 +966,7 @@ export default function Home() {
         signedIn={Boolean(user)}
         currentUsername={user?.login || ''}
         profileOpen={Boolean(selectedDev)}
-        onOpenActivity={handleOpenActivity}
+        onStartMission={handleStartMission}
         showAgentPrompt={agentProfileStatus === 'missing' && !tourStep}
         onOpenAgentProfile={() => setShowAiProfile(true)}
         onOpenAgentNetwork={handleOpenAgentNetwork}
@@ -1003,6 +1020,7 @@ export default function Home() {
           datasetLoading={datasetLoading && !searchActive}
           onOpenContributions={() => setShowContributions(true)}
           onCreateCard={handleCreateCardFromActivity}
+          missionRefreshRequest={missionRefreshRequest}
           liveDevelopers={filteredLiveDevelopers}
           liveConnection={liveConnection}
           liveLanguage={liveLanguage}
