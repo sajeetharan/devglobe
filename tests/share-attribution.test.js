@@ -9,6 +9,7 @@ import {
   identityCardShareUrl,
   normalizeDeveloperLogin,
   socialAttributionProperties,
+  vibeCardShareUrl,
 } from '../lib/share-attribution.js';
 
 test('normalizes acquisition attribution into bounded reporting categories', () => {
@@ -75,6 +76,20 @@ test('bounds identity card channels and normalizes X referrals', () => {
   assert.equal(unknown.searchParams.get('utm_source'), 'copy_link');
   assert.equal(unknown.searchParams.get('utm_medium'), 'referral');
   assert.throws(() => identityCardShareUrl('https://www.devglobe.dev', '../private', 'copy_link', '5'), /valid developer login/);
+});
+
+test('builds attributed Vibe Card sharing URLs', () => {
+  const vibeId = '123e4567-e89b-42d3-a456-426614174000';
+  const url = new URL(vibeCardShareUrl('https://www.devglobe.dev', 'OctoCat', vibeId, 'linkedin'));
+  assert.equal(url.pathname, `/vibe/octocat/${vibeId}`);
+  assert.equal(url.searchParams.get('utm_source'), 'linkedin');
+  assert.equal(url.searchParams.get('utm_medium'), 'social');
+  assert.equal(url.searchParams.get('utm_campaign'), 'vibe_session');
+  assert.equal(url.searchParams.get('utm_content'), 'octocat');
+  assert.throws(
+    () => vibeCardShareUrl('https://www.devglobe.dev', 'octocat', '../private', 'copy_link'),
+    /valid Vibe Card ID/,
+  );
 });
 
 test('preserves only campaign attribution when entering the globe', () => {

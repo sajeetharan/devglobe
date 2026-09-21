@@ -46,6 +46,7 @@ async function updateEffectiveSetting(settings, key, value) {
 
 const PRESENCE_TOKEN_KEY = 'devglobedev.livePresenceToken';
 const LAST_WAVE_SEEN_KEY = 'devglobedev.lastWaveSeenAt';
+const LAST_VIBE_CARD_KEY = 'devglobedev.lastVibeCardUrl';
 const ONBOARDING_KEY = 'devglobedev.goLiveOnboarding.v1';
 const HEARTBEAT_INTERVAL_MS = 30000;
 
@@ -533,7 +534,7 @@ async function offerGoLiveOnboarding(context) {
   if (configuration().presenceEnabled) return;
 
   const action = await vscode.window.showInformationMessage(
-    'Join the DevGlobe live coding map? Share your public location, language, editor, OS, and session timing; never code, files, or repositories.',
+    'Join the DevGlobe live coding map? Share your public location, language, editor, OS, session timing, and an unlisted recap when you stop; never code, files, or repositories.',
     'Go Live Now',
     'Learn More',
     'Not Now',
@@ -566,6 +567,14 @@ async function activate(context) {
   });
   registerCommand(context, 'devglobedev.openCodingStats', async () => {
     await openExternal(codingStatsUrl(configuration().baseUrl));
+  });
+  registerCommand(context, 'devglobedev.openLastVibeCard', async () => {
+    const url = context.globalState.get(LAST_VIBE_CARD_KEY, '');
+    if (url) {
+      await openExternal(url);
+      return;
+    }
+    await vscode.window.showInformationMessage('Finish a live coding session to create your first Vibe Card.');
   });
   registerCommand(context, 'devglobedev.completeProfile', async () => {
     const login = await configuredLogin();
@@ -697,7 +706,12 @@ async function activate(context) {
     const summary = recap
       ? `You coded for ${recap.durationMinutes} minutes alongside ${recap.developerCount} developers in ${recap.countryCount} countries and received ${recap.waveCount} waves.`
       : 'Your DevGlobe coding presence is offline.';
-    await vscode.window.showInformationMessage(summary);
+    if (recap?.shareUrl) await context.globalState.update(LAST_VIBE_CARD_KEY, recap.shareUrl);
+    const action = await vscode.window.showInformationMessage(
+      summary,
+      ...(recap?.shareUrl ? ['Share Vibe Card'] : []),
+    );
+    if (action === 'Share Vibe Card') await openExternal(recap.shareUrl);
   });
   if (configuration().presenceEnabled) {
     presence.start(false).catch(error => console.error('DevGlobe automatic presence resume failed:', error));

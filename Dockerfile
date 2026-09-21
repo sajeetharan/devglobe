@@ -1,10 +1,12 @@
-FROM node:22-slim AS dependencies
+FROM node:22-slim AS base
+
+FROM base AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install --global npm@11.14.1 \
   && npm ci
 
-FROM node:22-slim AS builder
+FROM base AS builder
 WORKDIR /app
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_DEVELOPER_SNAPSHOT_URL
@@ -17,7 +19,7 @@ COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:22-slim AS runner
+FROM base AS runner
 WORKDIR /app
 ENV HOSTNAME=0.0.0.0
 ENV NODE_ENV=production
