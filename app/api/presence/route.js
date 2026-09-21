@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifySessionToken } from '../../../lib/auth.js';
-import { recordCodingHeartbeat } from '../../../lib/coding-stats-store.js';
+import { recordCodingHeartbeat, saveExtensionUser } from '../../../lib/coding-stats-store.js';
 import { recordExtensionEvent } from '../../../lib/extension-telemetry.js';
 import {
   buildPresenceRecap,
@@ -75,6 +75,11 @@ export async function POST(request) {
       }, { status: 422 });
     }
     const savedPresence = await saveLivePresence(presence, { allowRapidUpdate: metadataOnly });
+    if (!metadataOnly && (!previousPresence || !sameSession)) {
+      await saveExtensionUser(savedPresence).catch(error => {
+        console.error('Extension user history update failed:', error.message);
+      });
+    }
     if (!metadataOnly) {
       await recordCodingHeartbeat(previousPresence, presence).catch(error => {
         console.error('Coding stats heartbeat aggregation failed:', error.message);
@@ -129,6 +134,11 @@ export async function DELETE(request) {
     await recordExtensionEvent('presence_stopped', session.login, { source: 'vscode_extension' }).catch(error => {
       console.error('Presence sign-off telemetry failed:', error.message);
     });
+    if (presence) {
+      await saveExtensionUser(presence).catch(error => {
+        console.error('Extension user history sign-off update failed:', error.message);
+      });
+    }
     return NextResponse.json({
       recap: presence ? buildPresenceRecap(presence, peers) : null,
     }, { headers: { 'Cache-Control': 'no-store' } });

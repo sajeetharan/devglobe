@@ -23,7 +23,7 @@ import { acquisitionAttributionProperties, socialAttributionProperties } from '.
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
 import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
-import { useLivePresence } from '../components/useLivePresence.js';
+import { useExtensionUsers, useLivePresence } from '../components/useLivePresence.js';
 import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('../components/Globe.jsx'), { ssr: false });
@@ -84,14 +84,24 @@ export default function Home() {
   const globeRef = useRef(null);
   const liveViewActive = sidebarView === 'live';
   const { developers: liveDevelopers, connection: liveConnection } = useLivePresence(liveViewActive);
-  const deferredLiveDevelopers = useDeferredValue(liveDevelopers);
-  const liveLanguages = useMemo(() => [...new Set(liveDevelopers.map(developer => developer.activeLanguage).filter(Boolean))].sort(), [liveDevelopers]);
-  const livePlatforms = useMemo(() => [...new Set(liveDevelopers.map(developer => developer.platform).filter(Boolean))].sort(), [liveDevelopers]);
-  const filteredLiveDevelopers = useMemo(() => deferredLiveDevelopers
+  const { developers: extensionUsers, connection: liveHistoryConnection } = useExtensionUsers(liveViewActive);
+  const liveTabDevelopers = useMemo(() => {
+    const merged = new Map(extensionUsers.map(developer => [developer.login, developer]));
+    for (const developer of liveDevelopers) merged.set(developer.login, developer);
+    return [...merged.values()];
+  }, [extensionUsers, liveDevelopers]);
+  const deferredLiveTabDevelopers = useDeferredValue(liveTabDevelopers);
+  const liveLanguages = useMemo(() => [...new Set(liveTabDevelopers.map(developer => developer.activeLanguage).filter(Boolean))].sort(), [liveTabDevelopers]);
+  const livePlatforms = useMemo(() => [...new Set(liveTabDevelopers.map(developer => developer.platform).filter(Boolean))].sort(), [liveTabDevelopers]);
+  const filteredLiveTabDevelopers = useMemo(() => deferredLiveTabDevelopers
     .filter(developer => !liveLanguage || developer.activeLanguage === liveLanguage)
     .filter(developer => !livePlatform || developer.platform === livePlatform)
     .sort((left, right) => right.lastHeartbeat.localeCompare(left.lastHeartbeat)),
-  [deferredLiveDevelopers, liveLanguage, livePlatform]);
+  [deferredLiveTabDevelopers, liveLanguage, livePlatform]);
+  const filteredLiveDevelopers = useMemo(() => liveDevelopers
+    .filter(developer => !liveLanguage || developer.activeLanguage === liveLanguage)
+    .filter(developer => !livePlatform || developer.platform === livePlatform),
+  [liveDevelopers, liveLanguage, livePlatform]);
 
   useEffect(() => {
     try {
@@ -1021,8 +1031,9 @@ export default function Home() {
           onOpenContributions={() => setShowContributions(true)}
           onCreateCard={handleCreateCardFromActivity}
           missionRefreshRequest={missionRefreshRequest}
-          liveDevelopers={filteredLiveDevelopers}
+          liveDevelopers={filteredLiveTabDevelopers}
           liveConnection={liveConnection}
+          liveHistoryConnection={liveHistoryConnection}
           liveLanguage={liveLanguage}
           livePlatform={livePlatform}
           liveLanguages={liveLanguages}

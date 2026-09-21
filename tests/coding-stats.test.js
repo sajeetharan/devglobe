@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildCodingAchievements, buildCodingDelta, buildCodingStats, mergeCodingDay } from '../lib/coding-stats.js';
+import { extensionUserFromPresence } from '../lib/coding-stats-store.js';
 
 const first = {
   login: 'octocat',
@@ -32,6 +33,38 @@ test('merges daily totals without storing source activity details', () => {
   assert.equal(document.editors['VS Code'], 30);
   assert.equal('file' in document, false);
   assert.equal('repository' in document, false);
+});
+
+test('builds a durable public extension user from live presence', () => {
+  const user = extensionUserFromPresence({
+    login: 'OctoCat',
+    name: 'Octo Cat',
+    avatarUrl: 'https://avatars.example/octo.png',
+    location: 'London, UK',
+    profileAvailable: true,
+    lat: 51.5,
+    lng: -0.12,
+    activeLanguage: 'TypeScript',
+    editor: 'VS Code',
+    platform: 'Windows',
+    lastHeartbeat: '2026-09-08T10:00:30.000Z',
+  });
+  assert.deepEqual(user, {
+    id: 'octocat:extension-user',
+    type: 'extension-user',
+    login: 'octocat',
+    name: 'Octo Cat',
+    avatarUrl: 'https://avatars.example/octo.png',
+    location: 'London, UK',
+    profileAvailable: true,
+    lat: 51.5,
+    lng: -0.12,
+    activeLanguage: 'TypeScript',
+    editor: 'VS Code',
+    platform: 'Windows',
+    lastLiveAt: '2026-09-08T10:00:30.000Z',
+    ttl: 34560000,
+  });
 });
 
 test('builds owner dashboard totals, dimensions, timeline, and streak', () => {
