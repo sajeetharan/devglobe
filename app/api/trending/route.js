@@ -50,8 +50,10 @@ export async function GET(request) {
   const windowDays = Math.min(Math.max(Number.parseInt(searchParams.get('days'), 10) || 30, 1), 90);
 
   try {
-    const developers = await loadDevelopers();
-    const baselineSnapshots = await listLatestSnapshotsOnOrBeforeDay(windowStartDay(windowDays));
+    const [developers, baselineSnapshots] = await Promise.all([
+      loadDevelopers(),
+      listLatestSnapshotsOnOrBeforeDay(windowStartDay(windowDays)),
+    ]);
     const trending = buildTrending(developers, baselineSnapshots, { windowDays });
     return NextResponse.json(trending, {
       headers: { 'Cache-Control': 's-maxage=1800, stale-while-revalidate=600' },
