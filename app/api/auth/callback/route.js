@@ -4,6 +4,10 @@ import { saveActivities } from '../../../../lib/activity-store.js';
 import { createPlatformActivity } from '../../../../lib/platform-activity.js';
 import { selectGitHubEmail } from '../../../../lib/github-email.js';
 import { resolveGitHubCallbackBaseUrl } from '../../../../lib/github-oauth.js';
+import {
+  GITHUB_OAUTH_STATE_COOKIE,
+  verifyGitHubOAuthState,
+} from '../../../../lib/github-oauth-state.js';
 import { getSiteUrl } from '../../../../lib/site.js';
 
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
@@ -24,6 +28,17 @@ export async function GET(request) {
 
   if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
     return NextResponse.redirect(`${baseUrl}?auth_error=not_configured`);
+  }
+
+  const continuation = verifyGitHubOAuthState(
+    searchParams.get('state'),
+    request.cookies.get(GITHUB_OAUTH_STATE_COOKIE)?.value,
+    GITHUB_CLIENT_SECRET,
+  );
+  if (!continuation) {
+    const response = NextResponse.redirect(`${baseUrl}?auth_error=invalid_state`);
+    response.cookies.delete(GITHUB_OAUTH_STATE_COOKIE);
+    return response;
   }
 
   try {
@@ -84,10 +99,12 @@ export async function GET(request) {
     const token = await createSessionToken(session);
     const cookie = buildSessionCookie(token);
 
-    const successUrl = new URL(baseUrl);
+    const successUrl = new URL(continuation.returnTo, baseUrl);
     successUrl.searchParams.set('auth', 'success');
+    if (continuation.claimLogin) successUrl.searchParams.set('claim', 'auto');
     const response = NextResponse.redirect(successUrl);
     response.cookies.set(cookie);
+    response.cookies.delete(GITHUB_OAUTH_STATE_COOKIE);
     try {
       await saveActivities([createPlatformActivity({
         type: 'logged_in',

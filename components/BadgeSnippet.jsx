@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track } from '../lib/analytics.js';
 
 const STAT_OPTIONS = [
   { value: 'globalRank', label: 'Global Rank' },
@@ -17,7 +18,7 @@ export default function BadgeSnippet({ login, siteUrl }) {
 
   const statQuery = stat === 'globalRank' ? '' : `?stat=${stat}`;
   const badgeUrl = `${siteUrl}/api/badge/${encodeURIComponent(login)}.svg${statQuery}`;
-  const profileUrl = `${siteUrl}/share/${encodeURIComponent(login)}`;
+  const profileUrl = `${siteUrl}/share/${encodeURIComponent(login)}?utm_source=github_readme&utm_medium=referral&utm_campaign=developer_activation&utm_content=${encodeURIComponent(login.toLowerCase())}`;
 
   const snippets = {
     markdown: `[![devglobe](${badgeUrl})](${profileUrl})`,
@@ -28,6 +29,7 @@ export default function BadgeSnippet({ login, siteUrl }) {
     try {
       await navigator.clipboard.writeText(snippets[format]);
       setCopied(true);
+      track('profile_badge_copied', { login, channel: 'copy_link', action: format });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard API can fail silently (permissions, insecure context);

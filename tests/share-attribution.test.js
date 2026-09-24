@@ -32,6 +32,24 @@ test('normalizes acquisition attribution into bounded reporting categories', () 
     campaign: 'organic_referral',
   });
   assert.deepEqual(acquisitionAttributionProperties(new URLSearchParams({
+    utm_source: 'github_readme',
+    utm_medium: 'referral',
+    utm_campaign: 'developer_activation',
+  })), {
+    source: 'github_readme',
+    channel: 'referral',
+    campaign: 'developer_activation',
+  });
+  assert.deepEqual(acquisitionAttributionProperties(new URLSearchParams({
+    utm_source: 'community_event',
+    utm_medium: 'community',
+    utm_campaign: 'community',
+  })), {
+    source: 'community_event',
+    channel: 'community',
+    campaign: 'community',
+  });
+  assert.deepEqual(acquisitionAttributionProperties(new URLSearchParams({
     utm_source: 'person@example.com',
     utm_medium: 'private channel',
     utm_campaign: 'secret campaign',

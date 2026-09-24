@@ -128,6 +128,21 @@ test('MCP client returns bounded trending developers with profile URLs', async (
   assert.equal(result.gainers[0].profileUrl, 'https://www.devglobe.dev/developer/rising-dev');
 });
 
+test('MCP client bounds slow trending requests', async () => {
+  const client = createDevGlobeMcpClient({
+    baseUrl: 'https://www.devglobe.dev',
+    requestTimeoutMs: 5,
+    fetchImpl: (url, options) => new Promise((resolve, reject) => {
+      options.signal.addEventListener('abort', () => reject(options.signal.reason), { once: true });
+    }),
+  });
+
+  await assert.rejects(
+    () => client.getTrendingDevelopers({ days: 30, limit: 5 }),
+    error => error.code === 'unavailable' && error.retryable === true,
+  );
+});
+
 test('MCP client returns similar developers without exposing embeddings', async () => {
   let requestedUrl;
   const client = createDevGlobeMcpClient({

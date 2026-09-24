@@ -236,6 +236,16 @@ export default function Home() {
             url.searchParams.delete('open');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
           }
+          if (url.searchParams.get('setup') === 'ai-profile') {
+            setShowAiProfile(true);
+            url.searchParams.delete('setup');
+            window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          }
+          if (url.searchParams.get('setup') === 'weekly-updates') {
+            setUserMenuRequest(request => request + 1);
+            url.searchParams.delete('setup');
+            window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          }
         }
       } catch { /* not authenticated */ }
     }

@@ -193,6 +193,37 @@ test('remote MCP attributes known clients without retaining raw user agents', as
   assert.doesNotMatch(JSON.stringify(metrics[0]), /SmitheryBot|smithery\.ai/);
 });
 
+test('stateless remote MCP closes its server after every request', async () => {
+  let connectedTransport;
+  let closed = false;
+  const response = await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 13, method: 'tools/list', params: {},
+  }), {
+    metricRecorder: () => {},
+    serverFactory: () => ({
+      async connect(transport) {
+        connectedTransport = transport;
+      },
+      async close() {
+        closed = true;
+      },
+    }),
+    transportFactory: options => ({
+      options,
+      async handleRequest() {
+        return Response.json({ jsonrpc: '2.0', id: 13, result: { tools: [] } });
+      },
+    }),
+  });
+
+  assert.equal(closed, true);
+  assert.deepEqual(connectedTransport.options, {
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+  assert.deepEqual((await response.json()).result.tools, []);
+});
+
 test('MCP caller correlation rotates daily without retaining source identifiers', () => {
   const request = mcpRequest({ jsonrpc: '2.0', id: 14, method: 'tools/list', params: {} }, {
     'User-Agent': 'PrivateClient/1.0',
@@ -247,6 +278,19 @@ test('MCP classifies malformed and unknown requests with bounded error codes', a
   assert.equal(metrics[1].errorCode, 'not_found');
   assert.equal(metrics[2].errorCode, 'not_found');
   assert.equal(metrics[2].tool, null);
+});
+
+test('MCP classifies unsupported protocol versions separately from upstream failures', async () => {
+  const metrics = [];
+  const response = await handleRemoteMcpRequest(mcpRequest({
+    jsonrpc: '2.0', id: 20, method: 'tools/list', params: {},
+  }, { 'Mcp-Protocol-Version': '2099-01-01' }), {
+    metricRecorder: metric => metrics.push(metric),
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(metrics[0].outcome, 'error');
+  assert.equal(metrics[0].errorCode, 'unsupported_protocol_version');
 });
 
 test('MCP telemetry distinguishes bounded handshake methods', () => {
