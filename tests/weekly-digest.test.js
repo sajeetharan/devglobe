@@ -144,6 +144,7 @@ test('sends one eligible digest per ISO week and records its rank', async () => 
       missingRecipient: 0,
       providerNotConfigured: 0,
       providerRejected: 0,
+      deliverySuppressed: 0,
       deliveryRecordFailed: 0,
     },
   });
@@ -181,6 +182,7 @@ test('reports privacy-safe aggregate delivery failure reasons', async () => {
     missingRecipient: 1,
     providerNotConfigured: 1,
     providerRejected: 1,
+    deliverySuppressed: 0,
     deliveryRecordFailed: 0,
   });
   assert.doesNotMatch(JSON.stringify(summary), /example\.com|private details/);
@@ -197,7 +199,7 @@ test('reports delivery record failures separately from provider failures', async
     },
   });
 
-  assert.equal(summary.sent, 0);
+  assert.equal(summary.sent, 1);
   assert.equal(summary.failed, 1);
   assert.equal(summary.providerAccepted, 1);
   assert.equal(summary.providerFailed, 0);
@@ -254,4 +256,38 @@ test('sends a real introduction signal instead of suppressing a first-run subscr
   assert.match(sent[0].message.html, /Review requests/);
   assert.equal(summary.sent, 1);
   assert.equal(summary.reasons.baselineCreated, 0);
+});
+
+test('sends one weekly digest when different logins share an email address', async () => {
+  const recipients = new Set();
+  const sent = [];
+  const summary = await sendWeeklyDigests({
+    contacts: [
+      { id: 'first', login: 'first', email: 'Shared@Example.com', lastWeeklyDigestRank: 5 },
+      { id: 'second', login: 'second', email: 'shared@example.com', lastWeeklyDigestRank: 6 },
+    ],
+    developers: [
+      { login: 'first', globalRank: 3, globalTotal: 100, score: 88 },
+      { login: 'second', globalRank: 4, globalTotal: 100, score: 87 },
+    ],
+    pendingIntroductionCounts: new Map(),
+    preferenceSecret: 'test-secret',
+    claimDelivery: async delivery => {
+      const recipient = delivery.recipient.trim().toLowerCase();
+      if (recipients.has(recipient)) return { claimed: false, reason: 'already_delivered' };
+      recipients.add(recipient);
+      return { claimed: true, id: recipient, deliveryKey: delivery.deliveryKey };
+    },
+    completeDelivery: async () => ({ completed: true }),
+    sendEmail: async email => {
+      sent.push(email);
+      return { sent: true, id: 'email-1' };
+    },
+    recordDelivery: async () => {},
+  });
+
+  assert.equal(sent.length, 1);
+  assert.equal(summary.sent, 1);
+  assert.equal(summary.skipped, 1);
+  assert.equal(summary.reasons.deliverySuppressed, 1);
 });

@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   DeveloperContactValidationError,
+  VERIFICATION_REMINDER_INTERVAL_MS,
   buildDeveloperContact,
+  claimEmailDelivery,
+  completeEmailDelivery,
   createEmailVerification,
   getDeveloperContact,
   isVerificationReminderDue,
@@ -10,6 +13,7 @@ import {
   normalizeContactEmail,
   recordEmailVerificationReminder,
   recordWeeklyDigestBaseline,
+  releaseEmailDelivery,
   saveDeveloperContact,
   setProductUpdatesPreference,
   verifyDeveloperContactEmail,
@@ -41,6 +45,112 @@ function fakeContainer(existing = null) {
     get saved() { return saved; },
   };
 }
+
+function fakeDeliveryContainer() {
+  const documents = new Map();
+  let version = 0;
+  const save = (id, document) => {
+    version += 1;
+    const stored = { ...document, _etag: `etag-${version}` };
+    documents.set(id, stored);
+    return stored;
+  };
+  return {
+    item: id => ({
+      read: async () => {
+        if (!documents.has(id)) throw Object.assign(new Error('Not found'), { code: 404 });
+        return { resource: documents.get(id) };
+      },
+      replace: async (document, options) => {
+        if (documents.get(id)?._etag !== options.accessCondition.condition) {
+          throw Object.assign(new Error('Precondition failed'), { code: 412 });
+        }
+        return { resource: save(id, document) };
+      },
+    }),
+    items: {
+      create: async document => {
+        if (documents.has(document.id)) throw Object.assign(new Error('Conflict'), { code: 409 });
+        return { resource: save(document.id, document) };
+      },
+    },
+    get documents() { return [...documents.values()]; },
+  };
+}
+
+test('claims one delivery per normalized recipient and campaign without storing email', async () => {
+  const container = fakeDeliveryContainer();
+  const first = await claimEmailDelivery({
+    campaign: 'weekly-digest',
+    deliveryKey: '2026-W39',
+    recipient: ' Dev@Example.com ',
+  }, { container, now: '2026-09-28T13:00:00.000Z', hashSecret: 'test-secret' });
+  const overlapping = await claimEmailDelivery({
+    campaign: 'weekly-digest',
+    deliveryKey: '2026-W39',
+    recipient: 'dev@example.com',
+  }, { container, now: '2026-09-28T13:00:01.000Z', hashSecret: 'test-secret' });
+
+  assert.equal(first.claimed, true);
+  assert.deepEqual(overlapping, { claimed: false, reason: 'in_progress' });
+  assert.doesNotMatch(JSON.stringify(container.documents), /dev@example\.com/i);
+
+  await completeEmailDelivery(first, { deliveredAt: '2026-09-28T13:00:02.000Z' }, { container });
+  assert.deepEqual(await claimEmailDelivery({
+    campaign: 'weekly-digest',
+    deliveryKey: '2026-W39',
+    recipient: 'dev@example.com',
+  }, { container, now: '2026-09-28T13:10:00.000Z', hashSecret: 'test-secret' }), { claimed: false, reason: 'already_delivered' });
+});
+
+test('enforces reminder cadence across delivery keys and releases failed attempts', async () => {
+  const container = fakeDeliveryContainer();
+  const first = await claimEmailDelivery({
+    campaign: 'verification-reminder',
+    deliveryKey: '2026-09-28',
+    recipient: 'dev@example.com',
+    minimumIntervalMs: VERIFICATION_REMINDER_INTERVAL_MS,
+  }, { container, now: '2026-09-28T14:00:00.000Z', hashSecret: 'test-secret' });
+  await releaseEmailDelivery(first, { container, now: '2026-09-28T14:01:00.000Z' });
+  const retry = await claimEmailDelivery({
+    campaign: 'verification-reminder',
+    deliveryKey: '2026-09-28',
+    recipient: 'dev@example.com',
+    minimumIntervalMs: VERIFICATION_REMINDER_INTERVAL_MS,
+  }, { container, now: '2026-09-28T14:02:00.000Z', hashSecret: 'test-secret' });
+  assert.equal(retry.claimed, true);
+  await completeEmailDelivery(retry, { deliveredAt: '2026-09-28T14:03:00.000Z' }, { container });
+
+  assert.deepEqual(await claimEmailDelivery({
+    campaign: 'verification-reminder',
+    deliveryKey: '2026-09-29',
+    recipient: 'dev@example.com',
+    minimumIntervalMs: VERIFICATION_REMINDER_INTERVAL_MS,
+  }, { container, now: '2026-09-29T14:00:00.000Z', hashSecret: 'test-secret' }), { claimed: false, reason: 'recently_delivered' });
+});
+
+test('prevents an expired worker from completing a renewed delivery claim', async () => {
+  const container = fakeDeliveryContainer();
+  const expired = await claimEmailDelivery({
+    campaign: 'weekly-digest',
+    deliveryKey: '2026-W39',
+    recipient: 'dev@example.com',
+  }, { container, now: '2026-09-28T13:00:00.000Z', hashSecret: 'test-secret' });
+  const renewed = await claimEmailDelivery({
+    campaign: 'weekly-digest',
+    deliveryKey: '2026-W39',
+    recipient: 'dev@example.com',
+  }, { container, now: '2026-09-28T13:16:00.000Z', hashSecret: 'test-secret' });
+
+  assert.equal(renewed.claimed, true);
+  assert.notEqual(expired.claimToken, renewed.claimToken);
+  assert.deepEqual(await completeEmailDelivery(expired, {
+    deliveredAt: '2026-09-28T13:16:01.000Z',
+  }, { container }), { completed: false, reason: 'stale_claim' });
+  assert.deepEqual(await completeEmailDelivery(renewed, {
+    deliveredAt: '2026-09-28T13:16:02.000Z',
+  }, { container }), { completed: true });
+});
 
 test('normalizes and validates contact email', () => {
   assert.equal(normalizeContactEmail(' Dev@Example.COM '), 'dev@example.com');
