@@ -35,7 +35,11 @@ async function getSampleData() {
 }
 
 function searchSampleData(data, q, limit) {
-  return rankDeveloperSearchResults(data, q, limit);
+  const search = rankDeveloperSearchResults(data, q, limit);
+  return {
+    ...search,
+    results: search.results.map(developer => ({ id: developer.id || developer.login, ...developer })),
+  };
 }
 
 function buildTextSearch(terms, limit, matchAll = true) {
