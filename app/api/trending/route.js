@@ -11,6 +11,9 @@ const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
 const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
+const TRENDING_CACHE_MS = 10 * 60 * 1000;
+const TRENDING_QUERY_TIMEOUT_MS = 5000;
+const trendingCache = new Map();
 
 async function getSampleData() {
   const filePath = path.join(process.cwd(), 'data', 'developers-sample.json');
@@ -43,6 +46,52 @@ async function loadDevelopers() {
   }
 }
 
+function withTimeout(promise, timeoutMs, label) {
+  let timeout;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timeout = setTimeout(() => reject(new Error(`${label} timed out`)), timeoutMs);
+    }),
+  ]).finally(() => clearTimeout(timeout));
+}
+
+async function computeTrending(windowDays) {
+  const developersPromise = withTimeout(loadDevelopers(), TRENDING_QUERY_TIMEOUT_MS, 'Developer query')
+    .catch(async error => {
+      console.warn('Trending developer query degraded to sample data:', error.message);
+      return rankDevelopers(await getSampleData());
+    });
+  const baselinePromise = withTimeout(
+    listLatestSnapshotsOnOrBeforeDay(windowStartDay(windowDays)),
+    TRENDING_QUERY_TIMEOUT_MS,
+    'Impact history query',
+  ).catch(error => {
+    console.warn('Trending history unavailable:', error.message);
+    return [];
+  });
+  const [developers, baselineSnapshots] = await Promise.all([developersPromise, baselinePromise]);
+  return buildTrending(developers, baselineSnapshots, { windowDays });
+}
+
+async function getCachedTrending(windowDays) {
+  const cached = trendingCache.get(windowDays);
+  if (cached?.value && cached.expiresAt > Date.now()) return cached.value;
+  if (cached?.promise) return cached.promise;
+
+  const promise = computeTrending(windowDays)
+    .then(value => {
+      trendingCache.set(windowDays, { value, expiresAt: Date.now() + TRENDING_CACHE_MS });
+      return value;
+    })
+    .catch(error => {
+      trendingCache.delete(windowDays);
+      throw error;
+    });
+  trendingCache.set(windowDays, { promise });
+  return promise;
+}
+
 // GET /api/trending -> top score gainers over the last 30 days, computed
 // against the most recent impact-history snapshot on or before that date.
 export async function GET(request) {
@@ -50,11 +99,7 @@ export async function GET(request) {
   const windowDays = Math.min(Math.max(Number.parseInt(searchParams.get('days'), 10) || 30, 1), 90);
 
   try {
-    const [developers, baselineSnapshots] = await Promise.all([
-      loadDevelopers(),
-      listLatestSnapshotsOnOrBeforeDay(windowStartDay(windowDays)),
-    ]);
-    const trending = buildTrending(developers, baselineSnapshots, { windowDays });
+    const trending = await getCachedTrending(windowDays);
     return NextResponse.json(trending, {
       headers: { 'Cache-Control': 's-maxage=1800, stale-while-revalidate=600' },
     });
