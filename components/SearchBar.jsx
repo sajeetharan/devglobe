@@ -5,9 +5,9 @@ import SpecialTags from './SpecialTags.jsx';
 import { track, trackSearchAppearances } from '../lib/analytics.js';
 import { countryKey } from '../lib/country.js';
 import {
-  developerMatchesSearchQuery,
   findExactLoginResult,
   normalizeTextSearchQuery,
+  rankDeveloperSearchResults,
   tokenizeDeveloperSearchQuery,
 } from '../lib/developer-search.js';
 import { publicApiUrl } from '../lib/public-api.js';
@@ -93,13 +93,14 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     track('next_action_selected', { action: source, journey: 'agent_onboarding', source: 'homepage_prompt' });
   }, [agentPromptKey]);
 
-  const openSearchResult = useCallback((developer, source) => {
+  const openSearchResult = useCallback((developer, source, resultRank) => {
     recordRecentProfile(developer);
     track('search_result_opened', {
       login: developer.login,
       action: mode,
       journey: 'developer_discovery',
       source,
+      ...(Number.isInteger(resultRank) ? { resultRank } : {}),
     });
     track('personalized_profile_viewed', {
       login: developer.login,
@@ -125,11 +126,15 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     onSelectDeveloper(developer);
   }, [mode, onSelectDeveloper]);
 
-  const recordSearchOutcome = useCallback((results, searchMode, source) => {
+  const recordSearchOutcome = useCallback((results, searchMode, source, context = {}) => {
     track(results.length > 0 ? 'search_results_viewed' : 'search_no_results', {
       action: searchMode,
       journey: 'developer_discovery',
       source,
+      termCount: context.interpretedTerms?.length || 0,
+      resultCount: results.length,
+      matchMode: context.matchMode || 'all',
+      fallback: context.fallback || 'none',
     });
   }, []);
 
@@ -153,13 +158,18 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
     if (m === 'text') {
       const textQuery = normalizeTextSearchQuery(q);
-      const interpretedTerms = tokenizeDeveloperSearchQuery(textQuery);
-      let results = developers.filter(d =>
-        developerMatchesSearchQuery(d, textQuery) ||
-        (interpretedTerms.length === 1 && d.location && countryKey(d.location).includes(countryKey(interpretedTerms[0])))
-      ).slice(0, topN);
+      const localSearch = rankDeveloperSearchResults(developers, textQuery, topN);
+      const interpretedTerms = localSearch.interpretedTerms;
+      let results = localSearch.results;
+      let outcomeContext = { interpretedTerms, fallback: null, matchMode: localSearch.matchMode };
 
-      setSearchContext({ interpretedTerms, fallback: null });
+      if (!results.length && interpretedTerms.length === 1) {
+        results = developers.filter(developer =>
+          developer.location && countryKey(developer.location).includes(countryKey(interpretedTerms[0]))
+        ).slice(0, topN);
+      }
+
+      setSearchContext(outcomeContext);
 
       if (results.length === 0) {
         const controller = new AbortController();
@@ -174,7 +184,12 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           if (controller.signal.aborted) return;
           if (!response.ok) throw new Error(data.error?.message || data.error || 'Search is unavailable.');
           results = data.results || [];
-          setSearchContext({ interpretedTerms: data.interpretedTerms || interpretedTerms, fallback: data.fallback });
+          outcomeContext = {
+            interpretedTerms: data.interpretedTerms || interpretedTerms,
+            fallback: data.fallback,
+            matchMode: data.matchMode || 'all',
+          };
+          setSearchContext(outcomeContext);
         } catch (error) {
           if (error.name === 'AbortError') return;
           console.error('Text search fallback failed:', error);
@@ -194,7 +209,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       setVisibleResults(results.slice(0, 3));
       setSingleResult(results.length === 1 ? results[0] : null);
       if (remember) recordRecentSearch({ query: q, mode: m });
-      recordSearchOutcome(results, m, source);
+      recordSearchOutcome(results, m, source, outcomeContext);
       trackSearchAppearances(results.map(result => result.login), m);
       onSearchState?.({ query: q.trim(), results });
       const exactResult = openExact ? findExactLoginResult(q, results) : null;
@@ -215,7 +230,12 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       if (!res.ok) throw new Error(data.error || 'Search is unavailable.');
       if (!controller.signal.aborted) {
         const results = data.results || [];
-        setSearchContext({ interpretedTerms: data.interpretedTerms || [], fallback: data.fallback });
+        const outcomeContext = {
+          interpretedTerms: data.interpretedTerms || [],
+          fallback: data.fallback,
+          matchMode: data.matchMode || 'all',
+        };
+        setSearchContext(outcomeContext);
         onResults(results);
         setResultCount(results.length);
         setVisibleResults(results.slice(0, 3));
@@ -224,7 +244,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           : null;
         setSingleResult(matchedDeveloper);
         if (remember) recordRecentSearch({ query: q, mode: m });
-        recordSearchOutcome(results, m, source);
+        recordSearchOutcome(results, m, source, outcomeContext);
         trackSearchAppearances(results.map(result => result.login), m);
         onSearchState?.({ query: q.trim(), results });
         const exactResult = openExact ? findExactLoginResult(q, results) : null;
@@ -306,8 +326,16 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     inputRef.current?.focus();
   };
 
-  const handleSelectResult = (developer) => {
-    openSearchResult(developer, mode);
+  const handleSelectResult = (developer, index) => {
+    openSearchResult(developer, mode, index + 1);
+  };
+
+  const handleBroadenQuery = () => {
+    const broaderTerms = (searchContext?.interpretedTerms || []).slice(0, -1);
+    if (!broaderTerms.length) return;
+    const broaderQuery = broaderTerms.join(' ');
+    setQuery(broaderQuery);
+    doSearch(broaderQuery, mode, { remember: true, source: 'broaden_search' });
   };
 
   const handleRecentSearch = recent => {
@@ -499,7 +527,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           </div>
           {searchContext?.interpretedTerms?.length > 1 && (
             <div className="search-bar__interpretation" role="status">
-              <span>Matched all:</span>
+              <span>{searchContext.matchMode === 'none' ? 'No strong matches for:' : searchContext.matchMode === 'broadened' ? 'Showing close matches for:' : searchContext.matchMode === 'approximate' ? 'Corrected likely typos in:' : 'Matched all:'}</span>
               <strong>{searchContext.interpretedTerms.join(' + ')}</strong>
             </div>
           )}
@@ -508,6 +536,11 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
               AI ranking is unavailable, so these results use public profile keywords.
             </div>
           )}
+          {resultCount === 0 && searchContext?.interpretedTerms?.length > 1 && (
+            <button type="button" className="search-bar__broaden" onClick={handleBroadenQuery}>
+              Search fewer terms
+            </button>
+          )}
           {visibleResults.length > 0 && (
             <div className="search-bar__suggestions" role="list" aria-label="Top developer matches">
               {visibleResults.map((developer, index) => (
@@ -515,7 +548,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
                   <button
                     type="button"
                     className="search-bar__profile-result"
-                    onClick={() => handleSelectResult(developer)}
+                    onClick={() => handleSelectResult(developer, index)}
                     aria-label={`View ${developer.name || developer.login}'s profile`}
                   >
                     <img src={developer.avatarUrl} alt="" />
@@ -535,11 +568,11 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
                           aria-label={`${developer.match.score} match score. ${developer.match.reasons[0]}. ${developer.match.disclaimer}`}
                         >
                           <b>{developer.match.score} match</b>
-                          <span>{developer.match.reasons[0]}</span>
+                          <span>{developer.match.reasons.slice(0, 2).join(' · ')}</span>
                         </span>
                       )}
                     </span>
-                    <span className="search-bar__view-profile">View profile</span>
+                    <span className="search-bar__view-profile">Open profile</span>
                   </button>
                   <span className="search-bar__card-actions">
                     {index === 0 && singleResult && (

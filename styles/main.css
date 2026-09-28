@@ -944,7 +944,7 @@ body {
 
 .search-bar__advanced-content {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   gap: 10px;
   padding: 0 12px 12px;
   border-top: 1px solid var(--border);
@@ -1258,6 +1258,22 @@ body {
 
 .search-bar__fallback {
   color: var(--accent-github);
+}
+
+.search-bar__broaden {
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--overlay-hover);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.search-bar__broaden:hover {
+  border-color: var(--accent-github);
 }
 
 .search-bar__reset {
