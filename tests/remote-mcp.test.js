@@ -193,6 +193,22 @@ test('remote MCP attributes known clients without retaining raw user agents', as
   assert.doesNotMatch(JSON.stringify(metrics[0]), /SmitheryBot|smithery\.ai/);
 });
 
+test('remote MCP lists tools for JSON clients that omit the SSE Accept value', async () => {
+  const metrics = [];
+  const request = new Request('http://localhost:3000/mcp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 20, method: 'tools/list', params: {} }),
+  });
+
+  const response = await handleRemoteMcpRequest(request, { metricRecorder: metric => metrics.push(metric) });
+  const body = await readMcpResponse(response);
+
+  assert.ok(body.result.tools.some(tool => tool.name === 'search_developers'));
+  assert.equal(metrics[0].outcome, 'success');
+  assert.equal(metrics[0].method, 'tools/list');
+});
+
 test('stateless remote MCP closes its server after every request', async () => {
   let connectedTransport;
   let closed = false;

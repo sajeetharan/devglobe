@@ -59,11 +59,11 @@ export function GET() {
       '/api/search': {
         get: {
           operationId: 'searchDevelopers',
-          summary: 'Search public developer profiles',
+          summary: 'Search public developer profiles with natural-language intent',
           parameters: [
-            { name: 'q', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'q', in: 'query', required: true, description: 'Skills, location, role, name, or GitHub login in natural language', schema: { type: 'string' } },
             { name: 'mode', in: 'query', schema: { type: 'string', enum: ['text', 'vector', 'hybrid'], default: 'hybrid' } },
-            { name: 'top', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 20, default: 10 } },
+            { name: 'top', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 50, default: 10 } },
           ],
           security: [],
           'x-required-scope': 'developers:read',
@@ -76,7 +76,10 @@ export function GET() {
                     type: 'object',
                     properties: {
                       query: { type: 'string' },
+                      requestedMode: { type: 'string', enum: ['text', 'vector', 'hybrid'] },
                       mode: { type: 'string' },
+                      fallback: { type: ['string', 'null'], enum: ['semantic_unavailable', null] },
+                      interpretedTerms: { type: 'array', items: { type: 'string' } },
                       count: { type: 'integer' },
                       results: {
                         type: 'array',

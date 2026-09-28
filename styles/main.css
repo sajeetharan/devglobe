@@ -1237,6 +1237,29 @@ body {
   padding: 0 2px;
 }
 
+.search-bar__interpretation,
+.search-bar__fallback {
+  display: flex;
+  gap: 5px;
+  padding: 6px 2px 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.search-bar__interpretation strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-bar__fallback {
+  color: var(--accent-github);
+}
+
 .search-bar__reset {
   display: inline-flex;
   align-items: center;
