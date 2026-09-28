@@ -298,13 +298,21 @@ test('MCP classifies malformed and unknown requests with bounded error codes', a
 
 test('MCP classifies unsupported protocol versions separately from upstream failures', async () => {
   const metrics = [];
+  let serverCreated = false;
   const response = await handleRemoteMcpRequest(mcpRequest({
     jsonrpc: '2.0', id: 20, method: 'tools/list', params: {},
   }, { 'Mcp-Protocol-Version': '2099-01-01' }), {
     metricRecorder: metric => metrics.push(metric),
+    serverFactory: () => {
+      serverCreated = true;
+      throw new Error('unsupported requests must not allocate a server');
+    },
   });
 
   assert.equal(response.status, 400);
+  assert.equal(serverCreated, false);
+  assert.match(response.headers.get('mcp-protocol-version'), /^\d{4}-\d{2}-\d{2}$/);
+  assert.match((await response.json()).error.message, /Supported versions:/);
   assert.equal(metrics[0].outcome, 'error');
   assert.equal(metrics[0].errorCode, 'unsupported_protocol_version');
 });
