@@ -4,7 +4,12 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import SpecialTags from './SpecialTags.jsx';
 import { track, trackSearchAppearances } from '../lib/analytics.js';
 import { countryKey } from '../lib/country.js';
-import { findExactLoginResult, normalizeTextSearchQuery } from '../lib/developer-search.js';
+import {
+  developerMatchesSearchQuery,
+  findExactLoginResult,
+  normalizeTextSearchQuery,
+  tokenizeDeveloperSearchQuery,
+} from '../lib/developer-search.js';
 import { publicApiUrl } from '../lib/public-api.js';
 import { attachSearchMatches } from '../lib/search-match.js';
 import {
@@ -45,6 +50,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
   const [visibleResults, setVisibleResults] = useState([]);
   const [singleResult, setSingleResult] = useState(null);
   const [searchError, setSearchError] = useState('');
+  const [searchContext, setSearchContext] = useState(null);
   const [agentPromptDismissed, setAgentPromptDismissed] = useState(false);
   const [history, setHistory] = useState({ searches: [], profiles: [] });
   const inputRef = useRef(null);
@@ -139,6 +145,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       setVisibleResults([]);
       setSingleResult(null);
       setSearchError('');
+      setSearchContext(null);
       return;
     }
 
@@ -146,13 +153,13 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
 
     if (m === 'text') {
       const textQuery = normalizeTextSearchQuery(q);
-      const lower = textQuery.toLowerCase();
-      const locationKey = countryKey(textQuery);
+      const interpretedTerms = tokenizeDeveloperSearchQuery(textQuery);
       let results = developers.filter(d =>
-        (d.login && d.login.toLowerCase().includes(lower)) ||
-        (d.name && d.name.toLowerCase().includes(lower)) ||
-        (d.location && countryKey(d.location).includes(locationKey))
+        developerMatchesSearchQuery(d, textQuery) ||
+        (interpretedTerms.length === 1 && d.location && countryKey(d.location).includes(countryKey(interpretedTerms[0])))
       ).slice(0, topN);
+
+      setSearchContext({ interpretedTerms, fallback: null });
 
       if (results.length === 0) {
         const controller = new AbortController();
@@ -165,10 +172,13 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           );
           const data = await response.json();
           if (controller.signal.aborted) return;
+          if (!response.ok) throw new Error(data.error?.message || data.error || 'Search is unavailable.');
           results = data.results || [];
+          setSearchContext({ interpretedTerms: data.interpretedTerms || interpretedTerms, fallback: data.fallback });
         } catch (error) {
           if (error.name === 'AbortError') return;
           console.error('Text search fallback failed:', error);
+          setSearchError(error.message || 'Search is temporarily unavailable.');
           track('search_failed', { action: m, journey: 'developer_discovery', source });
         } finally {
           if (!controller.signal.aborted) setSearching(false);
@@ -205,6 +215,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       if (!res.ok) throw new Error(data.error || 'Search is unavailable.');
       if (!controller.signal.aborted) {
         const results = data.results || [];
+        setSearchContext({ interpretedTerms: data.interpretedTerms || [], fallback: data.fallback });
         onResults(results);
         setResultCount(results.length);
         setVisibleResults(results.slice(0, 3));
@@ -289,6 +300,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
     setVisibleResults([]);
     setSingleResult(null);
     setSearchError('');
+    setSearchContext(null);
     searchStartedRef.current = false;
     onReset();
     inputRef.current?.focus();
@@ -378,7 +390,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           aria-label="Search developers"
           name="developer-search"
           type="text"
-          placeholder={mode === 'text' ? 'Search by skill, location, or GitHub username' : mode === 'vector' ? 'Describe your ideal developer or agent collaborator…' : 'Combine skills, interests, and location…'}
+          placeholder={mode === 'text' ? 'Describe skills, location, or a GitHub username…' : mode === 'vector' ? 'Describe your ideal developer or agent collaborator…' : 'Combine skills, interests, and location…'}
           autoComplete="off"
           spellCheck="false"
           value={query}
@@ -403,7 +415,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
             doSearch(query, mode, { openExact: true, remember: true, source: 'search_button' });
           }}
         >
-          {mode === 'text' ? 'Find developers' : 'Search'}
+          Search
         </button>
       </div>
       <details className="search-bar__advanced">
@@ -412,7 +424,7 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
           <label>
             Search mode
             <select value={mode} onChange={handleModeChange}>
-              <option value="text">Text</option>
+              <option value="text">Natural language</option>
               <option value="vector">Vector (AI)</option>
               <option value="hybrid">Hybrid</option>
             </select>
@@ -473,18 +485,29 @@ export default function SearchBar({ developers, onResults, onReset, onSelectDeve
       </details>
       {searchError && query && (
         <div className="search-bar__error" role="alert">
-          <span>AI search is temporarily unavailable.</span>
-          <button type="button" onClick={handleUseTextSearch}>Use Text search</button>
+          <span>{searchError}</span>
+          {mode !== 'text' && <button type="button" onClick={handleUseTextSearch}>Use natural-language search</button>}
         </div>
       )}
       {resultCount !== null && query && (
         <div className="search-bar__feedback">
           <div className="search-bar__results">
-            <span>{resultCount === 0 ? 'No matches yet. Try a broader skill, location, or GitHub username.' : `${resultCount} developer${resultCount !== 1 ? 's' : ''} found`}</span>
+            <span>{resultCount === 0 ? 'No matches yet. Try fewer details, a broader location, or one skill at a time.' : `${resultCount} developer${resultCount !== 1 ? 's' : ''} found`}</span>
             <button className="search-bar__reset" onClick={handleClear} title="Clear filter and show all">
               ✕ Clear
             </button>
           </div>
+          {searchContext?.interpretedTerms?.length > 1 && (
+            <div className="search-bar__interpretation" role="status">
+              <span>Matched all:</span>
+              <strong>{searchContext.interpretedTerms.join(' + ')}</strong>
+            </div>
+          )}
+          {searchContext?.fallback && (
+            <div className="search-bar__fallback" role="status">
+              AI ranking is unavailable, so these results use public profile keywords.
+            </div>
+          )}
           {visibleResults.length > 0 && (
             <div className="search-bar__suggestions" role="list" aria-label="Top developer matches">
               {visibleResults.map((developer, index) => (

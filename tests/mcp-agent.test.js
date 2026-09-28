@@ -143,6 +143,32 @@ test('MCP client bounds slow trending requests', async () => {
   );
 });
 
+test('MCP client retries trending through the public site when the internal app is unavailable', async () => {
+  const requestedOrigins = [];
+  const client = createDevGlobeMcpClient({
+    baseUrl: 'https://www.devglobe.dev',
+    appApiBaseUrl: 'https://devglobe-web.internal',
+    fetchImpl: async url => {
+      const parsed = new URL(url);
+      requestedOrigins.push(parsed.origin);
+      if (parsed.origin === 'https://devglobe-web.internal') {
+        return Response.json({ error: 'Unavailable' }, { status: 503 });
+      }
+      return Response.json({
+        windowDays: 30,
+        gainers: [{ login: 'fallback-dev', score: 91, scoreDelta: 5 }],
+        newEntries: [],
+        hasHistory: true,
+      });
+    },
+  });
+
+  const result = await client.getTrendingDevelopers({ days: 30, limit: 5 });
+
+  assert.deepEqual(requestedOrigins, ['https://devglobe-web.internal', 'https://www.devglobe.dev']);
+  assert.equal(result.gainers[0].login, 'fallback-dev');
+});
+
 test('MCP client returns similar developers without exposing embeddings', async () => {
   let requestedUrl;
   const client = createDevGlobeMcpClient({
@@ -185,16 +211,19 @@ test('MCP client returns repository matches with profile URLs', async () => {
 });
 
 test('MCP client requires an issued token for introductions', async () => {
-  const client = createDevGlobeMcpClient({ baseUrl: 'https://devglobe.dev', fetchImpl: () => {} });
+  const client = createDevGlobeMcpClient({ baseUrl: 'https://devglobe.dev', agentToken: '', fetchImpl: () => {} });
   await assert.rejects(() => client.requestIntroduction({}), /DEVGLOBE_AGENT_TOKEN/);
 });
 
 test('MCP client authenticates introduction status requests', async () => {
   let receivedAuthorization;
+  let requestedUrl;
   const client = createDevGlobeMcpClient({
     baseUrl: 'https://devglobe.dev',
+    appApiBaseUrl: 'https://devglobe-web.internal',
     agentToken: 'issued-token',
     fetchImpl: async (url, options) => {
+      requestedUrl = new URL(url);
       receivedAuthorization = options.headers.Authorization;
       return new Response(JSON.stringify({ request: { status: 'pending' } }), { status: 200 });
     },
@@ -204,6 +233,29 @@ test('MCP client authenticates introduction status requests', async () => {
     id: 'e6fa6dc6-64df-48c4-8597-c70bfe089bec',
     developerLogin: 'octocat',
   });
+  assert.equal(requestedUrl.origin, 'https://devglobe-web.internal');
   assert.equal(receivedAuthorization, 'Bearer issued-token');
   assert.equal(result.request.status, 'pending');
+});
+
+test('MCP client uses the internal app origin for introduction requests', async () => {
+  let requestedUrl;
+  const client = createDevGlobeMcpClient({
+    baseUrl: 'https://devglobe.dev',
+    appApiBaseUrl: 'https://devglobe-web.internal',
+    agentToken: 'issued-token',
+    fetchImpl: async url => {
+      requestedUrl = new URL(url);
+      return Response.json({ request: { status: 'pending' } }, { status: 201 });
+    },
+  });
+
+  await client.requestIntroduction({
+    developerLogin: 'octocat',
+    project: 'Example UI',
+    reason: 'We need a maintainer for our open-source project.',
+  });
+
+  assert.equal(requestedUrl.origin, 'https://devglobe-web.internal');
+  assert.equal(requestedUrl.pathname, '/api/agent/introductions');
 });
