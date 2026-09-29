@@ -1,0 +1,127 @@
+name: Apply Azure cost optimizations
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type APPLY-COST-OPTIMIZATION to continue
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  COSMOS_SUBSCRIPTION_ID: 5ba12f7d-8235-4c6a-857c-2dc8e4fcb50a
+  COSMOS_RESOURCE_GROUP: rg-devglobe
+  COSMOS_ACCOUNT: devglobe-cosmos
+  COSMOS_DATABASE: devglobe
+  AUTOSCALE_MAX_RU: 4000
+  IMPACT_HISTORY_TTL_SECONDS: 10368000
+
+jobs:
+  optimize:
+    if: inputs.confirmation == 'APPLY-COST-OPTIMIZATION'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.COSMOS_SUBSCRIPTION_ID }}
+
+      - name: Validate current Cosmos throughput
+        id: throughput
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_manual="$(az cosmosdb sql database throughput show \
+            --subscription "$COSMOS_SUBSCRIPTION_ID" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --account-name "$COSMOS_ACCOUNT" \
+            --name "$COSMOS_DATABASE" \
+            --query resource.throughput \
+            --output tsv)"
+          current_autoscale="$(az cosmosdb sql database throughput show \
+            --subscription "$COSMOS_SUBSCRIPTION_ID" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --account-name "$COSMOS_ACCOUNT" \
+            --name "$COSMOS_DATABASE" \
+            --query resource.autoscaleSettings.maxThroughput \
+            --output tsv)"
+          if [[ "$current_autoscale" == "$AUTOSCALE_MAX_RU" ]]; then
+            echo "Cosmos autoscale is already configured at ${AUTOSCALE_MAX_RU} RU/s."
+            echo "already_optimized=true" >> "$GITHUB_OUTPUT"
+            echo "migration_required=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ -n "$current_autoscale" && "$current_autoscale" != "null" ]]; then
+            if (( current_autoscale < AUTOSCALE_MAX_RU )); then
+              echo "Refusing update: autoscale maximum ${current_autoscale} is below the reviewed target." >&2
+              exit 1
+            fi
+            echo "Autoscale is active at ${current_autoscale} RU/s; the target maximum will be repaired."
+            echo "already_optimized=false" >> "$GITHUB_OUTPUT"
+            echo "migration_required=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ "$current_manual" != "4000" ]]; then
+            echo "Refusing migration: expected manual throughput 4000 RU/s, found '${current_manual:-none}'." >&2
+            exit 1
+          fi
+          echo "already_optimized=false" >> "$GITHUB_OUTPUT"
+          echo "migration_required=true" >> "$GITHUB_OUTPUT"
+
+      - name: Migrate shared throughput to autoscale
+        if: steps.throughput.outputs.migration_required == 'true'
+        run: |
+          az cosmosdb sql database throughput update \
+            --subscription "$COSMOS_SUBSCRIPTION_ID" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --account-name "$COSMOS_ACCOUNT" \
+            --name "$COSMOS_DATABASE" \
+            --throughput-type autoscale
+      - name: Set autoscale maximum throughput
+        if: steps.throughput.outputs.already_optimized != 'true'
+        run: |
+          az cosmosdb sql database throughput update \
+            --subscription "$COSMOS_SUBSCRIPTION_ID" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --account-name "$COSMOS_ACCOUNT" \
+            --name "$COSMOS_DATABASE" \
+            --max-throughput "$AUTOSCALE_MAX_RU"
+
+      - name: Bound impact history retention
+        run: |
+          az cosmosdb sql container update \
+            --subscription "$COSMOS_SUBSCRIPTION_ID" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --account-name "$COSMOS_ACCOUNT" \
+            --database-name "$COSMOS_DATABASE" \
+            --name impact-history \
+            --ttl "$IMPACT_HISTORY_TTL_SECONDS"
+
+      - name: Verify optimized Cosmos configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_max="$(az cosmosdb sql database throughput show \
+            --subscription "$COSMOS_SUBSCRIPTION_ID" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --account-name "$COSMOS_ACCOUNT" \
+            --name "$COSMOS_DATABASE" \
+            --query resource.autoscaleSettings.maxThroughput \
+            --output tsv)"
+          [[ "$actual_max" == "$AUTOSCALE_MAX_RU" ]]
+          az cosmosdb sql container show \
+            --subscription "$COSMOS_SUBSCRIPTION_ID" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --account-name "$COSMOS_ACCOUNT" \
+            --database-name "$COSMOS_DATABASE" \
+            --name impact-history \
+            --query '{ttl:resource.defaultTtl,indexingPolicy:resource.indexingPolicy}' \
+            --output json

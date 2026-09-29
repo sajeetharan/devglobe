@@ -1,4 +1,3 @@
-import { CosmosClient } from '@azure/cosmos';
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -6,12 +5,12 @@ import { withNumericScore } from '../../../lib/developer-score.js';
 import { addDeveloperRanks } from '../../../lib/ranking.js';
 import { listLatestSnapshotsOnOrBeforeDay } from '../../../lib/impact-history-store.js';
 import { buildTrending, windowStartDay } from '../../../lib/trending.js';
+import { getCosmosContainer } from '../../../lib/cosmos.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
-const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
-const TRENDING_CACHE_MS = 10 * 60 * 1000;
+const TRENDING_CACHE_MS = 60 * 60 * 1000;
 const TRENDING_QUERY_TIMEOUT_MS = 5000;
 const trendingCache = new Map();
 
@@ -33,8 +32,8 @@ async function loadDevelopers() {
     return rankDevelopers(await getSampleData());
   }
   try {
-    const client = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
-    const container = client.database(DATABASE).container(CONTAINER);
+    const container = getCosmosContainer(CONTAINER);
+    if (!container) return rankDevelopers(await getSampleData());
     const fields = 'c.login, c.name, c.avatarUrl, c.location, c.topLanguage, c.score';
     const { resources } = await container.items.query({
       query: `SELECT ${fields} FROM c WHERE (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved') ORDER BY c.score DESC`,

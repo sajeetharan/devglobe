@@ -1,4 +1,3 @@
-import { CosmosClient } from '@azure/cosmos';
 import { NextResponse } from 'next/server.js';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -9,6 +8,7 @@ import {
   tokenizeDeveloperSearchQuery,
 } from '../../../lib/developer-search.js';
 import { attachSearchMatches } from '../../../lib/search-match.js';
+import { getCosmosContainer } from '../../../lib/cosmos.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
@@ -21,7 +21,6 @@ const OPENAI_CONFIGURED = Boolean(
   && !OPENAI_ENDPOINT.includes('your-resource.openai.azure.com')
 );
 
-const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
 
 // Excludes pending/rejected self-nominations from every search mode. Legacy
@@ -150,8 +149,8 @@ export async function GET(request) {
   }
 
   try {
-    const client = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
-    const container = client.database(DATABASE).container(CONTAINER);
+    const container = getCosmosContainer(CONTAINER);
+    if (!container) throw new Error('Cosmos DB is not configured');
     let results;
     let resolvedMode = mode;
     let fallback = null;
