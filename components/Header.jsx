@@ -6,7 +6,12 @@ import UserMenu from './UserMenu.jsx';
 
 const marketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=devglobedev.devglobe-developer-discovery';
 
-export default function Header({ onHome, theme, onToggleTheme, user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, userMenuRequest, claimStatus, sidebarOpen, onToggleSidebar, liveOpen, onOpenLive, activityOpen, onOpenActivity, onAddMe, onStartTour }) {
+function runMenuAction(event, action) {
+  event.currentTarget.closest('details')?.removeAttribute('open');
+  action();
+}
+
+export default function Header({ onHome, theme, onToggleTheme, user, onLogout, onClaim, onEditAiProfile, onOpenIntroductions, onOpenShortlists, onOpenContributions, onOpenSimilar, onOpenProfile, onGenerateCard, completionVersion, userMenuRequest, claimStatus, sidebarOpen, onToggleSidebar, onAddMe, onStartTour }) {
   return (
     <header className="header">
       <button type="button" className="header__brand" onClick={onHome} aria-label="Go to DevGlobe home">
@@ -14,56 +19,6 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
         <h1 className="header__title">DevGlobe</h1>
       </button>
       <div className="header__actions">
-        <button type="button" onClick={onStartTour} className="btn btn--tour" aria-label="Start quick tour" title="Quick tour">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.1 9a3 3 0 115.8 1c0 2-3 2-3 4" />
-            <path d="M12 18h.01" />
-          </svg>
-        </button>
-        {claimStatus !== 'claimed' && (
-          <button type="button" onClick={onAddMe} className="btn btn--join" aria-label="Add me to the globe" title="Add me to the globe">
-            <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
-              <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm-2 5c-2.97 0-6 1.49-6 3v1h12v-1c0-1.51-3.03-3-6-3zm-4.9 3c.4-1 2.2-2 4.9-2s4.5 1 4.9 2H1.1zM12.5 4h-1a.5.5 0 0 0 0 1h1v1a.5.5 0 0 0 1 0V5h1a.5.5 0 0 0 0-1h-1V3a.5.5 0 0 0-1 0v1z"></path>
-            </svg><span className="btn__label">Add me to globe</span>
-          </button>
-        )}
-        <a href="/repository-match" className="btn btn--repository" aria-label="Build a repository match report" title="Repository match report">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M6 3v12M18 9v12" />
-            <circle cx="6" cy="18" r="3" />
-            <circle cx="18" cy="6" r="3" />
-            <path d="M9 18h3a6 6 0 0 0 6-6V9" />
-          </svg>
-          <span className="btn__label">Repo Match</span>
-        </a>
-        <button
-          type="button"
-          className={`btn btn--live${liveOpen ? ' btn--active' : ''}`}
-          onClick={onOpenLive}
-          aria-label={liveOpen ? 'Close live developer view' : 'See developers coding now'}
-          aria-expanded={liveOpen}
-          title="Show live developers on this globe"
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="2" />
-            <path d="M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7" />
-          </svg>
-          <span className="btn__label">Live now</span>
-        </button>
-        <button
-          type="button"
-          className={`btn btn--activity${activityOpen ? ' btn--active' : ''}`}
-          onClick={onOpenActivity}
-          aria-label={activityOpen ? 'Close today’s mission and activity' : 'Open today’s mission and activity'}
-          aria-expanded={activityOpen}
-          title="Today’s mission and community activity"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 12h4l2-7 4 14 2-7h6" />
-          </svg>
-          <span className="btn__label">Mission</span>
-        </button>
         <button
           type="button"
           className="btn btn--sidebar-toggle"
@@ -114,6 +69,20 @@ export default function Header({ onHome, theme, onToggleTheme, user, onLogout, o
             <span className="btn__label">More</span>
           </summary>
           <nav className="header-more__menu" aria-label="More DevGlobe links">
+            <a href="/repository-match">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 3v12M18 9v12" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="6" r="3" /><path d="M9 18h3a6 6 0 006-6V9" /></svg>
+              <span><strong>Repository match</strong><small>Match contributors to a repository</small></span>
+            </a>
+            {claimStatus !== 'claimed' && (
+              <button type="button" onClick={event => runMenuAction(event, onAddMe)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="8" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></svg>
+                <span><strong>Add me to the globe</strong><small>Create or claim your public profile</small></span>
+              </button>
+            )}
+            <button type="button" onClick={event => runMenuAction(event, onStartTour)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.1 9a3 3 0 115.8 1c0 2-3 2-3 4M12 18h.01" /></svg>
+              <span><strong>Quick tour</strong><small>Focus the developer search</small></span>
+            </button>
             <a href="/space">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2" /><path d="M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7" /></svg>
               <span><strong>Live globe</strong><small>See who is coding right now</small></span>

@@ -12,7 +12,7 @@ test('homepage activity ribbon includes anonymized Reddit feedback', () => {
   assert.doesNotMatch(bannerSource, /Outrageous_Ad_4801|NoRelation8434/);
 });
 
-test('feedback ribbon remains visible for signed-in and signed-out visitors', () => {
-  assert.match(homeSource, /\{!tourStep && <PlatformActivityBanner \/>\}/);
-  assert.match(homeSource, /\{!tourStep && user && claimStatus === 'claimed'/);
+test('homepage prioritizes primary features over the activity ribbon', () => {
+  assert.match(homeSource, /<PublicFeatureBar/);
+  assert.doesNotMatch(homeSource, /<PlatformActivityBanner/);
 });

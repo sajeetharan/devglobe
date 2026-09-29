@@ -16,8 +16,8 @@ import ShortlistManagerModal from '../components/ShortlistManagerModal.jsx';
 import ContributionOpportunitiesModal from '../components/ContributionOpportunitiesModal.jsx';
 import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
-import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
 import ReturnBriefing from '../components/ReturnBriefing.jsx';
+import PublicFeatureBar from '../components/PublicFeatureBar.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import { acquisitionAttributionProperties, socialAttributionProperties } from '../lib/share-attribution.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
@@ -102,14 +102,6 @@ export default function Home() {
     .filter(developer => !liveLanguage || developer.activeLanguage === liveLanguage)
     .filter(developer => !livePlatform || developer.platform === livePlatform),
   [liveDevelopers, liveLanguage, livePlatform]);
-
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(TOUR_COMPLETE_KEY) !== '1') setTourStep('search');
-    } catch {
-      setTourStep('search');
-    }
-  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -244,6 +236,14 @@ export default function Home() {
           if (url.searchParams.get('setup') === 'weekly-updates') {
             setUserMenuRequest(request => request + 1);
             url.searchParams.delete('setup');
+            window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          }
+          if (url.searchParams.get('feature') === 'mission') {
+            setSidebarView('activity');
+            setSidebarOpen(true);
+            setMissionRefreshRequest(request => request + 1);
+            track('next_action_selected', { action: 'mission', journey: 'public_activation', source: 'oauth_return' });
+            url.searchParams.delete('feature');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
           }
         }
@@ -804,6 +804,12 @@ export default function Home() {
     track('live_globe_opened', { source: 'home_header', journey: 'live_presence' });
   }, [sidebarView]);
 
+  const handleOpenSearch = useCallback(() => {
+    setSidebarOpen(false);
+    setSidebarView('leaderboard');
+    requestAnimationFrame(() => document.querySelector('#search-bar input')?.focus());
+  }, []);
+
   const handleSidebarViewChange = useCallback((view) => {
     if (view === 'live') {
       setSelectedCountry('');
@@ -956,14 +962,9 @@ export default function Home() {
         claimStatus={claimStatus}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={handleToggleSidebar}
-        liveOpen={liveViewActive}
-        onOpenLive={handleOpenLive}
-        activityOpen={sidebarView === 'activity'}
-        onOpenActivity={handleOpenActivity}
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
-      {!tourStep && <PlatformActivityBanner />}
       {!tourStep && user && claimStatus === 'claimed' && (
           <ReturnBriefing
             login={user.login}
@@ -971,6 +972,14 @@ export default function Home() {
             onOpenWeeklyUpdates={() => setUserMenuRequest(request => request + 1)}
           />
       )}
+      <PublicFeatureBar
+        activeFeature={sidebarOpen && sidebarView === 'activity' ? 'mission' : sidebarOpen && sidebarView === 'live' ? 'live' : 'search'}
+        signedIn={Boolean(user)}
+        username={user?.login || ''}
+        onSearch={handleOpenSearch}
+        onMission={handleOpenActivity}
+        onLive={handleOpenLive}
+      />
       <SearchBar
         developers={developers}
         onResults={handleSearch}
@@ -990,7 +999,7 @@ export default function Home() {
         showAgentPrompt={agentProfileStatus === 'missing' && !tourStep}
         onOpenAgentProfile={() => setShowAiProfile(true)}
         onOpenAgentNetwork={handleOpenAgentNetwork}
-        showMissionPreview={!tourStep}
+        showMissionPreview={false}
       />
       <QuickTour
         step={tourStep}
