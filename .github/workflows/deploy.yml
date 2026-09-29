@@ -45,4 +45,6 @@ jobs:
           az containerapp update \
             --resource-group "$AZURE_RESOURCE_GROUP" \
             --name "$AZURE_CONTAINER_APP" \
+            --min-replicas 0 \
+            --max-replicas 3 \
             --image "$AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:${GITHUB_SHA}"

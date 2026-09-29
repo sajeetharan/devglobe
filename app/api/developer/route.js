@@ -1,14 +1,13 @@
-import { CosmosClient } from '@azure/cosmos';
 import { NextResponse } from 'next/server.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { getPublicAiProfile } from '../../../lib/ai-profile.js';
 import { withNumericScore } from '../../../lib/developer-score.js';
 import { apiError } from '../../../lib/api-error.js';
+import { getCosmosContainer } from '../../../lib/cosmos.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
-const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
 
 async function getSampleData() {
@@ -51,8 +50,8 @@ export async function GET(request) {
   }
 
   try {
-    const client = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
-    const container = client.database(DATABASE).container(CONTAINER);
+    const container = getCosmosContainer(CONTAINER);
+    if (!container) throw new Error('Cosmos DB is not configured');
 
     const { resources } = await container.items.query({
       query: "SELECT c.id, c.login, c.name, c.avatarUrl, c.bio, c.githubUrl, c.location, c.lat, c.lng, c.followers, c.totalStars, c.totalForks, c.totalWatchers, c.totalCommits, c.topLanguage, c.languages, c.publicRepos, c.topRepos, c.soReputation, c.soAnswers, c.soAcceptRate, c.soBadges, c.soUserId, c.score, c.scoreDimensions, c.scoreWeights, c.scoreHasSO, c.scorePercentile, c.specialTags, c.claimed, c.claimedAt, c.metricsUpdatedAt, c.aiProfile FROM c WHERE (c.id = @id OR c.login = @id) AND (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved')",
