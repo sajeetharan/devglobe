@@ -15,6 +15,9 @@ The globe remains the distinctive spatial interface. Today is the primary return
 This branch uses existing production capabilities only:
 
 - Rename the primary Mission mode to **Today**.
+- Replace the anonymous globe-first entry with a full mission preview workspace.
+- Delay the developer dataset and globe until the user chooses Find people or authenticates.
+- Require GitHub authentication before opening Live coding from the primary feature bar.
 - Reframe the existing activity drawer as **Daily Companion**.
 - Organize it into **Today**, **Progress**, and **Community**.
 - Open Today once per UTC day for direct signed-in homepage visits.

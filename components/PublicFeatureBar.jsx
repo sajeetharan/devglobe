@@ -2,7 +2,7 @@
 
 import { RadioTower, Search, Target } from 'lucide-react';
 import { track } from '../lib/analytics.js';
-import { todayGitHubAuthUrl } from '../lib/public-activation.js';
+import { githubFeatureAuthUrl } from '../lib/public-activation.js';
 
 export default function PublicFeatureBar({ activeFeature, signedIn, username, onSearch, onToday, onLive }) {
   const selectFeature = (feature, action) => {
@@ -27,17 +27,15 @@ export default function PublicFeatureBar({ activeFeature, signedIn, username, on
           <span><strong>Today</strong><small>{username ? `For @${username}` : 'Your next move'}</small></span>
         </button>
       ) : (
-        <a
-          className="public-feature-bar__item public-feature-bar__item--mission"
-          href={todayGitHubAuthUrl()}
-          onClick={() => {
-            track('next_action_selected', { action: 'today', journey: 'daily_companion', source: 'feature_bar' });
-            track('github_auth_started', { source: 'feature_bar_today' });
-          }}
+        <button
+          type="button"
+          className={activeFeature === 'today' ? 'public-feature-bar__item public-feature-bar__item--mission public-feature-bar__item--active' : 'public-feature-bar__item public-feature-bar__item--mission'}
+          aria-pressed={activeFeature === 'today'}
+          onClick={() => selectFeature('today', onToday)}
         >
           <Target aria-hidden="true" />
-          <span><strong>Today</strong><small>Start with GitHub</small></span>
-        </a>
+          <span><strong>Today</strong><small>Preview your mission</small></span>
+        </button>
       )}
       <button
         type="button"
@@ -48,15 +46,26 @@ export default function PublicFeatureBar({ activeFeature, signedIn, username, on
         <Search aria-hidden="true" />
         <span><strong>Find people</strong><small>Skills and projects</small></span>
       </button>
-      <button
-        type="button"
-        className={activeFeature === 'live' ? 'public-feature-bar__item public-feature-bar__item--active' : 'public-feature-bar__item'}
-        aria-pressed={activeFeature === 'live'}
-        onClick={() => selectFeature('live', onLive)}
-      >
-        <RadioTower aria-hidden="true" />
-        <span><strong>Live coding</strong><small>On the globe</small></span>
-      </button>
+      {signedIn ? (
+        <button
+          type="button"
+          className={activeFeature === 'live' ? 'public-feature-bar__item public-feature-bar__item--active' : 'public-feature-bar__item'}
+          aria-pressed={activeFeature === 'live'}
+          onClick={() => selectFeature('live', onLive)}
+        >
+          <RadioTower aria-hidden="true" />
+          <span><strong>Live coding</strong><small>On the globe</small></span>
+        </button>
+      ) : (
+        <a
+          className="public-feature-bar__item"
+          href={githubFeatureAuthUrl('live')}
+          onClick={() => track('github_auth_started', { source: 'feature_bar_live' })}
+        >
+          <RadioTower aria-hidden="true" />
+          <span><strong>Live coding</strong><small>Continue with GitHub</small></span>
+        </a>
+      )}
     </nav>
   );
 }
