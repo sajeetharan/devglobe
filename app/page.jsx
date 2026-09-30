@@ -18,11 +18,17 @@ import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import ReturnBriefing from '../components/ReturnBriefing.jsx';
 import PublicFeatureBar from '../components/PublicFeatureBar.jsx';
+import MissionFirstHome from '../components/MissionFirstHome.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import { acquisitionAttributionProperties, socialAttributionProperties } from '../lib/share-attribution.js';
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
 import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
+import {
+  dailyCompanionStorageKey,
+  dailyCompanionVisitKey,
+  shouldOpenDailyCompanion,
+} from '../lib/public-activation.js';
 import { useExtensionUsers, useLivePresence } from '../components/useLivePresence.js';
 import dynamic from 'next/dynamic';
 
@@ -54,6 +60,8 @@ export default function Home() {
   const [compareDevs, setCompareDevs] = useState([]);
   const [theme, setTheme] = useState('dark');
   const [user, setUser] = useState(null);
+  const [sessionResolved, setSessionResolved] = useState(false);
+  const [publicSurface, setPublicSurface] = useState('today');
   const [claimStatus, setClaimStatus] = useState('checking'); // 'checking' | 'unclaimed' | 'pending' | 'claimed' | 'no_match'
   const [claimedLogins, setClaimedLogins] = useState(() => new Set(cachedDeveloperDataset?.claimedLogins || []));
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -195,6 +203,7 @@ export default function Home() {
         if (data.user) {
           setUser(data.user);
           const url = new URL(window.location.href);
+          const requestedFeature = url.searchParams.get('feature');
           const authSucceeded = url.searchParams.get('auth') === 'success';
           if (authSucceeded) {
             let source = 'signin';
@@ -238,16 +247,45 @@ export default function Home() {
             url.searchParams.delete('setup');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
           }
-          if (url.searchParams.get('feature') === 'mission') {
+          if (requestedFeature === 'today' || requestedFeature === 'mission') {
             setSidebarView('activity');
             setSidebarOpen(true);
             setMissionRefreshRequest(request => request + 1);
-            track('next_action_selected', { action: 'mission', journey: 'public_activation', source: 'oauth_return' });
+            track('next_action_selected', { action: 'today', journey: 'daily_companion', source: 'oauth_return' });
+            try {
+              localStorage.setItem(dailyCompanionStorageKey(data.user.login), dailyCompanionVisitKey(data.user.login));
+            } catch { /* The companion can still open without visit persistence. */ }
             url.searchParams.delete('feature');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          } else if (requestedFeature === 'live') {
+            setSelectedCountry('');
+            setAgentGlobeLayerVisible(false);
+            setSidebarView('live');
+            setSidebarOpen(true);
+            track('live_globe_opened', { source: 'oauth_return', journey: 'live_presence' });
+            url.searchParams.delete('feature');
+            window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          } else {
+            try {
+              const storageKey = dailyCompanionStorageKey(data.user.login);
+              const visitKey = dailyCompanionVisitKey(data.user.login);
+              if (shouldOpenDailyCompanion({
+                login: data.user.login,
+                pathname: url.pathname,
+                searchParams: url.searchParams,
+                lastVisitKey: localStorage.getItem(storageKey) || '',
+              })) {
+                localStorage.setItem(storageKey, visitKey);
+                setSidebarView('activity');
+                setSidebarOpen(true);
+                setMissionRefreshRequest(request => request + 1);
+                track('next_action_selected', { action: 'daily_return', journey: 'daily_companion', source: 'homepage' });
+              }
+            } catch { /* Daily opening is an enhancement, never a sign-in blocker. */ }
           }
         }
       } catch { /* not authenticated */ }
+      finally { setSessionResolved(true); }
     }
     loadSession();
   }, []);
@@ -442,9 +480,10 @@ export default function Home() {
   }, []);
 
   const hasActiveSearchRef = useRef(false);
+  const shouldLoadDeveloperDataset = sessionResolved && (Boolean(user) || publicSurface === 'search');
 
   useEffect(() => {
-    if (cachedDeveloperDataset) return;
+    if (!shouldLoadDeveloperDataset || cachedDeveloperDataset) return;
 
     let cancelled = false;
 
@@ -520,7 +559,7 @@ export default function Home() {
     }
     loadData();
     return () => { cancelled = true; };
-  }, []);
+  }, [shouldLoadDeveloperDataset]);
 
   const handleSearch = useCallback((results) => {
     hasActiveSearchRef.current = true;
@@ -775,6 +814,16 @@ export default function Home() {
     setSidebarOpen(prev => sidebarView === 'leaderboard' ? !prev : true);
   }, [sidebarView]);
 
+  const handleToggleExplorer = useCallback(() => {
+    if (!user && publicSurface === 'today') {
+      setPublicSurface('search');
+      setSidebarView('leaderboard');
+      setSidebarOpen(true);
+      return;
+    }
+    handleToggleSidebar();
+  }, [handleToggleSidebar, publicSurface, user]);
+
   const handleOpenActivity = useCallback(() => {
     if (sidebarView === 'activity') {
       setSidebarOpen(false);
@@ -784,6 +833,16 @@ export default function Home() {
     setSidebarView('activity');
     setSidebarOpen(true);
   }, [sidebarView]);
+
+  const handleOpenToday = useCallback(() => {
+    if (user) {
+      handleOpenActivity();
+      return;
+    }
+    setSidebarOpen(false);
+    setSidebarView('leaderboard');
+    setPublicSurface('today');
+  }, [handleOpenActivity, user]);
 
   const handleStartMission = useCallback(() => {
     setSidebarView('activity');
@@ -807,7 +866,8 @@ export default function Home() {
   const handleOpenSearch = useCallback(() => {
     setSidebarOpen(false);
     setSidebarView('leaderboard');
-    requestAnimationFrame(() => document.querySelector('#search-bar input')?.focus());
+    setPublicSurface('search');
+    requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector('#search-bar input')?.focus()));
   }, []);
 
   const handleSidebarViewChange = useCallback((view) => {
@@ -908,11 +968,14 @@ export default function Home() {
     setFlyTarget(null);
     setSelectedCountry('');
     setSidebarOpen(false);
-  }, [developers]);
+    if (!user) setPublicSurface('today');
+  }, [developers, user]);
 
   if (error) {
     return <LoadingOverlay error={error} datasetCount={datasetCount} />;
   }
+
+  const showMissionHome = !sessionResolved || (!user && publicSurface === 'today');
 
   return (
     <div id="app" className={tourStep ? 'tour-active' : ''} aria-busy={loading}>
@@ -942,7 +1005,7 @@ export default function Home() {
           <a href="/sitemap.xml">Sitemap</a>
         </nav>
       </section>
-      {loading && <LoadingOverlay datasetCount={datasetCount} stage={loadingStage} />}
+      {loading && !showMissionHome && <LoadingOverlay datasetCount={datasetCount} stage={loadingStage} />}
       <Header
         onHome={handleHome}
         theme={theme}
@@ -961,11 +1024,11 @@ export default function Home() {
         userMenuRequest={userMenuRequest}
         claimStatus={claimStatus}
         sidebarOpen={sidebarOpen}
-        onToggleSidebar={handleToggleSidebar}
+        onToggleSidebar={handleToggleExplorer}
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
-      {!tourStep && user && claimStatus === 'claimed' && (
+      {!tourStep && user && claimStatus === 'claimed' && !(sidebarOpen && sidebarView === 'activity') && (
           <ReturnBriefing
             login={user.login}
             onOpenContributions={() => setShowContributions(true)}
@@ -973,14 +1036,14 @@ export default function Home() {
           />
       )}
       <PublicFeatureBar
-        activeFeature={sidebarOpen && sidebarView === 'activity' ? 'mission' : sidebarOpen && sidebarView === 'live' ? 'live' : 'search'}
+        activeFeature={!user ? publicSurface : sidebarOpen && sidebarView === 'activity' ? 'today' : sidebarOpen && sidebarView === 'live' ? 'live' : 'search'}
         signedIn={Boolean(user)}
         username={user?.login || ''}
         onSearch={handleOpenSearch}
-        onMission={handleOpenActivity}
+        onToday={handleOpenToday}
         onLive={handleOpenLive}
       />
-      <SearchBar
+      {!showMissionHome && <SearchBar
         developers={developers}
         onResults={handleSearch}
         onReset={handleResetFilter}
@@ -1000,13 +1063,14 @@ export default function Home() {
         onOpenAgentProfile={() => setShowAiProfile(true)}
         onOpenAgentNetwork={handleOpenAgentNetwork}
         showMissionPreview={false}
-      />
-      <QuickTour
+      />}
+      {!showMissionHome && <QuickTour
         step={tourStep}
         onFocusSearch={handleTourFocusSearch}
         onClose={completeTour}
-      />
-      <main className="main">
+      />}
+      <main className={`main${showMissionHome ? ' main--mission-home' : ''}`}>
+        {showMissionHome ? <MissionFirstHome /> : <>
         <Globe
           ref={globeRef}
           developers={filtered}
@@ -1084,6 +1148,7 @@ export default function Home() {
         {compareDevs.length === 2 && (
           <ComparePanel devs={compareDevs} onClose={handleCloseCompare} />
         )}
+        </>}
         {showAddMe && (
           <AddMeModal
             onClose={handleCloseAddMe}

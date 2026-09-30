@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { track } from '../lib/analytics.js';
 import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
+import { todayGitHubAuthUrl } from '../lib/public-activation.js';
 import MissionFreshness from './MissionFreshness.jsx';
 
 const COMPLETED_PAGE_SIZE = 10;
@@ -156,8 +157,8 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
       <section className="today-mission today-mission--completed" aria-labelledby="completed-missions-title" aria-busy={status === 'loading' || updating}>
         <div className="today-mission__heading">
           <div>
-            <span>DEVGLOBE MISSIONS</span>
-            <h2 id="completed-missions-title">Completed missions</h2>
+            <span>Your contribution record</span>
+            <h2 id="completed-missions-title">Mission progress</h2>
           </div>
           {showHistory && <strong className="today-mission__count">{completedMissions.length}</strong>}
         </div>
@@ -166,7 +167,7 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
         {status === 'signed-out' && (
           <div className="today-mission__state">
             <span>{message}</span>
-            <a href="/api/auth/github">Sign in with GitHub</a>
+            <a href={todayGitHubAuthUrl()} onClick={() => track('github_auth_started', { source: 'daily_companion_progress' })}>Continue with GitHub</a>
           </div>
         )}
         {status === 'claim-required' && (
@@ -226,8 +227,8 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
     <section className="today-mission" aria-labelledby="today-mission-title" aria-busy={status === 'loading' || updating}>
       <div className="today-mission__heading">
         <div>
-          <span>ONE FOCUSED CONTRIBUTION</span>
-          <h2 id="today-mission-title">Today’s Mission</h2>
+          <span>Your next useful move</span>
+          <h2 id="today-mission-title">Today’s mission</h2>
         </div>
         <div className="today-mission__heading-actions">
           <strong>{mission?.durationMinutes || 15} min</strong>
@@ -239,7 +240,7 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
       {status === 'signed-out' && (
         <div className="today-mission__state">
           <span>{message}</span>
-          <a href="/api/auth/github">Sign in with GitHub</a>
+          <a href={todayGitHubAuthUrl()} onClick={() => track('github_auth_started', { source: 'daily_companion_today' })}>Continue with GitHub</a>
         </div>
       )}
       {status === 'claim-required' && (
