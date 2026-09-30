@@ -89,10 +89,15 @@ export default function GlobalActivityFeed({ active, missionRefreshRequest = 0, 
 
   return (
     <div className="global-activity">
+      <header className="global-activity__intro">
+        <span>Daily companion</span>
+        <h2>Make one useful move today</h2>
+        <p>Take a matched mission, review completed work, or see what changed in the community.</p>
+      </header>
       <div className="global-activity__views" role="tablist" aria-label="Activity sections">
         <button ref={node => { viewTabsRef.current[0] = node; }} id="activity-tab-today" type="button" role="tab" tabIndex={selectedView === 'today' ? 0 : -1} aria-selected={selectedView === 'today'} aria-controls="activity-today" className={selectedView === 'today' ? 'global-activity__view global-activity__view--active' : 'global-activity__view'} onClick={() => selectView('today')} onKeyDown={event => handleViewKeyDown(event, 0)}>Today</button>
         <button ref={node => { viewTabsRef.current[1] = node; }} id="activity-tab-completed" type="button" role="tab" tabIndex={selectedView === 'completed' ? 0 : -1} aria-selected={selectedView === 'completed'} aria-controls="activity-completed" className={selectedView === 'completed' ? 'global-activity__view global-activity__view--active' : 'global-activity__view'} onClick={() => selectView('completed')} onKeyDown={event => handleViewKeyDown(event, 1)}>
-          <span>Completed</span>
+          <span>Progress</span>
           {completedCount !== null && <strong>{completedCount}</strong>}
         </button>
         <button ref={node => { viewTabsRef.current[2] = node; }} id="activity-tab-community" type="button" role="tab" tabIndex={selectedView === 'community' ? 0 : -1} aria-selected={selectedView === 'community'} aria-controls="activity-community" className={selectedView === 'community' ? 'global-activity__view global-activity__view--active' : 'global-activity__view'} onClick={() => selectView('community')} onKeyDown={event => handleViewKeyDown(event, 2)}>Community</button>

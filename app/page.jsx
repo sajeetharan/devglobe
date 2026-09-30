@@ -23,6 +23,11 @@ import { acquisitionAttributionProperties, socialAttributionProperties } from '.
 import { developerSnapshotUrl, publicApiUrl } from '../lib/public-api.js';
 import { resolveIdentityCardDeveloper } from '../lib/home-actions.js';
 import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
+import {
+  dailyCompanionStorageKey,
+  dailyCompanionVisitKey,
+  shouldOpenDailyCompanion,
+} from '../lib/public-activation.js';
 import { useExtensionUsers, useLivePresence } from '../components/useLivePresence.js';
 import dynamic from 'next/dynamic';
 
@@ -195,6 +200,7 @@ export default function Home() {
         if (data.user) {
           setUser(data.user);
           const url = new URL(window.location.href);
+          const requestedFeature = url.searchParams.get('feature');
           const authSucceeded = url.searchParams.get('auth') === 'success';
           if (authSucceeded) {
             let source = 'signin';
@@ -238,13 +244,33 @@ export default function Home() {
             url.searchParams.delete('setup');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
           }
-          if (url.searchParams.get('feature') === 'mission') {
+          if (requestedFeature === 'today' || requestedFeature === 'mission') {
             setSidebarView('activity');
             setSidebarOpen(true);
             setMissionRefreshRequest(request => request + 1);
-            track('next_action_selected', { action: 'mission', journey: 'public_activation', source: 'oauth_return' });
+            track('next_action_selected', { action: 'today', journey: 'daily_companion', source: 'oauth_return' });
+            try {
+              localStorage.setItem(dailyCompanionStorageKey(data.user.login), dailyCompanionVisitKey(data.user.login));
+            } catch { /* The companion can still open without visit persistence. */ }
             url.searchParams.delete('feature');
             window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          } else {
+            try {
+              const storageKey = dailyCompanionStorageKey(data.user.login);
+              const visitKey = dailyCompanionVisitKey(data.user.login);
+              if (shouldOpenDailyCompanion({
+                login: data.user.login,
+                pathname: url.pathname,
+                searchParams: url.searchParams,
+                lastVisitKey: localStorage.getItem(storageKey) || '',
+              })) {
+                localStorage.setItem(storageKey, visitKey);
+                setSidebarView('activity');
+                setSidebarOpen(true);
+                setMissionRefreshRequest(request => request + 1);
+                track('next_action_selected', { action: 'daily_return', journey: 'daily_companion', source: 'homepage' });
+              }
+            } catch { /* Daily opening is an enhancement, never a sign-in blocker. */ }
           }
         }
       } catch { /* not authenticated */ }
@@ -965,7 +991,7 @@ export default function Home() {
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
-      {!tourStep && user && claimStatus === 'claimed' && (
+      {!tourStep && user && claimStatus === 'claimed' && !(sidebarOpen && sidebarView === 'activity') && (
           <ReturnBriefing
             login={user.login}
             onOpenContributions={() => setShowContributions(true)}
@@ -973,11 +999,11 @@ export default function Home() {
           />
       )}
       <PublicFeatureBar
-        activeFeature={sidebarOpen && sidebarView === 'activity' ? 'mission' : sidebarOpen && sidebarView === 'live' ? 'live' : 'search'}
+        activeFeature={sidebarOpen && sidebarView === 'activity' ? 'today' : sidebarOpen && sidebarView === 'live' ? 'live' : 'search'}
         signedIn={Boolean(user)}
         username={user?.login || ''}
         onSearch={handleOpenSearch}
-        onMission={handleOpenActivity}
+        onToday={handleOpenActivity}
         onLive={handleOpenLive}
       />
       <SearchBar
