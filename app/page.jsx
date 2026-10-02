@@ -17,6 +17,8 @@ import ContributionOpportunitiesModal from '../components/ContributionOpportunit
 import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
 import PlatformActivityBanner from '../components/PlatformActivityBanner.jsx';
+import HacktoberfestBanner from '../components/HacktoberfestBanner.jsx';
+import { isHacktoberfestCampaignActive } from '../lib/hacktoberfest-campaign.js';
 import ReturnBriefing from '../components/ReturnBriefing.jsx';
 import { prepareDeveloperDataset } from '../lib/developer-dataset.js';
 import { acquisitionAttributionProperties, socialAttributionProperties } from '../lib/share-attribution.js';
@@ -78,6 +80,7 @@ export default function Home() {
   const [trending, setTrending] = useState(null);
   const [trendingError, setTrendingError] = useState('');
   const [tourStep, setTourStep] = useState(null);
+  const [hacktoberfestActive, setHacktoberfestActive] = useState(false);
   const [liveLanguage, setLiveLanguage] = useState('');
   const [livePlatform, setLivePlatform] = useState('');
   const [missionRefreshRequest, setMissionRefreshRequest] = useState(0);
@@ -104,6 +107,7 @@ export default function Home() {
   [liveDevelopers, liveLanguage, livePlatform]);
 
   useEffect(() => {
+    setHacktoberfestActive(isHacktoberfestCampaignActive());
     try {
       if (localStorage.getItem(TOUR_COMPLETE_KEY) !== '1') setTourStep('search');
     } catch {
@@ -963,7 +967,9 @@ export default function Home() {
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
-      {!tourStep && <PlatformActivityBanner />}
+      {hacktoberfestActive
+        ? <HacktoberfestBanner />
+        : !tourStep && <PlatformActivityBanner />}
       {!tourStep && user && claimStatus === 'claimed' && (
           <ReturnBriefing
             login={user.login}

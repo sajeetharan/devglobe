@@ -3,18 +3,26 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { track } from '../lib/analytics.js';
+import { acquisitionAttributionProperties } from '../lib/share-attribution.js';
+import { HACKTOBERFEST_CAMPAIGN } from '../lib/hacktoberfest-campaign.js';
 import styles from './HacktoberfestMatchmaker.module.css';
 
 export default function HacktoberfestMatchmaker() {
   const [login, setLogin] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const [profileMissing, setProfileMissing] = useState(false);
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    const initialLogin = new URLSearchParams(window.location.search).get('login') || '';
+    const params = new URLSearchParams(window.location.search);
+    const initialLogin = params.get('login') || '';
     if (/^[a-z\d-]{1,39}$/i.test(initialLogin)) setLogin(initialLogin);
-    track('recommendation_opened', { journey: 'hacktoberfest_matchmaker' });
+    track('site_visited', {
+      ...acquisitionAttributionProperties(params, { referrer: document.referrer, siteUrl: window.location.origin }),
+      journey: 'hacktoberfest_matchmaker',
+    });
+    track('recommendation_opened', { journey: 'hacktoberfest_matchmaker', campaign: HACKTOBERFEST_CAMPAIGN });
   }, []);
 
   async function findMatches(event) {
@@ -22,16 +30,22 @@ export default function HacktoberfestMatchmaker() {
     const normalizedLogin = login.trim().replace(/^@/, '');
     setStatus('loading');
     setError('');
+    setProfileMissing(false);
     setResult(null);
-    track('next_action_selected', { action: 'hacktoberfest_username_submit', journey: 'hacktoberfest_matchmaker' });
+    track('next_action_selected', { action: 'hacktoberfest_username_submit', journey: 'hacktoberfest_matchmaker', campaign: HACKTOBERFEST_CAMPAIGN });
 
     try {
       const response = await fetch(`/api/hacktoberfest-matches?login=${encodeURIComponent(normalizedLogin)}`, { cache: 'no-store' });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Unable to find matches');
+      if (!response.ok) {
+        setProfileMissing(response.status === 404);
+        throw new Error(data.error || 'Unable to find matches');
+      }
       setResult(data);
       setStatus('ready');
-      window.history.replaceState({}, '', `/hacktoberfest?login=${encodeURIComponent(data.developer.login)}`);
+      const url = new URL(window.location.href);
+      url.searchParams.set('login', data.developer.login);
+      window.history.replaceState({}, '', `${url.pathname}${url.search}`);
     } catch (matchError) {
       setError(matchError.message);
       setStatus('error');
@@ -50,14 +64,15 @@ export default function HacktoberfestMatchmaker() {
 
       <section className={styles.workspace}>
         <header className={styles.intro}>
-          <span className={styles.eyebrow}>HACKTOBERFEST 2026</span>
-          <h1>Find an issue worth opening.</h1>
-          <p>Enter your GitHub username. DevGlobe uses your public language profile to find three fresh, unassigned issues with contribution guidance.</p>
+          <span className={styles.eyebrow}>Hacktoberfest 2026</span>
+          <h1>Your next contribution starts here.</h1>
+          <p>Skip the endless issue search. Use your DevGlobe language profile to discover up to three fresh, unassigned issues labeled for Hacktoberfest.</p>
+          <p className={styles.requirement}>Already on DevGlobe? Enter your GitHub username. No sign-in required.</p>
         </header>
 
         <div className={styles.tool} aria-busy={status === 'loading'}>
           <div className={styles.toolHeading}>
-            <span>OPEN SOURCE PASSPORT</span>
+            <span>Find your contribution</span>
             <span>Public beta</span>
           </div>
           <form onSubmit={findMatches} className={styles.form}>
@@ -79,7 +94,7 @@ export default function HacktoberfestMatchmaker() {
                 {status === 'loading' ? 'Matching...' : 'Find my matches'}
               </button>
             </div>
-            <p>Public DevGlobe data only. No sign-in required.</p>
+            <p>Your username must have a public DevGlobe profile. We never request access to your private repositories.</p>
           </form>
 
           {status === 'loading' && (
@@ -90,7 +105,11 @@ export default function HacktoberfestMatchmaker() {
           )}
           {status === 'error' && (
             <div className={`${styles.state} ${styles.error}`} role="alert">
-              <div><strong>We could not build this passport</strong><span>{error}</span></div>
+              <div>
+                <strong>{profileMissing ? 'Your profile is not on DevGlobe yet' : 'Matches could not be loaded'}</strong>
+                <span>{profileMissing ? 'Open the globe and choose "Add me to globe" to submit your profile. Matching is available after approval.' : error}</span>
+                {profileMissing && <Link href="/">Add my profile on the globe</Link>}
+              </div>
             </div>
           )}
 
@@ -125,7 +144,7 @@ export default function HacktoberfestMatchmaker() {
                         href={match.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={() => track('next_action_selected', { action: 'open_hacktoberfest_match', journey: 'hacktoberfest_matchmaker' })}
+                        onClick={() => track('next_action_selected', { action: 'open_hacktoberfest_match', journey: 'hacktoberfest_matchmaker', campaign: HACKTOBERFEST_CAMPAIGN })}
                       >
                         Open issue
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -150,10 +169,15 @@ export default function HacktoberfestMatchmaker() {
         </div>
 
         <dl className={styles.criteria}>
-          <div><dt>01</dt><dd>Matched to your languages</dd></div>
-          <div><dt>02</dt><dd>Open and unassigned</dd></div>
-          <div><dt>03</dt><dd>Contribution guide verified</dd></div>
+          <div><dt>Skills</dt><dd>Matched to your profile languages</dd></div>
+          <div><dt>Issues</dt><dd>Open, unassigned, recently updated</dd></div>
+          <div><dt>Guidance</dt><dd>A contribution guide is available</dd></div>
         </dl>
+        <p className={styles.eventNote}>
+          DevGlobe is an independent issue finder, not an official Hacktoberfest partner.
+          Issue labels do not guarantee event eligibility or rewards. Read the project's contribution guide and{' '}
+          <a href="https://hacktoberfest.com/" target="_blank" rel="noopener noreferrer">current Hacktoberfest guidance</a> before contributing.
+        </p>
       </section>
 
       <footer className={styles.footer}>
