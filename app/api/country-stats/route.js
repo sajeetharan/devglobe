@@ -1,14 +1,16 @@
-import { CosmosClient } from '@azure/cosmos';
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { withNumericScore } from '../../../lib/developer-score.js';
 import { computeCountryStats } from '../../../lib/country-stats.js';
+import { getCosmosContainer } from '../../../lib/cosmos.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
-const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
+const COUNTRY_STATS_CACHE_MS = 60 * 60 * 1000;
+let countryStatsCache;
+let countryStatsPromise;
 
 async function getSampleData() {
   const filePath = path.join(process.cwd(), 'data', 'developers-sample.json');
@@ -22,8 +24,8 @@ async function getDevelopersForStats() {
   }
 
   try {
-    const client = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
-    const container = client.database(DATABASE).container(CONTAINER);
+    const container = getCosmosContainer(CONTAINER);
+    if (!container) return (await getSampleData()).map(withNumericScore);
     const fields = 'c.location, c.score, c.topLanguage';
     const query = `SELECT ${fields} FROM c WHERE (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved')`;
     const { resources } = await container.items.query(query).fetchAll();
@@ -39,12 +41,25 @@ async function getDevelopersForStats() {
 // normalization the globe/leaderboard country filter already relies on.
 export async function GET() {
   try {
-    const developers = await getDevelopersForStats();
-    const countries = computeCountryStats(developers);
-    const totalDevelopers = developers.filter(d => d.location).length;
+    if (!countryStatsCache || countryStatsCache.expiresAt <= Date.now()) {
+      countryStatsPromise ||= getDevelopersForStats()
+        .then(developers => {
+          countryStatsCache = {
+            value: {
+              countries: computeCountryStats(developers),
+              totalDevelopers: developers.filter(developer => developer.location).length,
+            },
+            expiresAt: Date.now() + COUNTRY_STATS_CACHE_MS,
+          };
+        })
+        .finally(() => {
+          countryStatsPromise = null;
+        });
+      await countryStatsPromise;
+    }
 
     return NextResponse.json(
-      { countries, totalDevelopers },
+      countryStatsCache.value,
       { headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate=600' } },
     );
   } catch (err) {

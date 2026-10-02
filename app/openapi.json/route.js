@@ -80,6 +80,7 @@ export function GET() {
                       mode: { type: 'string' },
                       fallback: { type: ['string', 'null'], enum: ['semantic_unavailable', null] },
                       interpretedTerms: { type: 'array', items: { type: 'string' } },
+                      matchMode: { type: 'string', enum: ['all', 'approximate', 'broadened', 'none'] },
                       count: { type: 'integer' },
                       results: {
                         type: 'array',

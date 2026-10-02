@@ -70,4 +70,4 @@ Compare visitors and sessions against the same hours on earlier days, then measu
 
 Use the confirmed website telemetry location: `AppPageViews` / `AppEvents` in `DefaultWorkspace-0caf9c40-8ea2-43b1-a54f-38c656a8e1f0-EUS`, scoped to the `devglobe-public-api` Application Insights resource and the `devglobe.dev` / `www.devglobe.dev` hosts. Do not substitute MCP callers for website users.
 
-The homepage highlight appears during October 2026 (UTC), including the first-visit tour, and replaces the rotating activity strip in the same space. Outside October the existing activity strip returns. The matching route remains accessible.
+The homepage highlight appears during October 2026 (UTC), including the first-visit tour. It sits above the primary feature navigation, with space reserved for the search and daily mission surfaces. Outside October it disappears, leaving the daily-companion homepage unchanged. The matching route remains accessible.

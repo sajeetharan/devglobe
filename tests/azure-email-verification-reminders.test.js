@@ -27,7 +27,7 @@ test('Azure timer invokes the protected verification reminder endpoint', async (
       return {
         ok: true,
         status: 200,
-        json: async () => ({ scanned: 7, eligible: 7, sent: 7, skipped: 0, failed: 0 }),
+        json: async () => ({ scanned: 7, eligible: 7, sent: 7, skipped: 0, suppressed: 0, failed: 0 }),
       };
     };
 
@@ -38,6 +38,7 @@ test('Azure timer invokes the protected verification reminder endpoint', async (
       eligible: 7,
       sent: 7,
       skipped: 0,
+      suppressed: 0,
       failed: 0,
     });
 

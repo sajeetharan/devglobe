@@ -180,7 +180,7 @@ export default function Leaderboard({
           className={activeView === 'activity' ? 'sidebar__tab sidebar__tab--active' : 'sidebar__tab'}
           onClick={() => onViewChange?.('activity')}
         >
-          Activity
+          Today
         </button>
         <button
           type="button"

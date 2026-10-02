@@ -15,6 +15,7 @@ module.exports = async function emailVerificationReminders(context) {
     eligible: result.eligible,
     sent: result.sent,
     skipped: result.skipped,
+    suppressed: result.suppressed,
     failed: result.failed,
   });
   if (!response.ok) throw new Error(`Email verification reminders returned ${response.status}`);

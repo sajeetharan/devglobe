@@ -1,10 +1,14 @@
-import { CosmosClient } from '@azure/cosmos';
 import { NextResponse } from 'next/server.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { apiError } from '../../../lib/api-error.js';
-import { developerMatchesSearchQuery, tokenizeDeveloperSearchQuery } from '../../../lib/developer-search.js';
+import {
+  rankDeveloperSearchResults,
+  searchTermAlternatives,
+  tokenizeDeveloperSearchQuery,
+} from '../../../lib/developer-search.js';
 import { attachSearchMatches } from '../../../lib/search-match.js';
+import { getCosmosContainer } from '../../../lib/cosmos.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
@@ -17,7 +21,6 @@ const OPENAI_CONFIGURED = Boolean(
   && !OPENAI_ENDPOINT.includes('your-resource.openai.azure.com')
 );
 
-const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
 
 // Excludes pending/rejected self-nominations from every search mode. Legacy
@@ -31,21 +34,31 @@ async function getSampleData() {
 }
 
 function searchSampleData(data, q, limit) {
-  return data
-    .filter(developer => developerMatchesSearchQuery(developer, q))
-    .slice(0, limit);
+  const search = rankDeveloperSearchResults(data, q, limit);
+  return {
+    ...search,
+    results: search.results.map(developer => ({ id: developer.id || developer.login, ...developer })),
+  };
 }
 
-function buildTextSearch(terms, limit) {
-  const parameters = terms.map((term, index) => ({ name: `@q${index}`, value: term }));
-  const predicates = terms.map((_, index) => `(
-    CONTAINS(LOWER(c.login), @q${index})
-    OR CONTAINS(LOWER(c.name), @q${index})
-    OR CONTAINS(LOWER(c.location), @q${index})
-    OR CONTAINS(LOWER(c.bio), @q${index})
-    OR CONTAINS(LOWER(c.topLanguage), @q${index})
-    OR EXISTS(SELECT VALUE tag FROM tag IN c.specialTags WHERE CONTAINS(LOWER(tag), @q${index}))
-  )`);
+function buildTextSearch(terms, limit, matchAll = true) {
+  const parameters = [];
+  const predicates = terms.map((term, termIndex) => {
+    const alternatives = searchTermAlternatives(term);
+    const alternativePredicates = alternatives.map((alternative, alternativeIndex) => {
+      const parameterName = `@q${termIndex}_${alternativeIndex}`;
+      parameters.push({ name: parameterName, value: alternative });
+      return `(
+        CONTAINS(LOWER(c.login), ${parameterName})
+        OR CONTAINS(LOWER(c.name), ${parameterName})
+        OR CONTAINS(LOWER(c.location), ${parameterName})
+        OR CONTAINS(LOWER(c.bio), ${parameterName})
+        OR CONTAINS(LOWER(c.topLanguage), ${parameterName})
+        OR EXISTS(SELECT VALUE tag FROM tag IN c.specialTags WHERE CONTAINS(LOWER(tag), ${parameterName}))
+      )`;
+    });
+    return `(${alternativePredicates.join(' OR ')})`;
+  });
 
   return {
     query: `
@@ -53,7 +66,7 @@ function buildTextSearch(terms, limit) {
         c.id, c.login, c.name, c.avatarUrl, c.location, c.lat, c.lng,
         c.topLanguage, c.score, c.totalStars, c.followers, c.soReputation, c.specialTags
       FROM c
-      WHERE ${predicates.join(' AND ')} AND ${PUBLIC_FILTER}
+      WHERE ${predicates.join(matchAll ? ' AND ' : ' OR ')} AND ${PUBLIC_FILTER}
       ORDER BY c.score DESC
     `,
     parameters,
@@ -61,8 +74,12 @@ function buildTextSearch(terms, limit) {
 }
 
 async function runTextSearch(container, terms, limit) {
-  const { resources } = await container.items.query(buildTextSearch(terms, limit)).fetchAll();
-  return resources;
+  const strict = await container.items.query(buildTextSearch(terms, limit)).fetchAll();
+  if (strict.resources.length || terms.length < 2) return { results: strict.resources, matchMode: 'all' };
+  const candidateLimit = Math.min(Math.max(limit * 5, 50), 200);
+  const broadened = await container.items.query(buildTextSearch(terms, candidateLimit, false)).fetchAll();
+  const ranked = rankDeveloperSearchResults(broadened.resources, terms.join(' '), limit);
+  return { results: ranked.results, matchMode: ranked.matchMode };
 }
 
 async function runVectorSearch(container, query, limit) {
@@ -117,24 +134,27 @@ export async function GET(request) {
 
   if (!COSMOS_ENDPOINT || !COSMOS_KEY) {
     const data = await getSampleData();
-    const results = attachSearchMatches(searchSampleData(data, q, limit), q, 'text');
+    const search = searchSampleData(data, q, limit);
+    const results = attachSearchMatches(search.results, q, 'text');
     return NextResponse.json({
       query: q,
       requestedMode: mode,
       mode: 'text',
       fallback: mode === 'text' ? null : 'semantic_unavailable',
       interpretedTerms,
+      matchMode: search.matchMode,
       count: results.length,
       results,
     });
   }
 
   try {
-    const client = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
-    const container = client.database(DATABASE).container(CONTAINER);
+    const container = getCosmosContainer(CONTAINER);
+    if (!container) throw new Error('Cosmos DB is not configured');
     let results;
     let resolvedMode = mode;
     let fallback = null;
+    let matchMode = 'all';
 
     if (mode === 'vector') {
       try {
@@ -142,19 +162,25 @@ export async function GET(request) {
         results = await runVectorSearch(container, q, limit);
       } catch (error) {
         console.warn('Vector search fell back to text:', error.message);
-        results = await runTextSearch(container, interpretedTerms, limit);
+        const textSearch = await runTextSearch(container, interpretedTerms, limit);
+        results = textSearch.results;
+        matchMode = textSearch.matchMode;
         resolvedMode = 'text';
         fallback = 'semantic_unavailable';
       }
     } else if (mode === 'text') {
-      results = await runTextSearch(container, interpretedTerms, limit);
+      const textSearch = await runTextSearch(container, interpretedTerms, limit);
+      results = textSearch.results;
+      matchMode = textSearch.matchMode;
     } else {
       try {
         if (!OPENAI_CONFIGURED) throw new Error('Semantic search is not configured');
-        const [vectorResults, textResults] = await Promise.all([
+        const [vectorResults, textSearch] = await Promise.all([
           runVectorSearch(container, q, limit),
           runTextSearch(container, interpretedTerms, limit),
         ]);
+        const textResults = textSearch.results;
+        matchMode = textSearch.matchMode;
         const k = 60;
         const rrf = new Map();
         const allMap = new Map();
@@ -169,7 +195,9 @@ export async function GET(request) {
         results = [...rrf.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([login]) => allMap.get(login));
       } catch (error) {
         console.warn('Hybrid search fell back to text:', error.message);
-        results = await runTextSearch(container, interpretedTerms, limit);
+        const textSearch = await runTextSearch(container, interpretedTerms, limit);
+        results = textSearch.results;
+        matchMode = textSearch.matchMode;
         resolvedMode = 'text';
         fallback = 'semantic_unavailable';
       }
@@ -182,6 +210,7 @@ export async function GET(request) {
       mode: resolvedMode,
       fallback,
       interpretedTerms,
+      matchMode,
       count: results.length,
       results,
     });

@@ -1,21 +1,14 @@
-import { CosmosClient } from '@azure/cosmos';
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { projectAgentReadiness } from '../../../lib/agent-network.js';
 import { withNumericScore } from '../../../lib/developer-score.js';
 import { parsePaginationParams } from '../../../lib/pagination.js';
+import { getCosmosContainer } from '../../../lib/cosmos.js';
 
 const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT;
 const COSMOS_KEY = process.env.COSMOS_KEY;
-const DATABASE = process.env.COSMOS_DATABASE || 'devglobe';
 const CONTAINER = process.env.COSMOS_CONTAINER || 'developers';
-let cosmosClient;
-
-function getContainer() {
-  cosmosClient ||= new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
-  return cosmosClient.database(DATABASE).container(CONTAINER);
-}
 
 async function getSampleData() {
   const filePath = path.join(process.cwd(), 'data', 'developers-sample.json');
@@ -51,7 +44,8 @@ export async function GET(request) {
   }
 
   try {
-    const container = getContainer();
+    const container = getCosmosContainer(CONTAINER);
+    if (!container) throw new Error('Cosmos DB is not configured');
     const fields = 'c.id, c.login, c.name, c.avatarUrl, c.location, c.lat, c.lng, c.followers, c.publicRepos, c.totalStars, c.totalForks, c.totalCommits, c.topLanguage, c.soUserId, c.soReputation, c.soAnswers, c.soBadges, c.score, c.specialTags, c.claimed, c.metricsUpdatedAt, c.aiProfile';
     const baseQuery = `SELECT ${fields} FROM c WHERE (NOT IS_DEFINED(c.nomination) OR c.nomination.status = 'approved') ORDER BY c.score DESC`;
 
