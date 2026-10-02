@@ -848,6 +848,24 @@ body {
 }
 
 /* Centered search bar */
+.hacktoberfest-active .public-feature-bar {
+  top: 112px;
+}
+
+.hacktoberfest-active .search-bar {
+  top: 172px;
+}
+
+.hacktoberfest-active .mission-home {
+  padding-top: 186px;
+}
+
+@media (max-width: 600px) {
+  .hacktoberfest-active .public-feature-bar {
+    top: 108px;
+  }
+}
+
 .search-bar {
   position: fixed;
   top: 128px;

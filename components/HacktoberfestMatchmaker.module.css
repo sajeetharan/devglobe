@@ -63,7 +63,8 @@
   grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
   grid-template-areas:
     "intro tool"
-    "criteria tool";
+    "criteria tool"
+    "note note";
   gap: 64px;
   align-items: start;
   padding: 72px 0 64px;
@@ -73,10 +74,14 @@
 .eyebrow { color: var(--match-orange); font-size: 12px; font-weight: 800; }
 .intro h1 { max-width: 520px; margin: 16px 0 20px; font-size: 64px; line-height: 1.02; letter-spacing: 0; }
 .intro > p { max-width: 530px; margin: 0; color: var(--match-muted); font-size: 17px; line-height: 1.65; }
+.intro .requirement { margin-top: 20px; color: var(--match-text); font-size: 14px; }
+.eventNote { grid-area: note; max-width: 80ch; color: var(--match-muted); font-size: 13px; line-height: 1.65; }
+.eventNote a, .state a { color: var(--mission-link); text-underline-offset: 3px; }
+.state a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; }
 
 .criteria { grid-area: criteria; margin: -20px 0 0; border-top: 1px solid var(--match-line); }
-.criteria div { display: grid; grid-template-columns: 42px 1fr; gap: 12px; padding: 15px 0; border-bottom: 1px solid var(--match-line); }
-.criteria dt { color: var(--match-cyan); font-family: monospace; font-size: 12px; }
+.criteria div { display: grid; grid-template-columns: 74px 1fr; gap: 12px; padding: 15px 0; border-bottom: 1px solid var(--match-line); }
+.criteria dt { color: var(--mission-link); font-size: 12px; font-weight: 700; }
 .criteria dd { margin: 0; color: var(--match-text); font-size: 13px; }
 
 .tool { grid-area: tool; border: 1px solid var(--match-line); background: var(--bg-panel-95); box-shadow: var(--shadow-strong); }
@@ -87,7 +92,7 @@
 .inputRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; min-height: 48px; border: 1px solid var(--match-line); background: var(--match-bg); }
 .inputRow > span { padding-left: 16px; color: var(--match-muted); font-size: 16px; }
 .inputRow input { position: relative; z-index: 1; min-width: 0; height: 46px; border: 0; outline: 0; background: transparent; color: var(--match-text); font: inherit; font-size: 16px; }
-.inputRow button { align-self: stretch; min-width: 150px; border: 0; background: var(--match-orange); color: #fff; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
+.inputRow button { align-self: stretch; min-width: 150px; border: 0; background: var(--match-orange); color: var(--match-bg); cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
 .inputRow button:hover { background: color-mix(in srgb, var(--match-orange) 82%, white); }
 .inputRow button:disabled { cursor: wait; opacity: 0.7; }
 .form > p { margin: 9px 0 0; color: var(--match-muted); font-size: 11px; }
@@ -132,7 +137,7 @@
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 0 36px; border-top: 1px solid var(--match-line); color: var(--match-muted); font-size: 12px; }
 
 @media (max-width: 920px) {
-  .workspace { grid-template-columns: 1fr; grid-template-areas: "intro" "tool" "criteria"; gap: 44px; }
+  .workspace { grid-template-columns: 1fr; grid-template-areas: "intro" "tool" "criteria" "note"; gap: 44px; }
   .intro { max-width: 680px; padding-top: 0; }
   .intro h1 { font-size: 56px; }
   .criteria { max-width: 560px; margin-top: 0; }
@@ -166,11 +171,11 @@
 
 @media (max-width: 520px) {
   .criteria { grid-template-columns: 1fr; }
-  .criteria div { grid-template-columns: 32px minmax(0, 1fr); align-items: center; padding: 10px 8px; border-right: 0; }
+  .criteria div { grid-template-columns: 74px minmax(0, 1fr); align-items: center; padding: 10px 8px; border-right: 0; }
   .criteria dd { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spinner { animation-duration: 1.6s; }
+  .spinner { animation: none; }
   .match { transition: none; }
 }

@@ -130,4 +130,10 @@ No success metric should reward raw pull-request volume.
 
 ## Follow-up phase
 
+### Public October entry point
+
+The homepage highlights the public [Hacktoberfest matchmaker](../../app/hacktoberfest/page.jsx) during October 2026 UTC, above the daily-companion feature navigation with clearance for search and mission content. The route requires an existing public DevGlobe profile but no sign-in, and returns up to three matches. Missing profiles are directed to the homepage nomination flow.
+
+Campaign attribution uses `hacktoberfest-2026` for acquisition and issue-open actions. See the [promotion copy and launch checklist](../hacktoberfest-promotion.md). The current official website says pull requests no longer count toward rewards; label matching must not be presented as a guarantee of event credit.
+
 Verified passport stamps, shareable campaign cards, and aggregate globe activity may be considered after DevGlobe can verify GitHub identity, pull-request state, repository acceptance, and consent. Any recognition model must resist duplicate, spam, late, and low-quality activity and remain separate from the core developer score.

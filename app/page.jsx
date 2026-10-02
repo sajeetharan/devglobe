@@ -16,6 +16,8 @@ import ShortlistManagerModal from '../components/ShortlistManagerModal.jsx';
 import ContributionOpportunitiesModal from '../components/ContributionOpportunitiesModal.jsx';
 import SimilarDevelopersModal from '../components/SimilarDevelopersModal.jsx';
 import QuickTour from '../components/QuickTour.jsx';
+import HacktoberfestBanner from '../components/HacktoberfestBanner.jsx';
+import { isHacktoberfestCampaignActive } from '../lib/hacktoberfest-campaign.js';
 import ReturnBriefing from '../components/ReturnBriefing.jsx';
 import PublicFeatureBar from '../components/PublicFeatureBar.jsx';
 import MissionFirstHome from '../components/MissionFirstHome.jsx';
@@ -86,6 +88,7 @@ export default function Home() {
   const [trending, setTrending] = useState(null);
   const [trendingError, setTrendingError] = useState('');
   const [tourStep, setTourStep] = useState(null);
+  const [hacktoberfestActive, setHacktoberfestActive] = useState(false);
   const [liveLanguage, setLiveLanguage] = useState('');
   const [livePlatform, setLivePlatform] = useState('');
   const [missionRefreshRequest, setMissionRefreshRequest] = useState(0);
@@ -112,6 +115,7 @@ export default function Home() {
   [liveDevelopers, liveLanguage, livePlatform]);
 
   useEffect(() => {
+    setHacktoberfestActive(isHacktoberfestCampaignActive());
     const params = new URLSearchParams(window.location.search);
     const attribution = acquisitionAttributionProperties(params, { referrer: document.referrer, siteUrl: window.location.origin });
     track('site_visited', {
@@ -978,7 +982,7 @@ export default function Home() {
   const showMissionHome = !sessionResolved || (!user && publicSurface === 'today');
 
   return (
-    <div id="app" className={tourStep ? 'tour-active' : ''} aria-busy={loading}>
+    <div id="app" className={[tourStep ? 'tour-active' : '', hacktoberfestActive ? 'hacktoberfest-active' : ''].filter(Boolean).join(' ')} aria-busy={loading}>
       <section className="agent-readable-summary" aria-labelledby="devglobe-summary-title">
         <h1 id="devglobe-summary-title">The open-source talent graph for humans and AI agents.</h1>
         <p>
@@ -1028,6 +1032,7 @@ export default function Home() {
         onAddMe={handleAddMe}
         onStartTour={handleTourFocusSearch}
       />
+      {hacktoberfestActive && <HacktoberfestBanner />}
       {!tourStep && user && claimStatus === 'claimed' && !(sidebarOpen && sidebarView === 'activity') && (
           <ReturnBriefing
             login={user.login}
