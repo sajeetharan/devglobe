@@ -66,7 +66,7 @@ Share feedback about relevance and availability. Matches are discovery suggestio
 
 Campaign links use the allow-listed `hacktoberfest-2026` value. The matchmaker records `site_visited` with acquisition source, channel, and the `hacktoberfest_matchmaker` journey. The homepage highlight and issue-opening actions carry the campaign value.
 
-Compare visitors and sessions against the same hours on earlier days, then measure form submissions and issue opens. Distinct browser identifiers are tracked visitors, not verified people; analytics blocking reduces coverage. Browser custom events may not be captured before Application Insights finishes initializing; durable engagement ingestion is a separate source.
+Compare visitors and sessions against the same hours on earlier days, then measure form submissions and issue opens. Distinct browser identifiers are tracked visitors, not verified people; analytics blocking reduces coverage. Browser custom events are queued in memory until Application Insights initializes (up to 100 events). Missing configuration, blocked or failed initialization, and leaving before initialization can still prevent delivery; durable engagement ingestion is a separate source.
 
 Use the confirmed website telemetry location: `AppPageViews` / `AppEvents` in `DefaultWorkspace-0caf9c40-8ea2-43b1-a54f-38c656a8e1f0-EUS`, scoped to the `devglobe-public-api` Application Insights resource and the `devglobe.dev` / `www.devglobe.dev` hosts. Do not substitute MCP callers for website users.
 

@@ -8,6 +8,8 @@ Search text, email addresses, OAuth data, IP addresses, and raw browser session 
 
 ## Counting and privacy
 
+Browser Application Insights events use a bounded, in-memory startup queue (100 events) while runtime configuration and the SDK load. Once initialized, pending events are delivered in order and subsequent actions use the same client. Only allow-listed, sanitized analytics properties enter the queue; it is not persisted. Missing configuration or initialization failure clears and disables the queue. Localhost and automated browsers are excluded. Initialization, delivery, and queue-overflow failures emit console warnings without blocking product actions. The existing `/api/engagement` ingestion runs independently and is not replayed when the browser queue drains.
+
 The server rejects missing and known automated user agents, social preview crawlers, and direct image requests. It issues a signed, HTTP-only browser-session cookie and rejects forged session identities; raw session IDs are HMACed before storage. Repeated events for the same session, event name, target profile, action qualifier, and 30-minute window produce the same Cosmos item ID and are idempotent. The minimum-volume threshold counts separately HMACed network cohorts, so deleting or rotating a browser cookie cannot reveal a low-volume metric.
 
 Profile insights show 7, 30, and 90-day event counts with the immediately preceding period. A metric is suppressed unless at least three distinct hashed sessions contributed during that period. Only an authenticated GitHub owner whose matching profile is claimed can read the private panel.
