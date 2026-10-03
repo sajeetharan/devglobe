@@ -13,6 +13,7 @@ import {
   getContributionOpportunityStateContainer,
   reserveGlobalRecommendationRefresh,
 } from '../../../lib/contribution-opportunity-store.js';
+import { CONTRIBUTION_TASK_PREFERENCES, contributionTask } from '../../../lib/contribution-task.js';
 
 const LOGIN_PATTERN = /^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
 
@@ -42,20 +43,27 @@ export function createHacktoberfestMatchesHandler(dependencies = {}) {
   const now = dependencies.now || (() => new Date());
 
   return async function getHacktoberfestMatches(request) {
-    const login = new URL(request.url).searchParams.get('login')?.trim() || '';
-    if (!LOGIN_PATTERN.test(login)) {
+    const params = new URL(request.url).searchParams;
+    const guest = params.get('mode') === 'guest';
+    const login = params.get('login')?.trim() || '';
+    const language = params.get('language')?.trim().toLowerCase() || '';
+    const taskPreference = params.get('task') || 'any';
+    if (guest && (!CONTRIBUTION_LANGUAGES.includes(language) || !CONTRIBUTION_TASK_PREFERENCES.includes(taskPreference))) {
+      return NextResponse.json({ error: 'Choose a supported repository language and task preference' }, { status: 400 });
+    }
+    if (!guest && !LOGIN_PATTERN.test(login)) {
       return NextResponse.json({ error: 'Enter a valid GitHub username' }, { status: 400 });
     }
 
     try {
-      const developerContainer = getDeveloperContainer();
       const stateContainer = getStateContainer();
-      if (!developerContainer || !stateContainer) {
+      const developerContainer = guest ? null : getDeveloperContainer();
+      if ((!guest && !developerContainer) || !stateContainer) {
         return NextResponse.json({ error: 'Hacktoberfest matching is unavailable' }, { status: 503 });
       }
 
-      const developer = await findDeveloper(developerContainer, login);
-      if (!developer) {
+      const developer = guest ? null : await findDeveloper(developerContainer, login);
+      if (!guest && !developer) {
         return NextResponse.json({ error: 'Developer not found on DevGlobe' }, { status: 404 });
       }
 
@@ -63,7 +71,7 @@ export function createHacktoberfestMatchesHandler(dependencies = {}) {
         campaign: 'hacktoberfest-2026',
         difficulty: 'beginner',
         interests: [],
-        languages: profileLanguages(developer),
+        languages: guest ? [language] : profileLanguages(developer),
       });
       if (preferences.languages.length === 0) {
         return NextResponse.json({ error: 'No supported languages found for this profile' }, { status: 422 });
@@ -82,10 +90,15 @@ export function createHacktoberfestMatchesHandler(dependencies = {}) {
         token: process.env.GITHUB_TOKEN,
         now: requestedAt,
       });
-      const matches = rankContributionOpportunities(candidates, preferences, [], requestedAt).slice(0, 3);
+      const filteredCandidates = guest && taskPreference !== 'any'
+        ? candidates.filter(candidate => contributionTask(candidate.issue).kind === taskPreference)
+        : candidates;
+      const matches = rankContributionOpportunities(filteredCandidates, preferences, [], requestedAt).slice(0, 3);
 
       return NextResponse.json({
-        developer: {
+        mode: guest ? 'guest' : 'profile',
+        preferences: { languages: preferences.languages, task: guest ? taskPreference : 'any' },
+        developer: guest ? null : {
           login: developer.login,
           name: developer.name || developer.login,
           avatarUrl: developer.avatarUrl || null,

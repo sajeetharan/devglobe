@@ -100,6 +100,14 @@ Before campaign launch, maintainers should confirm the published Hacktoberfest 2
 
 The existing owner-scoped preference object stores only the campaign key alongside languages, interests, and difficulty. Cached results continue to contain bounded public issue summaries. The feature adds no contributor activity store and no new personal data.
 
+## Public matcher and guest preview
+
+The public `/hacktoberfest` matcher supports approved profile lookup without sign-in and an explicit guest mode for new or pending profiles. Guests choose one supported repository language and a finite task preference (`any`, `code`, or `content`). Guest discovery skips developer lookup, does not create or approve profiles, and does not persist preferences. It uses the same global refresh budget, three-result limit, freshness, guide, campaign, and assignment checks.
+
+Cards distinguish `Repository: TypeScript` (repository metadata) from the inferred task, such as `JSON/content edit`, `Documentation edit`, or `Code change`. Unclear tasks say to check issue details; code/content filters exclude unclassified tasks rather than guess. Labels are conservative heuristics, not promises about prerequisites, setup, or completion time.
+
+Cards link directly to a contribution guide, preferring an issue-linked guide within the same GitHub repository and otherwise using the repository community-profile guide. Only HTTPS GitHub file/tree links within that repository are surfaced. Issue bodies are inspected transiently for classification and guide extraction, not copied into results, stored summaries, or analytics. Guest mode does not change authenticated mission acceptance or GitHub completion verification.
+
 ## Success metrics
 
 - Percentage of contribution-opportunity sessions selecting Hacktoberfest mode.

@@ -114,3 +114,81 @@ test('public matcher preserves shared quota and discovery failures', async () =>
   const unavailableResponse = await unavailableHandler(new Request('http://localhost/api/hacktoberfest-matches?login=octocat'));
   assert.equal(unavailableResponse.status, 503);
 });
+
+test('guest preview bypasses profile lookup and filters actual tasks before the result limit', async () => {
+  let preferences;
+  let refreshes = 0;
+  const code = candidate(20);
+  code.issue.title = 'Fix JSON parser bug';
+  code.issue.body = 'Edit the parser code.';
+  code.issue.labels = [{ name: 'hacktoberfest' }, { name: 'good first issue' }];
+  const content = candidate(21);
+  content.issue.title = 'Add new Japan Fact';
+  content.issue.body = 'No code required. JSON/data file edit.';
+  const assigned = candidate(22);
+  assigned.issue.assignees = [{ login: 'someone' }];
+  const handler = createHacktoberfestMatchesHandler({
+    getDeveloperContainer: () => { throw new Error('Guests must not query profiles'); },
+    getStateContainer: () => ({}),
+    reserveRefresh: async () => { refreshes += 1; return 0; },
+    fetchCandidates: async value => { preferences = value; return [code, content, assigned]; },
+    now: () => now,
+  });
+  for (const [task, ids] of [['any', ['20', '21']], ['code', ['20']], ['content', ['21']]]) {
+    const response = await handler(new Request(`http://localhost/api/hacktoberfest-matches?mode=guest&language=typescript&task=${task}`));
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.developer, null);
+    assert.equal(body.mode, 'guest');
+    assert.deepEqual(body.matches.map(match => match.id).sort(), ids);
+    assert.deepEqual(body.preferences, { languages: ['typescript'], task });
+  }
+  assert.equal(refreshes, 3);
+  assert.deepEqual(preferences.languages, ['typescript']);
+});
+
+test('guest validation occurs before storage or quota use', async () => {
+  const handler = createHacktoberfestMatchesHandler({
+    getStateContainer: () => { throw new Error('Invalid requests must not access storage'); },
+  });
+  for (const query of ['mode=guest', 'mode=guest&language=brainfuck', 'mode=guest&language=typescript&task=anything']) {
+    const response = await handler(new Request(`http://localhost/api/hacktoberfest-matches?${query}`));
+    assert.equal(response.status, 400);
+  }
+});
+
+test('task preference is applied before ranking limits and unknown tasks are not guessed', async () => {
+  const codeCandidates = Array.from({ length: 9 }, (_, index) => {
+    const item = candidate(index + 1);
+    item.issue.title = 'Fix parser bug in implementation';
+    item.issue.labels = [{ name: 'hacktoberfest' }, { name: 'good first issue' }];
+    return item;
+  });
+  const content = candidate(99);
+  content.repository.stargazers_count = 0;
+  const unknown = candidate(100);
+  unknown.issue.title = 'Discuss an alternative approach';
+  unknown.issue.labels = [{ name: 'hacktoberfest' }, { name: 'good first issue' }];
+  const handler = createHacktoberfestMatchesHandler({
+    getStateContainer: () => ({}),
+    reserveRefresh: async () => 0,
+    fetchCandidates: async () => [...codeCandidates, content, unknown],
+    now: () => now,
+  });
+  const response = await handler(new Request('http://localhost/api/hacktoberfest-matches?mode=guest&language=typescript&task=content'));
+  assert.deepEqual((await response.json()).matches.map(match => match.id), ['99']);
+});
+
+test('guest previews retain the global refresh budget and upstream errors', async () => {
+  const dependencies = {
+    getStateContainer: () => ({}),
+    reserveRefresh: async () => 17,
+    fetchCandidates: async () => { throw new ContributionOpportunitiesUnavailableError(); },
+  };
+  const request = new Request('http://localhost/api/hacktoberfest-matches?mode=guest&language=typescript');
+  const busy = await createHacktoberfestMatchesHandler(dependencies)(request);
+  assert.equal(busy.status, 429);
+  assert.equal(busy.headers.get('retry-after'), '17');
+  const unavailable = await createHacktoberfestMatchesHandler({ ...dependencies, reserveRefresh: async () => 0 })(request);
+  assert.equal(unavailable.status, 503);
+});
