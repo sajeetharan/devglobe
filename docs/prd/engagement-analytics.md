@@ -16,6 +16,14 @@ Profile insights show 7, 30, and 90-day event counts with the immediately preced
 
 An engaged session contains at least two distinct meaningful event types or a card generation followed by another meaningful action. Returning-user reporting compares a claimed user's first session in a 7 or 30-day period with an earlier session. Funnel reporting uses `card_generated` followed by a different meaningful event in the same hashed session.
 
+## Mission funnel diagnostics
+
+`mission_preview_requested` is followed by `mission_preview_shown`, `mission_preview_no_match`, or `mission_preview_failed` when a request finishes. `mission_action_requested` records `accept`, `pass`, or `complete`; failed requests emit `mission_action_failed`, while successful transitions retain `mission_accepted`, `mission_passed`, and `mission_completed`.
+
+Failures carry only a finite `outcome`: invalid request, signed out, forbidden, missing profile, conflict, verification pending, rate limited, unavailable, generic request failure, network error, or invalid response. No username, issue ID, request body, URL, or raw error message is included in diagnostic events. Durable ingestion bounds outcomes/actions and deduplicates separately by action and failure outcome. Compare users progressing through each stage rather than interpreting deduplicated event counts as all request attempts.
+
+This distinguishes matching/API failures from abandonment after a successful offer. Browser closure or analytics blocking can still interrupt event delivery. Completion continues to require GitHub verification of a linked PR by the mission owner, merged after acceptance; diagnostics do not loosen matching, authentication, claims, or verification rules.
+
 ## Retention and deletion
 
 Raw allow-listed events have item-level Cosmos TTL and expire after 180 days, which supports current and prior 90-day comparisons. Aggregate responses are computed on demand and are not persisted. Session hashes cannot be reversed without the server secret and rotate when that secret changes.

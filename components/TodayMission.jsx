@@ -5,6 +5,7 @@ import { track } from '../lib/analytics.js';
 import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
 import { todayGitHubAuthUrl } from '../lib/public-activation.js';
 import MissionFreshness from './MissionFreshness.jsx';
+import { requestMissionJson } from '../lib/mission-telemetry.js';
 
 const COMPLETED_PAGE_SIZE = 10;
 
@@ -121,12 +122,18 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
     setUpdating(true);
     setMessage('');
     try {
-      const response = await fetch('/api/daily-mission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, missionId: mission.id }),
+      const { response, data } = await requestMissionJson({
+        url: '/api/daily-mission',
+        options: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, missionId: mission.id }),
+        },
+        requestedEvent: 'mission_action_requested',
+        failedEvent: 'mission_action_failed',
+        properties: { action, journey: 'daily_mission' },
+        track,
       });
-      const data = await response.json();
       if (requestVersion !== requestVersionRef.current) return;
       if (response.status === 422) {
         setMessage(data.error || 'GitHub does not show a completed contribution for this mission yet.');

@@ -5,6 +5,7 @@ import { track } from '../lib/analytics.js';
 import { createPendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission.js';
 import { githubFeatureAuthUrl } from '../lib/public-activation.js';
 import MissionFreshness from './MissionFreshness.jsx';
+import { requestMissionJson } from '../lib/mission-telemetry.js';
 
 export default function MissionPreview({ signedIn = false, currentUsername = '', onStartMission, variant = 'panel' }) {
   const [visible, setVisible] = useState(true);
@@ -18,14 +19,19 @@ export default function MissionPreview({ signedIn = false, currentUsername = '',
     setStatus('loading');
     setError('');
     setResult(null);
-    track('mission_preview_requested', { journey: 'mission_preview' });
     try {
-      const response = await fetch('/api/mission-preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login }),
+      const { response, data } = await requestMissionJson({
+        url: '/api/mission-preview',
+        options: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login }),
+        },
+        requestedEvent: 'mission_preview_requested',
+        failedEvent: 'mission_preview_failed',
+        properties: { journey: 'mission_preview' },
+        track,
       });
-      const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to preview a mission');
       setResult(data);
       setStatus('ready');
