@@ -122,7 +122,7 @@ test('ranks relevant issues with reasons, stable order, limits, and dismissals',
   const results = rankContributionOpportunities(candidates, preferences, ['2'], now);
 
   assert.deepEqual(results.map(result => result.id), ['1', '3']);
-  assert.deepEqual(results[0].reasons, ['Uses JavaScript', 'Matches documentation', 'beginner friendly']);
+  assert.deepEqual(results[0].reasons, ['Repository: JavaScript', 'Matches documentation', 'beginner friendly']);
   assert.ok(results.every(result => !Object.hasOwn(result, 'score')));
 });
 
@@ -140,7 +140,7 @@ test('discovers public issues and verifies repository contribution guidance', as
       labels: [{ name: 'good first issue' }],
       assignees: [],
     }] }), { status: 200 });
-    if (url.endsWith('/community/profile')) return new Response(JSON.stringify({ files: { contributing: { html_url: 'guide' } } }), { status: 200 });
+    if (url.endsWith('/community/profile')) return new Response(JSON.stringify({ files: { contributing: { html_url: 'https://github.com/org/repo/blob/main/CONTRIBUTING.md' } } }), { status: 200 });
     if (url.includes('/pulls?')) return new Response(JSON.stringify([{
       merged_at: '2026-08-10T00:00:00.000Z',
       labels: [{ name: 'good first issue' }],
@@ -156,6 +156,7 @@ test('discovers public issues and verifies repository contribution guidance', as
 
   assert.equal(candidates.length, 1);
   assert.equal(candidates[0].hasContributionGuide, true);
+  assert.equal(candidates[0].contributionGuideUrl, 'https://github.com/org/repo/blob/main/CONTRIBUTING.md');
   assert.equal(candidates[0].recentlyMergedPullRequests, 1);
   assert.equal(candidates[0].lastMaintainerActivityAt, '2026-08-10T00:00:00.000Z');
   assert.ok(requested[0].includes('language%3A%22JavaScript%22'));
