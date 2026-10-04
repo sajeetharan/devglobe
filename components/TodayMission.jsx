@@ -6,6 +6,11 @@ import { parsePendingMission, PENDING_MISSION_KEY } from '../lib/pending-mission
 import { todayGitHubAuthUrl } from '../lib/public-activation.js';
 import MissionFreshness from './MissionFreshness.jsx';
 import { requestMissionJson } from '../lib/mission-telemetry.js';
+import SavedContribution, { notifySavedContributionChange } from './SavedContribution.jsx';
+import MissionProgress from './MissionProgress.jsx';
+import { SAVED_CONTRIBUTION_KEY, parseSavedContribution } from '../lib/contribution-passport.js';
+import { MISSION_PROGRESS_ACTIONS } from '../lib/daily-mission.js';
+import passportStyles from './ContributionPassport.module.css';
 
 const COMPLETED_PAGE_SIZE = 10;
 
@@ -37,6 +42,12 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
         requestUrl.searchParams.set('previewLogin', pendingMission.login);
         requestUrl.searchParams.set('previewIssueId', pendingMission.issueId);
       }
+      try {
+        const saved = parseSavedContribution(localStorage.getItem(SAVED_CONTRIBUTION_KEY));
+        if (saved && !pendingMission) requestUrl.searchParams.set('savedIssueUrl', saved.url);
+      } catch (storageError) {
+        setRestoreNotice(`Saved contribution could not be restored: ${storageError.message}`);
+      }
       const response = await fetch(`${requestUrl.pathname}${requestUrl.search}`, { cache: 'no-store', credentials: 'same-origin' });
       const data = await response.json();
       if (requestVersion !== requestVersionRef.current) return;
@@ -56,6 +67,12 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
       setCompletedMissions(Array.isArray(data.completedMissions) ? data.completedMissions : []);
       setHistoryLoaded(true);
       setStatus(data.unavailable ? 'unavailable' : data.mission ? 'ready' : 'empty');
+      if (data.savedRestoreAttempted) {
+        setRestoreNotice(data.restoredSaved
+          ? 'Your saved contribution is ready. Accept it to start verified tracking; saving did not reserve the issue.'
+          : 'Continue your existing mission first. Your browser-local contribution is still saved.');
+      }
+      if (data.mission?.status === 'accepted') track('mission_resumed', { journey: 'daily_mission' });
       if (pendingMission && response.ok && !data.unavailable) {
         try { localStorage.removeItem(PENDING_MISSION_KEY); } catch { /* Stale intent expires automatically. */ }
         if (data.restoredPreview) track('mission_preview_restored', { journey: 'daily_mission' });
@@ -116,18 +133,26 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
     if (view === 'completed') setVisibleCompletedCount(COMPLETED_PAGE_SIZE);
   }, [view]);
 
-  async function update(action) {
+  async function update(action, blocker) {
     const requestVersion = ++requestVersionRef.current;
     clearTimeout(retryTimerRef.current);
     setUpdating(true);
     setMessage('');
     try {
+      let saved;
+      if (action === 'accept') {
+        try { saved = parseSavedContribution(localStorage.getItem(SAVED_CONTRIBUTION_KEY)); }
+        catch (storageError) { setRestoreNotice(`Local progress could not be read: ${storageError.message}`); }
+      }
       const { response, data } = await requestMissionJson({
         url: '/api/daily-mission',
         options: {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, missionId: mission.id }),
+          body: JSON.stringify({
+            action, missionId: mission.id, blocker,
+            ...(saved?.url === mission.opportunity.url ? { localProgress: { guideRead: saved.guideRead, started: saved.started } } : {}),
+          }),
         },
         requestedEvent: 'mission_action_requested',
         failedEvent: 'mission_action_failed',
@@ -147,7 +172,22 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
       setMission(data.mission);
       setCompletedMissions(Array.isArray(data.completedMissions) ? data.completedMissions : []);
       setStatus(data.mission ? 'ready' : 'empty');
-      track(`mission_${action === 'complete' ? 'completed' : `${action}ed`}`, { journey: 'daily_mission' });
+      if (MISSION_PROGRESS_ACTIONS.includes(action)) {
+        const firstSubmission = action === 'verify_progress' && !mission.progress?.submittedEvidence
+          && data.mission?.progress?.submittedEvidence?.type !== 'closed_pull_request';
+        track(firstSubmission ? 'mission_pr_submitted' : action === 'blocked' ? 'mission_blocked' : 'mission_progress_updated', {
+          journey: 'daily_mission', action: action === 'blocked' ? blocker : action,
+        });
+      } else track(`mission_${action === 'complete' ? 'completed' : `${action}ed`}`, { journey: 'daily_mission' });
+      if (action === 'accept' && saved?.url === data.mission?.opportunity.url) {
+        try {
+          localStorage.removeItem(SAVED_CONTRIBUTION_KEY);
+          notifySavedContributionChange();
+        } catch (storageError) {
+          setRestoreNotice(`Mission accepted and saved to your profile, but the browser copy could not be removed: ${storageError.message}`);
+        }
+      }
+      if (action === 'pass' && !data.mission) await load();
     } catch (error) {
       if (requestVersion !== requestVersionRef.current) return;
       setMessage(error.message);
@@ -211,6 +251,9 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
                     {completed.completionEvidence?.url && (
                       <a href={completed.completionEvidence.url} target="_blank" rel="noopener noreferrer">View merged PR</a>
                     )}
+                    {showHistory && completedMissions.some(completed => completed.completionEvidence?.type === 'merged_pull_request') && (
+                      <strong className={passportStyles.badge}>First verified mission completed · Contribution Passport</strong>
+                    )}
                   </span>
                 </li>
               ))}
@@ -235,8 +278,9 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
       <div className="today-mission__heading">
         <div>
           <span>Your next useful move</span>
-          <h2 id="today-mission-title">Today’s mission</h2>
+          <h2 id="today-mission-title">{mission?.status === 'accepted' ? 'Continue your contribution' : 'Today’s mission'}</h2>
         </div>
+        <SavedContribution signedIn={status !== 'signed-out'} onChange={load} />
         <div className="today-mission__heading-actions">
           <strong>{mission?.durationMinutes || 15} min</strong>
           {onOpenContributions && !['signed-out', 'claim-required'].includes(status) && <button type="button" onClick={onOpenContributions}>Adjust matching</button>}
@@ -285,6 +329,12 @@ export default function TodayMission({ active, refreshRequest = 0, onOpenContrib
             </ul>
           )}
           <MissionFreshness freshness={mission.opportunity.freshness} compact />
+          {['accepted', 'completed'].includes(mission.status) && (
+            <MissionProgress mission={mission} updating={updating} onUpdate={update} onBrowse={onOpenContributions} />
+          )}
+          {mission.status === 'completed' && mission.completionEvidence?.type === 'merged_pull_request' && (
+            <strong className={passportStyles.badge}>First verified mission completed · Contribution Passport</strong>
+          )}
           <div className="today-mission__actions">
             {mission.status === 'offered' && <button type="button" className="today-mission__primary" onClick={() => update('accept')} disabled={updating}>Accept this mission</button>}
             {mission.status === 'accepted' && <button type="button" className="today-mission__primary" onClick={() => update('complete')} disabled={updating}>Verify completion</button>}

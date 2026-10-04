@@ -7,6 +7,7 @@ import { acquisitionAttributionProperties } from '../lib/share-attribution.js';
 import { HACKTOBERFEST_CAMPAIGN } from '../lib/hacktoberfest-campaign.js';
 import { CONTRIBUTION_LANGUAGES } from '../lib/contribution-opportunities.js';
 import styles from './HacktoberfestMatchmaker.module.css';
+import SavedContribution, { SaveContributionButton } from './SavedContribution.jsx';
 
 export default function HacktoberfestMatchmaker() {
   const [login, setLogin] = useState('');
@@ -96,6 +97,7 @@ export default function HacktoberfestMatchmaker() {
             <span>Find your contribution</span>
             <span>Public beta</span>
           </div>
+          <SavedContribution />
           <form onSubmit={findMatches} className={styles.form}>
             <fieldset className={styles.modeChoice} disabled={status === 'loading'}>
               <legend>Match using</legend>
@@ -193,6 +195,7 @@ export default function HacktoberfestMatchmaker() {
                             Read contribution guide
                           </a>
                         )}
+                        <SaveContributionButton opportunity={match} />
                       </div>
                       <a
                         href={match.url}

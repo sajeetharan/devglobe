@@ -17,7 +17,7 @@ Maintainers also need contributors to choose well-scoped work and follow project
 
 Add an **Open Source Passport** mode to the existing Contribution opportunities experience. It reuses the current matching, eligibility, dismissal, caching, and rate-limit controls while requiring the GitHub issue label `hacktoberfest`.
 
-The MVP is a trustworthy discovery mode, not a contribution ledger. Passport history, stamps, and rewards require a later verified GitHub contribution model.
+The campaign matcher remains a trustworthy discovery mode, not an official event ledger. Its result cards now integrate the evergreen Contribution Passport: one browser-local saved issue, a return card, optional self-reported checkpoints and calendar-file reminders. Sign-in and a claimed profile enable persistent accepted-mission progress and the existing GitHub-verified merged completion history. The first verified completion badge is personal progress, not event credit or a reward.
 
 ## Goals
 

@@ -285,3 +285,29 @@ test('limits previews by opaque client hash with expiring point records', async 
   assert.ok(resource.ttl > 0);
   assert.equal(await reserveMissionPreview(container, 'opaque-hash', new Date(now.getTime() + 301000)), 0);
 });
+
+test('restores saved issues through fresh canonical GitHub reads with repository verification', async () => {
+  const requested = [];
+  const issue = { ...candidate().issue, repository_url: 'https://api.github.com/repos/org/repo' };
+  const fetchImpl = async (url, options) => {
+    requested.push({ url, options });
+    if (url.endsWith('/issues/42')) return Response.json(issue);
+    if (url.endsWith('/community/profile')) return Response.json({ files: { contributing: { html_url: 'https://github.com/org/repo/blob/main/CONTRIBUTING.md' } } });
+    if (url.includes('/pulls?')) return Response.json([]);
+    return Response.json(candidate().repository);
+  };
+  const candidates = await fetchGitHubContributionCandidates({ languages: ['typescript'], difficulty: 'beginner' }, {
+    fetchImpl, token: 'token', now, issueUrl: 'https://github.com/org/repo/issues/42',
+  });
+  assert.equal(candidates.length, 1);
+  assert.equal(requested[0].url, 'https://api.github.com/repos/org/repo/issues/42');
+  assert.equal(requested[0].options.cache, 'no-store');
+  assert.ok(!requested.some(item => item.url.includes('/search/issues')));
+  assert.equal(candidates[0].hasContributionGuide, true);
+  assert.deepEqual(await fetchGitHubContributionCandidates({ languages: [], difficulty: 'beginner' }, {
+    fetchImpl: async () => new Response('{}', { status: 404 }), token: 'token', issueUrl: 'https://github.com/org/repo/issues/42',
+  }), []);
+  await assert.rejects(fetchGitHubContributionCandidates({ languages: [], difficulty: 'beginner' }, {
+    fetchImpl, token: 'token', issueUrl: 'https://evil.test/org/repo/issues/42',
+  }), ContributionOpportunitiesUnavailableError);
+});

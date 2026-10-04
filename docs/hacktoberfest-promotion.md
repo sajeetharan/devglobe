@@ -6,6 +6,8 @@ Lead with a specific problem: finding a useful open-source issue without searchi
 
 The public matchmaker supports an existing, approved DevGlobe profile or a guest preview using a chosen repository language and code/content preference. It returns **up to three** open, unassigned, recently updated issues labeled `hacktoberfest`, with task badges and direct contribution-guide links. Availability varies; issues are not reserved. Repository language is not necessarily the language or skill required for the task.
 
+Visitors can save one contribution on their browser, return through the Continue card, and optionally download a calendar reminder without signing in. Verified progress across devices requires GitHub sign-in, a claimed DevGlobe profile, acceptance and server-verified PR evidence. Reminders require calendar import; DevGlobe sends no email/push reminders and cannot cancel imported events.
+
 DevGlobe is independent of Hacktoberfest. The [official website](https://hacktoberfest.com/) currently says pull requests no longer count toward rewards. Do not promise qualifying PRs, event credit, rewards, or official affiliation.
 
 ## Ready-to-post copy

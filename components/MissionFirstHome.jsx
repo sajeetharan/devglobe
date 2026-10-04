@@ -1,6 +1,7 @@
 'use client';
 
 import MissionPreview from './MissionPreview.jsx';
+import SavedContribution from './SavedContribution.jsx';
 
 export default function MissionFirstHome() {
   return (
@@ -11,6 +12,7 @@ export default function MissionFirstHome() {
           <h2 id="mission-home-title">Make one useful open-source contribution today.</h2>
           <p>Preview a real issue matched to your public GitHub profile. Sign in only when you are ready to accept it, track progress, or ask for another match.</p>
         </header>
+        <SavedContribution />
         <MissionPreview variant="landing" />
         <dl className="mission-home__trust" aria-label="Mission preview principles">
           <div><dt>Public signals</dt><dd>Languages and contribution history</dd></div>
