@@ -52,6 +52,12 @@ The primary audience is a developer who is curious about open source but has not
 6. The visitor can open the public issue or choose **Sign in to accept missions**.
 7. The preview does not create mission state, reserve the issue, or survive as an accepted mission.
 
+### Saved contribution handoff
+
+The separate **Save this contribution** action retains one public issue summary and optional self-reported guide/work checkpoints on this browser for up to 30 days. Replacement requires confirmation. The homepage and matcher expose a **Continue your contribution** card, issue/guide links, a removable save, and an opt-in calendar-file reminder. This durable save is distinct from the existing 15-minute pending-preview intent used by the sign-in button.
+
+Sign-in returns to Today. A claimed profile is still required, and the saved canonical issue is freshly revalidated against GitHub readiness rules before an offer is restored. Saving is never acceptance or reservation; an unavailable issue returns an explicit error, and the user can remove the save. An existing accepted mission wins over another saved issue. On successful same-issue acceptance, only boolean local checkpoints transfer to the profile; the browser copy is removed. GitHub submission and merged completion always require server verification.
+
 ### Cold-start onboarding
 
 1. A signed-in claimed developer opens Today’s Mission or contribution preferences.

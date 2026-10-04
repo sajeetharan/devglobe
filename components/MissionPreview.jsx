@@ -6,6 +6,7 @@ import { createPendingMission, PENDING_MISSION_KEY } from '../lib/pending-missio
 import { githubFeatureAuthUrl } from '../lib/public-activation.js';
 import MissionFreshness from './MissionFreshness.jsx';
 import { requestMissionJson } from '../lib/mission-telemetry.js';
+import { SaveContributionButton } from './SavedContribution.jsx';
 
 export default function MissionPreview({ signedIn = false, currentUsername = '', onStartMission, variant = 'panel' }) {
   const [visible, setVisible] = useState(true);
@@ -158,6 +159,7 @@ export default function MissionPreview({ signedIn = false, currentUsername = '',
               </a>
             )}
           </div>
+          <SaveContributionButton opportunity={result.mission.opportunity} />
         </article>
       )}
     </section>

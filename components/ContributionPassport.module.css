@@ -1,0 +1,41 @@
+.card {
+  margin: 16px 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.card h2 { margin: 8px 0; font-size: 20px; }
+.card h3 { margin: 8px 0; font-size: 16px; line-height: 1.5; }
+.card p, .save p, .reminder p { font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+.eyebrow { font-size: 12px; color: var(--text-secondary); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.card a, .actions a { display: inline-flex; align-items: center; min-height: 44px; color: var(--mission-link); text-underline-offset: 3px; }
+.card button, .save button, .reminder button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.card button:disabled { opacity: 0.65; cursor: wait; }
+.card :focus-visible, .save :focus-visible, .reminder :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.checklist { display: grid; gap: 4px; border: 0; padding: 0; margin: 12px 0; }
+.checklist legend { font-size: 13px; margin-bottom: 8px; }
+.checklist label { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; }
+.reminder { display: grid; gap: 10px; margin: 16px 0; }
+.reminder label { display: grid; gap: 8px; font-size: 14px; }
+.reminder select, .reminder input, .card select {
+  width: 100%; min-width: 0; min-height: 44px; padding: 8px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--bg-primary); color: var(--text-primary); font: inherit; font-size: 16px;
+}
+.save { margin-top: 8px; }
+.stages { padding-left: 20px; font-size: 14px; line-height: 1.8; }
+.badge { display: block; margin: 12px 0; padding: 12px; border: 1px solid var(--border); color: var(--mission-match); font-size: 14px; }

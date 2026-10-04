@@ -18,11 +18,13 @@ An engaged session contains at least two distinct meaningful event types or a ca
 
 ## Mission funnel diagnostics
 
-`mission_preview_requested` is followed by `mission_preview_shown`, `mission_preview_no_match`, or `mission_preview_failed` when a request finishes. `mission_action_requested` records `accept`, `pass`, or `complete`; failed requests emit `mission_action_failed`, while successful transitions retain `mission_accepted`, `mission_passed`, and `mission_completed`.
+`mission_preview_requested` is followed by `mission_preview_shown`, `mission_preview_no_match`, or `mission_preview_failed` when a request finishes. `mission_action_requested` records lifecycle actions (`accept`, `pass`, `complete`) and passport progress actions (`read_guide`, `started`, `blocked`, `verify_progress`); failed requests emit `mission_action_failed`, while successful lifecycle transitions retain `mission_accepted`, `mission_passed`, and `mission_completed`.
 
 Failures carry only a finite `outcome`: invalid request, signed out, forbidden, missing profile, conflict, verification pending, rate limited, unavailable, generic request failure, network error, or invalid response. No username, issue ID, request body, URL, or raw error message is included in diagnostic events. Durable ingestion bounds outcomes/actions and deduplicates separately by action and failure outcome. Compare users progressing through each stage rather than interpreting deduplicated event counts as all request attempts.
 
 This distinguishes matching/API failures from abandonment after a successful offer. Browser closure or analytics blocking can still interrupt event delivery. Completion continues to require GitHub verification of a linked PR by the mission owner, merged after acceptance; diagnostics do not loosen matching, authentication, claims, or verification rules.
+
+Passport events include `mission_saved`, `mission_resumed`, `mission_progress_updated`, `mission_blocked`, `mission_pr_submitted`, and `mission_reminder_downloaded`. Guide/work progress is self-reported and must not be counted as verified completion. `mission_pr_submitted` follows GitHub verification, not a button click, and remains distinct from merged completion. Blockers and reminder selections are finite categories; no exact reminder timestamp, PR/issue URL, notes, or contact data is ingested. Progress/action categories deduplicate independently inside the existing time window. Compare accepted cohorts' returns, verified submissions and completions; raw reminder downloads do not prove calendar imports or delivery.
 
 ## Retention and deletion
 

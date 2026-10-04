@@ -15,7 +15,7 @@ DevGlobe needs a small, repeatable daily loop that turns known skills into one b
 
 ## Product decision
 
-Add **Today’s Mission** above the existing activity feed. Each UTC day, a claimed developer receives one 15-minute, contribution-ready GitHub issue matched with the existing language, interest, difficulty, safety, and contribution-guide rules.
+Add **Today’s Mission** above the existing activity feed. Each UTC day, a claimed developer without an unfinished accepted mission receives one contribution-ready GitHub issue matched with the existing language, interest, difficulty, safety, and contribution-guide rules. Duration is a suggested scope, not a completion-time promise.
 
 The developer can accept, pass, open, and verify completion of the mission. Completion requires a merged pull request authored by the signed-in GitHub login, linked from the mission issue, and merged after mission acceptance.
 
@@ -46,11 +46,11 @@ Signed-out visitors see a GitHub sign-in action. Signed-in developers without a 
 ## MVP journey
 
 1. The developer opens the Activity view.
-2. DevGlobe returns the persisted mission for the current UTC day or creates one from a bounded recommendation pool.
+2. DevGlobe returns an unfinished accepted mission even across UTC days, otherwise the current-day mission or a new offer from a bounded recommendation pool.
 3. The mission shows a 15-minute scope, repository, match reasons, and canonical GitHub issue link.
 4. The developer chooses **Accept** or **Pass**.
 5. Pass selects the next item from the already-fetched daily pool and does not consume another GitHub request.
-6. After accepting, the developer can open the issue and choose **Verify completion**.
+6. After accepting, the developer can record self-reported guide/work checkpoints, save a finite blocker reason, check for a submitted PR, and choose **Verify completion**.
 7. DevGlobe checks public GitHub issue timeline and pull-request data. An issue being closed alone is not completion evidence.
 8. The completed state and merged pull-request link remain visible for the rest of the UTC day. Verified completions are also retained in a bounded mission history with links to the issue and merged pull request. A new mission can be assigned the following day.
 
@@ -84,7 +84,24 @@ Pull-request review and technical-question missions remain future source integra
 - `accepted -> completed`
 - `accepted -> passed`
 
-Completed, passed, stale, and invalid transitions are rejected. A client cannot complete a mission before accepting it, and the server cannot complete it without current GitHub evidence.
+Completed, passed, stale offered, and invalid transitions are rejected. Accepted missions remain active across days until completed or passed. A client cannot complete a mission before accepting it, and the server cannot complete it without current GitHub evidence.
+
+### Contribution passport
+
+- Public mission previews and Hacktoberfest result cards offer **Save this contribution**. One versioned, bounded public summary is retained locally for up to 30 days; a different save requires explicit replacement confirmation. Invalid/expired saves show a removable error, and storage failures are visible.
+- Homepage and matcher show a persistent **Continue your contribution** card. Guest guide/work checkpoints are explicitly self-reported and earn no verified credit. Guest saves do not create profiles, reserve issues, or synchronize across browsers.
+- GitHub sign-in returns to the Today destination. After existing authentication and claim checks, the saved URL is re-fetched from GitHub under the existing global quota and contribution-readiness rules. Browser titles, checklists and snapshots cannot establish eligibility or verified proof. Existing accepted missions are never replaced by a saved issue.
+- Accepting the restored offer transfers only boolean guide/work checkpoints to the owner-scoped profile state. After the server accepts, the corresponding local copy is removed; failed requests retain it.
+- The accepted card is titled **Continue your contribution**, with guide-read and work-started checkpoints, finite blocker choices (`setup`, `instructions`, `issue_taken`, `too_large`), GitHub-verified PR submission, and verified merged completion.
+- Submission checking scans public issue cross-references (bounded timeline pagination), verifies the actual PR author and creation after acceptance, and requires an open non-draft PR. Closed-unmerged PRs show a distinct status; merged PRs still require the explicit completion action to award the existing completed milestone.
+- PR status is shown with its verification time and a manual refresh; it is not live monitoring. Waiting for maintainer review is not contributor failure.
+- A **First verified mission completed** passport badge appears only with server-recorded merged-PR evidence in current mission/history. No points, leaderboard, event credit, developer-score changes, or self-reported completion badges are introduced.
+
+### Optional calendar reminders
+
+Guests and accepted contributors without an open submitted PR can choose tomorrow, next Saturday at 9 AM, or a custom local time and download an `.ics` calendar event. Default is **No reminder**. Times are encoded as UTC; fields are escaped and lines folded to calendar format limits. The event includes the canonical issue and Today return link.
+
+Downloading is not subscribing. The user must import the file into their calendar; that calendar controls delivery, snooze and cancellation. DevGlobe sends no emails or push notifications, cannot remove an imported event after completion, and reminds users to recheck issue availability. The download control is hidden while a verified PR awaits review; existing calendar events must be edited or removed by the user.
 
 ### Experience
 
@@ -105,13 +122,15 @@ The response is private and non-cacheable.
 
 ### `POST /api/daily-mission`
 
-Requires same-origin JSON and a signed-in claimed profile. Body: `{ action: "accept" | "pass" | "complete", missionId: "<displayed mission id>" }`. The mission ID binds the action to the mission the developer saw and prevents concurrent tabs from changing a replacement mission. A complete action verifies GitHub before mutation, returns `422` when evidence is absent, and returns `503` when verification is unavailable. Returns the resulting mission or the next offered mission after a pass.
+Requires same-origin JSON and a signed-in claimed profile. Body: `{ action: "accept" | "pass" | "complete" | "read_guide" | "started" | "blocked" | "verify_progress", missionId: "<displayed mission id>", blocker?, localProgress? }`. Blockers use only the finite values above; acceptance imports only boolean local checkpoints. The mission ID binds the action to the displayed mission. Verified writes also bind evidence to its acceptance timestamp, preventing optimistic-concurrency retries from applying proof to another acceptance. Verification returns `422` when evidence is absent and `503` when unavailable. Passing a previous-day mission does not rotate through stale previous-day recommendations.
+
+GET optionally accepts `savedIssueUrl`, restricted to canonical public GitHub issues. It restores an eligible saved issue as **offered**, never automatically accepted, and reports `restoredSaved` / `savedRestoreAttempted`. It returns `422` if the saved issue no longer meets readiness checks. The user can remove the save to resume ordinary matching.
 
 ## Data model
 
 Mission state lives in the claimed developer’s existing `contributionOpportunity` object:
 
-- `dailyMission`: UTC day, issue ID, category, duration, status, timestamps, bounded public opportunity summary, and bounded merged pull-request evidence after verification.
+- `dailyMission`: UTC day, issue ID, category, duration, status, timestamps, bounded public opportunity summary, self-reported `progress.guideReadAt` / `startedAt` / finite `blocker`, GitHub-verified `progress.submittedEvidence`, and bounded merged pull-request evidence after completion verification.
 - `dailyMissionPool`: UTC day and up to eight ranked public opportunity summaries.
 - `dailyMissionHistory`: UTC day and up to eight passed issue IDs.
 
@@ -129,8 +148,14 @@ Durable allow-listed events:
 - `mission_completed`
 - `mission_unavailable`
 - `mission_exhausted`
+- `mission_saved`
+- `mission_resumed`
+- `mission_progress_updated`
+- `mission_blocked`
+- `mission_pr_submitted`
+- `mission_reminder_downloaded`
 
-All use the fixed journey `daily_mission`. Issue IDs, titles, repository names, and developer logins are excluded from event properties.
+Authenticated events use `daily_mission`; local saves and reminder downloads use `contribution_passport`. Progress, blocker and reminder actions are finite categories; exact reminder times, issue IDs, titles, repository names, developer logins and free-text notes are excluded from event properties. Submission telemetry records the first observed transition, not every refresh.
 
 Primary metrics:
 
